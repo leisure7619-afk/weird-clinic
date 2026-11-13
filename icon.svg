@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc9ff"/><stop offset="1" stop-color="#d4f1ff"/></linearGradient></defs>
+<rect width="512" height="512" fill="url(#s2)"/>
+<circle cx="110" cy="100" r="34" fill="#fff" opacity=".85"/><circle cx="148" cy="92" r="26" fill="#fff" opacity=".85"/><circle cx="80" cy="108" r="20" fill="#fff" opacity=".85"/>
+<polygon points="256,250 470,357 256,464 42,357" fill="#7fb85e"/><polygon points="42,357 256,464 256,486 42,379" fill="#5f9a44"/><polygon points="256,464 470,357 470,379 256,486" fill="#4f8638"/>
+<polygon points="256,280 400,352 256,424 112,352" fill="#d4cde8"/>
+<polygon points="112,352 256,424 256,300 112,228" fill="#f6ead3"/><polygon points="256,424 400,352 400,228 256,300" fill="#e4d0ac"/><polygon points="112,228 256,156 400,228 256,300" fill="#fff8ec" stroke="#e4d0ac" stroke-width="4"/>
+<polygon points="112,228 256,300 256,312 112,240" fill="#7cc6fe"/><polygon points="256,300 400,228 400,240 256,312" fill="#5aa9e6"/>
+<polygon points="140,282 186,305 186,345 140,322" fill="#bfe0f2" stroke="#fff" stroke-width="4"/><polygon points="196,310 230,327 230,367 196,350" fill="#5aa9e6"/>
+<polygon points="290,330 336,307 336,347 290,370" fill="#bfe0f2" stroke="#fff" stroke-width="4"/><polygon points="350,300 380,285 380,325 350,340" fill="#bfe0f2" stroke="#fff" stroke-width="4"/>
+<g transform="translate(256 150)"><rect x="-70" y="-62" width="140" height="80" rx="18" fill="#ff6b5b" stroke="#fff" stroke-width="8"/><rect x="-12" y="-50" width="24" height="56" rx="4" fill="#fff"/><rect x="-28" y="-34" width="56" height="24" rx="4" fill="#fff"/><rect x="-4" y="18" width="8" height="30" fill="#c9b08a"/></g>
+<g transform="translate(150 410)"><ellipse cx="0" cy="8" rx="22" ry="7" fill="#000" opacity=".2"/><path d="M-20 4 C-24 -36 24 -36 20 4 C10 10 -10 10 -20 4Z" fill="#7ed98a" stroke="#2f7a40" stroke-width="4"/><circle cx="-7" cy="-14" r="4" fill="#222"/><circle cx="8" cy="-14" r="4" fill="#222"/></g>
+<g transform="translate(110 368)"><circle r="24" fill="#fff" stroke="#e4d0ac" stroke-width="3"/><text y="11" text-anchor="middle" font-family="Noto Sans CJK TC" font-weight="900" font-size="34" fill="#ff5b5b">?</text></g>
+</svg>
