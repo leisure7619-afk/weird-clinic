@@ -26,14 +26,17 @@ header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(s
 .pill{background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:3px 7px;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .15s}
 .pill.bump{transform:scale(1.12)}
 .pill.warn{background:#ffe3dc;border-color:#f3a593}
-.buffs{display:flex;gap:4px;flex-wrap:wrap}
+.row2{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.chipbtn{pointer-events:auto;background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:2px 9px;font-weight:800;font-size:12px;white-space:nowrap}
 .buff{font-size:11px;font-weight:700;background:#fff1c7;border:1px solid #f1d27a;border-radius:8px;padding:2px 6px}
+.buff.em{background:#ffdcd6;border-color:#f08a7a;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.6}}
 #stage{flex:1;position:relative;min-height:0}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #banner{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:7px 8px 7px 14px;border-radius:999px;font-size:13px;font-weight:700;display:none;gap:8px;align-items:center;white-space:nowrap;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 #banner.show{display:flex}
 #banner button{background:#fff;color:var(--ink);border:0;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800}
-#toast{position:absolute;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:4;pointer-events:none;display:flex;flex-direction:column;gap:6px;align-items:center}
+#toast{position:absolute;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);z-index:4;pointer-events:none;display:flex;flex-direction:column;gap:6px;align-items:center}
 .tst{background:rgba(255,253,248,.97);border:2px solid var(--line);border-radius:16px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.15);animation:tin .3s cubic-bezier(.2,1.4,.4,1);white-space:nowrap}
 .tst .ti{font-size:26px}.tst small{display:block;font-size:11px;color:var(--soft);font-weight:700}
 .tst.out{opacity:0;transform:translateY(-8px);transition:all .3s}
@@ -42,18 +45,20 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #zoom button{width:38px;height:38px;border-radius:12px;border:2px solid var(--line);background:rgba(255,253,248,.95);font-size:18px;font-weight:900;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 #ticker{margin:6px 10px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:7px 12px;font-size:13px;min-height:36px;line-height:1.45;transition:background .3s}
 #ticker.flash{background:#fff4d6}
-nav{display:flex;gap:6px;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
-nav button{flex:1;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:7px 0 5px;font-size:12px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line)}
+nav{display:flex;gap:5px;padding:0 8px calc(10px + env(safe-area-inset-bottom))}
+nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;font-weight:900}
 #bottom{background:linear-gradient(#f6ecd9,#fdf6e9)}
 .hidden{display:none!important}
 #sheetWrap{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:flex-end}
 #sheetWrap .backdrop{position:absolute;inset:0;background:rgba(40,25,15,.35)}
-.sheet{position:relative;background:var(--card);border-radius:22px 22px 0 0;max-height:78vh;overflow:auto;padding:8px 16px 22px;max-width:640px;width:100%;margin:0 auto;animation:up .22s ease-out;-webkit-overflow-scrolling:touch}
+.sheet{position:relative;background:var(--card);border-radius:22px 22px 0 0;max-height:78vh;overflow:auto;padding:8px 16px calc(22px + env(safe-area-inset-bottom));max-width:640px;width:100%;margin:0 auto;animation:up .22s ease-out;-webkit-overflow-scrolling:touch}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 10px}
 .sheet h2{margin:2px 0 4px;font-size:19px}
+.sheet h4{margin:14px 0 8px;font-size:14px;color:var(--soft)}
 .sheet .sub{color:var(--soft);font-size:13px;margin-bottom:12px;line-height:1.5}
 .item{display:flex;gap:12px;align-items:center;padding:10px;border:2px solid var(--line);border-radius:16px;margin-bottom:8px;background:#fff}
 .item .ic{font-size:28px;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;flex:none}
@@ -61,6 +66,9 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 .item .nm{font-weight:800;font-size:15px}
 .item .ds{font-size:12px;color:var(--soft);margin-top:2px;line-height:1.4}
 .item.locked{opacity:.55}
+.item.done{background:#eefaf3;border-color:#bfe8cf}
+.bar{height:7px;border-radius:9px;background:#f0e6d8;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good);border-radius:9px}
 .btn{border:0;border-radius:12px;padding:9px 14px;font-weight:800;font-size:14px;background:var(--accent);color:#fff;white-space:nowrap;box-shadow:0 3px 0 #d65a3c}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #d65a3c}
 .btn[disabled]{background:#cbbfb3;box-shadow:0 3px 0 #b3a597}
@@ -79,12 +87,15 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .chip{font-size:12px;background:#fbf4ea;border-radius:8px;padding:2px 7px}
 #modalWrap{position:fixed;inset:0;z-index:20;background:rgba(40,25,15,.45);display:grid;place-items:center;padding:20px}
-.modal{background:var(--card);border-radius:24px;padding:22px 20px 18px;max-width:360px;width:100%;text-align:center;animation:pop .25s cubic-bezier(.2,1.4,.4,1);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.modal{background:var(--card);border-radius:24px;padding:22px 20px 18px;max-width:360px;width:100%;text-align:center;animation:pop .25s cubic-bezier(.2,1.4,.4,1);box-shadow:0 10px 40px rgba(0,0,0,.25);max-height:86vh;overflow:auto}
 @keyframes pop{from{transform:scale(.8);opacity:0}}
 .modal .mi{font-size:56px;line-height:1.1}
 .modal h3{margin:8px 0 6px;font-size:20px}
 .modal p{margin:0 0 6px;font-size:14px;line-height:1.6;color:#5a4a40}
 .modal .note{font-size:13px;color:var(--soft);background:#fbf4ea;border-radius:12px;padding:8px 10px;margin-top:8px;line-height:1.6;text-align:left}
+.modal .award{display:flex;gap:10px;align-items:center;text-align:left;background:#fff7e6;border:2px solid #f6dfae;border-radius:14px;padding:8px 10px;margin-top:8px}
+.modal .award b{display:block;font-size:14px}.modal .award span{font-size:12px;color:var(--soft)}
+.modal .award .ai{font-size:30px}
 .modal .row{flex-direction:column}
 .delta{font-weight:800}
 .delta.pos{color:var(--good)} .delta.neg{color:var(--bad)}
@@ -104,7 +115,7 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
           <div class="pill" id="clean">✨ 100%</div>
         </div>
       </div>
-      <div class="buffs" id="buffs"></div>
+      <div class="row2"><button class="chipbtn" id="dateChip">📅 第1年 1月</button><span id="buffs" class="row2"></span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
     <div id="toast"></div>
@@ -115,6 +126,7 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
     <nav>
       <button id="navBuild"><span>🏗️</span>建造</button>
       <button id="navLobby"><span>🛋️</span>大廳</button>
+      <button id="navLab"><span>🔬</span>研發<b class="dot hidden" id="labDot">!</b></button>
       <button id="navDex"><span>📖</span>圖鑑</button>
       <button id="navOffice"><span>🏥</span>院長室</button>
     </nav>
@@ -129,9 +141,11 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 // ================= 資料 =================
 const ROOMS = {
   gp:     {name:'一般診間',    icon:'🩺',color:'#7cc6fe',floor:['#e8f4ff','#d6eafc'],cost:150,  time:4.0,rep:0,  desc:'什麼都看一點，什麼都不太確定。'},
+  lab:    {name:'研發室',      icon:'🔬',color:'#9be3c7',floor:['#eefbf5','#dcf4ea'],cost:900,  time:0,  rep:10, desc:'科學家在裡面做實驗，偶爾會爆炸，但會產生研發點。',noPatients:true},
   magnet: {name:'磁力分離室',  icon:'🧲',color:'#ff8fa3',floor:['#ffe9ee','#fbd7df'],cost:600,  time:5.0,rep:15, desc:'把黏在一起的東西強制分開，包括手機和手。'},
   joke:   {name:'冷笑話治療室',icon:'🤡',color:'#b18cf0',floor:['#f1e9ff','#e3d5fb'],cost:1500, time:5.5,rep:40, desc:'以毒攻毒、以梗治梗。進去前請先穿外套。'},
   spa:    {name:'心靈SPA',     icon:'🧖',color:'#5fd0aa',floor:['#e6faf2','#d0f2e5'],cost:3500, time:6.5,rep:90, desc:'海浪聲、精油，還有一句「今天不用回訊息」。'},
+  reboot: {name:'重開機室',    icon:'🔌',color:'#8a9ad6',floor:['#eef0fb','#dde2f6'],cost:6000, time:6.0,rep:140,desc:'「請問你有試過關機再開機嗎？」',needs:'reboot'},
   freeze: {name:'冷凍艙',      icon:'🧊',color:'#62b3f0',floor:['#eef8ff','#dcefff'],cost:8000, time:7.0,rep:160,desc:'凡是過熱的東西都能冷靜下來，包括衝動。'},
   cat:    {name:'貓醫師診間',  icon:'🐈',color:'#ffb86b',floor:['#fff3e3','#fbe5c8'],cost:18000,time:6.0,rep:260,desc:'主治醫師是一隻貓。看診時間取決於牠的心情。'}
 };
@@ -143,28 +157,68 @@ const DISEASES = [
   {id:'phonehand',name:'手機黏手症', icon:'🤳',room:'magnet',fee:95, rep:15, litter:null,  desc:'手機已和手掌合而為一，洗澡也在滑。',cure:'砰！手機飛出去，黏在天花板上。'},
   {id:'selfie',  name:'自拍角度依賴',icon:'📸',room:'magnet',fee:105,rep:25, litter:null,  desc:'脖子固定在 45 度角，無法正視人生。',cure:'磁力矯正後，病人第一次看見自己的正面。'},
   {id:'keyboard',name:'鍵盤俠化',    icon:'⌨️',room:'magnet',fee:115,rep:30, litter:'keys',desc:'手指逐漸變成鍵帽，一生氣就自動打字。',cure:'拔下 104 顆鍵帽後，手指恢復正常。'},
+  {id:'antenna', name:'Wi-Fi 天線頭',icon:'📶',room:'magnet',fee:125,rep:35, litter:null,  desc:'頭上長出一根天線，訊號滿格，鄰居都來蹭網。',cure:'磁力一吸，天線拔掉了。鄰居們很失望。'},
   {id:'lowjoke', name:'笑點過低症',  icon:'🤣',room:'joke',  fee:160,rep:40, litter:null,  desc:'聽到「早安」就笑到抽筋。',cure:'連聽 50 個冷笑話後，笑點終於調回正常高度。'},
   {id:'pun',     name:'諧音梗成癮',  icon:'🥁',room:'joke',  fee:175,rep:55, litter:'paper',desc:'每句話都要接一個諧音梗，朋友已經逃光了。',cure:'以梗治梗，病人被冷到結冰，梗也一起凍住了。'},
+  {id:'bgm',     name:'自帶 BGM 症', icon:'🎵',room:'joke',  fee:190,rep:65, litter:'paper',desc:'走到哪都有背景音樂，而且是很激昂的那種。',cure:'醫生講了一個超冷的笑話，BGM 尷尬到自己停了。'},
   {id:'boss',    name:'主管過敏症',  icon:'🙅',room:'spa',   fee:250,rep:90, litter:null,  desc:'聽到「欸你來一下」就全身起疹子。',cure:'播放 2 小時海浪聲，疹子退成了微笑的形狀。'},
+  {id:'sprout',  name:'頭頂長草症',  icon:'🌱',room:'spa',   fee:270,rep:100,litter:'leaf',desc:'太久沒出門，頭上開始長出小草。',cure:'SPA 師幫小草澆了水、修了型，順便帶它出去曬太陽。'},
   {id:'procrast',name:'拖延症末期',  icon:'🐌',room:'spa',   fee:265,rep:110,litter:'paper',desc:'掛號單填到一半就說「明天再來」。走路也很慢。',cure:'SPA 師說「那就現在」，病人居然照做了。'},
   {id:'zombie',  name:'加班殭屍化',  icon:'🧟',room:'spa',   fee:285,rep:130,litter:'paper',desc:'天黑才有精神，白天在辦公桌上冬眠。',cure:'強制準時下班一次，病人感動到昏倒。'},
+  {id:'invisible',name:'隱形症',     icon:'👻',room:'reboot',fee:330,rep:140,litter:null,  desc:'衣服自己在走路，人不見了。掛號時櫃台嚇了一跳。',cure:'關機、等十秒、再開機。人回來了，衣服還穿反了。'},
+  {id:'backward',name:'倒退嚕症',    icon:'🔙',room:'reboot',fee:340,rep:150,litter:'paper',desc:'只能倒著走，連掛號單都倒著寫。',cure:'重開機後恢復出廠設定，終於可以往前走了。'},
   {id:'burnin',  name:'工程師燒機症',icon:'🔥',room:'freeze',fee:390,rep:160,litter:'ash', desc:'體溫穩定維持在 125°C，已連續 1000 小時。',cure:'冷凍艙降溫完成，失效率 0 ppm，判定 PASS！'},
+  {id:'echo',    name:'回音症',      icon:'🔊',room:'reboot',fee:360,rep:175,litter:null,  desc:'說一句話會重複三次次次。',cure:'重開機完成。病人說「謝謝」，只說了一次。'},
   {id:'cart',    name:'購物車滿載症',icon:'🛒',room:'freeze',fee:420,rep:190,litter:'box', desc:'走到哪都推著購物車，半夜會自動下單。',cure:'錢包冰鎮 30 分鐘，衝動消費完全冷靜。'},
+  {id:'tiny',    name:'縮小症',      icon:'🤏',room:'reboot',fee:380,rep:210,litter:null,  desc:'早上醒來只剩一半大，掛號要墊腳。',cure:'重開機時記憶體重新配置，身高也回來了。'},
   {id:'catneed', name:'吸貓依存症',  icon:'😻',room:'cat',   fee:520,rep:260,litter:'fur', desc:'每 10 分鐘不吸一次貓就會發抖。',cure:'貓醫師親自讓他吸了一口，藥到病除。'},
+  {id:'catears', name:'貓耳症',      icon:'🐱',room:'cat',   fee:540,rep:280,litter:'fur', desc:'頭上長出貓耳朵，開始對紙箱有興趣。',cure:'貓醫師看了一眼說：「你不是我們這邊的。」耳朵就縮回去了。'},
   {id:'catgrump',name:'貓咪厭世症',  icon:'😾',room:'cat',   fee:560,rep:300,litter:'fur', desc:'仔細一看，病人其實是一隻貓。牠覺得人類很煩。',cure:'貓醫師與牠對看 3 秒，兩貓達成共識。'}
 ];
 const DMAP = Object.fromEntries(DISEASES.map(d=>[d.id,d]));
-const FX = {monday:{jelly:1},unread:{phone:1},buffet:{belly:1},phonehand:{phone:1},selfie:{tilt:1,phone:1},keyboard:{keys:1},lowjoke:{shake:1},boss:{spots:1},procrast:{slow:1},zombie:{zombie:1},burnin:{glow:1},cart:{cart:1},catneed:{holdcat:1},catgrump:{cat:1}};
+const FX = {monday:{jelly:1},unread:{phone:1},buffet:{belly:1},phonehand:{phone:1},selfie:{tilt:1,phone:1},keyboard:{keys:1},antenna:{antenna:1},lowjoke:{shake:1},bgm:{notes:1},boss:{spots:1},sprout:{sprout:1},procrast:{slow:1},zombie:{zombie:1},invisible:{invisible:1},backward:{back:1},burnin:{glow:1},echo:{echo:1},cart:{cart:1},tiny:{scale:.55},catneed:{holdcat:1},catears:{catears:1},catgrump:{cat:1}};
 const TITLES = [[0,'巷口小診所'],[40,'社區人氣診所'],[110,'區域怪病中心'],[200,'國際怪病醫學中心'],[320,'宇宙級怪病研究院']];
-const SAYS = ['醫生，我覺得我的病很有個性。','請問這裡可以集點嗎？','我上網查過了，應該是絕症。','可以開一張不用上班的證明嗎？','我是陪朋友來的，朋友就是我。','這裡的 Wi-Fi 密碼是多少？','排隊也算一種療程吧？','其實我只是想吹冷氣。','我掛號是為了抽號碼牌的快感。'];
-const FLAVOR = ['📣 走廊上有人在找自己的影子。','📣 冷氣好像又在偷聽病人說話。','📣 候診區的盆栽說它也想掛號。','📣 自動販賣機吐出了一張診斷書。','📣 有人在電梯裡跟鏡子吵架，鏡子贏了。','📣 今天的藥袋印錯了，上面寫「祝你發財」。','📣 實習醫生把聽診器戴反了，但聽得更清楚。','📣 掛號櫃台的鈴鐺自己響了三聲。'];
+const SAYS = ['醫生，我覺得我的病很有個性。','請問這裡可以集點嗎？','我上網查過了，應該是絕症。','可以開一張不用上班的證明嗎？','我是陪朋友來的，朋友就是我。','這裡的 Wi-Fi 密碼是多少？','排隊也算一種療程吧？','其實我只是想吹冷氣。','我掛號是為了抽號碼牌的快感。','聽說這裡的醫生是一隻貓？'];
+const STAFF_SAYS = ['我昨天才看影片學的，放心。','這個病我在夢裡看過。','請不要在診間吃滷味。','你這個，嗯…很有創意。','下一位～','我的白袍是租的。'];
+const ECHO = ['你好好好…','醫生生生…','我在排隊隊隊…','請問廁所所所…','輪到我了嗎嗎嗎…'];
+const FLAVOR = ['📣 走廊上有人在找自己的影子。','📣 冷氣好像又在偷聽病人說話。','📣 候診區的盆栽說它也想掛號。','📣 自動販賣機吐出了一張診斷書。','📣 有人在電梯裡跟鏡子吵架，鏡子贏了。','📣 今天的藥袋印錯了，上面寫「祝你發財」。','📣 實習醫生把聽診器戴反了，但聽得更清楚。','📣 掛號櫃台的鈴鐺自己響了三聲。','📣 失物招領：一隻左腳的拖鞋、一份遺失的自信。'];
+const LAB_LINES = ['💥 研發室傳出爆炸聲。科學家頂著爆炸頭說：「有進展！」','💥 研發室的燒杯冒出彩虹色的煙，走廊聞起來像草莓。','💥 科學家不小心把咖啡加進實驗，發現咖啡更好喝了。','💥 研發室的天花板多了一個洞。研發點 +5。','💥 實驗失敗，但做出了一個會唱歌的燒杯。'];
 const AWAY = ['值班的實習醫生把每位病人都診斷成「想太多」，竟然全部治好了。','你不在的時候，一隻路過的橘貓坐上院長椅，照常看診。','櫃台小姐幫你收了掛號費，還順便收了很多人情。','病人們自動排好隊，自己把自己治好了。'];
-const BUFFNAME = {spawn:'📹 來客 x2',rep:'🐈 聲望 x2',speed:'⚡ 速度 x1.5',patience:'🎤 耐心提升',fee:'🧪 收費 +20%',closed:'🍗 暫停營業'};
+const BUFFNAME = {spawn:'📹 來客 x2',rep:'🐈 聲望 x2',speed:'⚡ 速度 x1.5',patience:'🎤 耐心提升',fee:'🧪 收費 +20%',closed:'🍗 暫停營業',slow:'🌩️ 停電中',mondayfree:'📅 今天是週二'};
 const LOBBY_UP = {
-  bench:{name:'候診長椅',icon:'🪑',max:3,cost:[0,400,1200],desc:'病人排不進診間時會先坐著等。等級越高座位越多。'},
-  plant:{name:'盆栽',    icon:'🪴',max:3,cost:[200,400,800],desc:'看到綠色植物，病人耐心 +12%（每盆）。'},
-  vend: {name:'飲料販賣機',icon:'🥤',max:1,cost:[600],desc:'等候的病人會買飲料（+$），但空罐會亂丟。'},
+  bench:{name:'候診長椅',icon:'🪑',max:3,cost:[0,400,1200],desc:'病人排不進診間時會先坐著等。'},
+  plant:{name:'盆栽',    icon:'🪴',max:3,cost:[200,400,800],desc:'病人耐心 +12%（每盆）。'},
+  vend: {name:'飲料販賣機',icon:'🥤',max:1,cost:[600],desc:'病人會買飲料，但空罐會亂丟。'},
   jan:  {name:'清潔阿姨', icon:'🧹',max:3,cost:[400,900,1800],desc:'自動清理走廊上的怪東西。'}
+};
+const RESEARCH = [
+  {id:'fastdesk',name:'自動掛號機',  icon:'🖨️',cost:40, desc:'掛號速度 x2。機器會說「歡迎光臨」，但沒有人教它。'},
+  {id:'turbomop',name:'渦輪拖把',    icon:'🌀',cost:60, desc:'清潔阿姨速度 x2，偶爾會飄起來。'},
+  {id:'comfy',   name:'按摩長椅',    icon:'💺',cost:120,desc:'病人耐心 +25%。有人坐到不想看病了。'},
+  {id:'soda',    name:'神秘口味汽水',icon:'🧃',cost:120,desc:'販賣機收入 x2。口味是「下雨天的味道」。'},
+  {id:'antislip',name:'防滑地板',    icon:'🧽',cost:150,desc:'踩到果凍不會再滑倒。（比較不好笑，請斟酌）'},
+  {id:'coat',    name:'帥氣白袍',    icon:'🥼',cost:200,desc:'收費 +15%。醫生走路自帶慢動作。'},
+  {id:'stetho',  name:'渦輪聽診器',  icon:'🩺',cost:260,desc:'治療速度 +20%。'},
+  {id:'reboot',  name:'重開機理論',  icon:'🔌',cost:300,desc:'解鎖「重開機室」。核心理論：關掉，再打開。'},
+  {id:'tvad',    name:'電視廣告',    icon:'📺',cost:350,desc:'「生病了嗎？來怪病診所！」來客 +25%。'},
+  {id:'luckycat',name:'招財貓擺飾',  icon:'🐱',cost:400,desc:'離線收益 x2。牠的手一直在揮，可能是在叫你回來。'},
+  {id:'ufo',     name:'外星合作計畫',icon:'🛸',cost:600,desc:'外星人偶爾會用光束順手治好排隊的病人。'}
+];
+const WINGS = {
+  north:{name:'北翼',cost:6000, rep:60, slots:[[1,0],[2,0],[3,0]],desc:'多 3 塊地。原本是隔壁停車場。'},
+  west: {name:'西翼',cost:12000,rep:120,slots:[[0,1],[0,2],[0,3]],desc:'多 3 塊地。地主是一位很愛講話的阿伯。'},
+  corner:{name:'西北角',cost:20000,rep:200,slots:[[0,0]],needs:['north','west'],desc:'最後 1 塊地，聽說地下埋著一台古董自動販賣機。'}
+};
+const AWARDS = {
+  clean:{icon:'🧽',name:'年度最乾淨診所',txt:'地板亮到評審看到自己的鼻毛。'},
+  slips:{icon:'🫠',name:'最多人滑倒獎',txt:'今年有 {n} 人踩到果凍滑倒，創院內新高。'},
+  cleans:{icon:'🧹',name:'院長親自打掃獎',txt:'院長今年親手撿了 {n} 次垃圾，清潔阿姨表示壓力很大。'},
+  money:{icon:'💰',name:'最會賺錢獎',txt:'會計師說他從沒看過這麼怪的收入明細。'},
+  happy:{icon:'😊',name:'好評如潮獎',txt:'幾乎沒有病人氣跑，還有人留下來吃晚餐。'},
+  emerg:{icon:'🚨',name:'急診英雄獎',txt:'今年接了 {n} 次急診團，遊覽車司機都認識你了。'},
+  dex:{icon:'📖',name:'怪病收集家',txt:'已經見識過 {n} 種怪病，可以出書了。'},
+  ducks:{icon:'🦆',name:'鴨子之友獎',txt:'今年被 {n} 隻鴨子拜訪，鴨群給你五顆星。'},
+  try:{icon:'🎗️',name:'最努力參加獎',txt:'評審團說：「嗯…有來就好。」'}
 };
 const big = n => Math.round(n*(1+S.rep/40));
 const EVENTS = [
@@ -194,26 +248,40 @@ const EVENTS = [
     {label:'不買',fn:()=>({text:'推銷員轉身去隔壁推銷給獸醫了。'})}]},
   {icon:'🕴️',title:'衛生局長突擊視察',text:'一位戴墨鏡的先生拿著板夾走進大廳，說要看看你們有多乾淨。',choices:[
     {label:'熱情招待',fn:()=>litter.length<=2?{text:'局長摸了摸櫃台，白手套一塵不染，當場頒發「乾淨到發亮」獎。',money:big(400),rep:5}:{text:'局長踩到地上的不明物體，滑了一大跤。板夾寫滿了紅字。',rep:-3}},
-    {label:'假裝今天公休',fn:()=>({text:'局長在門口站了十分鐘，最後買了一罐飲料就走了。',money:S.lobby.vend?8:0})}]}
+    {label:'假裝今天公休',fn:()=>({text:'局長在門口站了十分鐘，最後買了一罐飲料就走了。',money:S.lobby.vend?8:0})}]},
+  {icon:'🦆',title:'鴨子來掛號',text:'一排鴨子整齊地走進大廳，帶頭的那隻把一張掛號單放在櫃台上。',choices:[
+    {label:'幫牠們掛號',fn:()=>{ for(let k=0;k<5;k++) setTimeout(()=>spawnDuck(),k*500); return {text:'鴨子們開心地在走廊散步。病人們拍照拍得很開心。',rep:2}; }},
+    {label:'請牠們出去',fn:()=>({text:'鴨子們排隊離開，帶頭的那隻回頭看了你一眼，眼神很受傷。'})}]},
+  {icon:'🌩️',title:'全院停電！',text:'一道雷打下來，診所一片漆黑。病人們開始在黑暗中尖叫。',choices:[
+    {label:'大家打手電筒繼續看',fn:()=>({text:'醫生們拿手機照明看診，速度變慢，但很有氣氛。',buff:['slow',25]})},
+    {label:'全院一起講鬼故事',fn:()=>({text:'鬼故事講得太好，電來了大家還不想走。病人耐心提升 60 秒。',buff:['patience',60],rep:1})}]},
+  {icon:'👵',title:'阿嬤來道謝',text:'上週治好的阿嬤提著一大鍋滷肉來，說要謝謝醫生。',choices:[
+    {label:'收下滷肉',fn:()=>({text:'全院吃得飽飽的，醫生手腳變超快！速度 1.5 倍 40 秒。',buff:['speed',40],rep:2})},
+    {label:'客氣婉拒',fn:()=>({text:'阿嬤說：「不吃就是看不起我。」然後坐在大廳不走。',rep:-1})}]},
+  {icon:'🦠',title:'週一症候群大流行',text:'城裡爆發週一症候群，街上到處都是果凍人。',choices:[
+    {label:'發免費果凍冰淇淋',fn:()=>({text:'以果凍治果凍，大家吃得很開心。聲望加倍 60 秒。',money:-big(100),buff:['rep',60]})},
+    {label:'宣布今天是週二',fn:()=>({text:'大家半信半疑，但症狀真的減輕了。60 秒內不會有週一症候群患者。',buff:['mondayfree',60],rep:1})}]}
 ];
 
 // ================= 地圖 =================
-const MW = 13, QMAX = 4, MAXLV = 5;
-const SLOT_ORDER = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2]];
-const SPAWN = {x:15.6,y:10.5};
-const RQ_POS = [[10.55,10.05],[10.55,10.75],[10.55,11.45],[11.25,11.6],[11.95,11.6],[12.5,11.0],[12.5,10.4]];
+const NS = 4, MW = 4*NS+1, QMAX = 4, MAXLV = 5;
+const LOBBY = {i:3,j:3};
+const SPAWN = {x:19.6,y:14.5};
+const RQ_POS = [[14.55,14.05],[14.55,14.75],[14.55,15.45],[15.25,15.6],[15.95,15.6],[16.5,15.0],[16.5,14.4]];
 const BENCHES = [
-  {f:[9.05,9.9,0.35,1.4],back:[9.05,9.9,0.08,1.4],seats:[[9.32,10.15],[9.32,10.62],[9.32,11.1]],face:1},
-  {f:[11.6,9.75,0.35,1.4],back:[11.87,9.75,0.08,1.4],seats:[[11.72,9.98],[11.72,10.45],[11.72,10.92]],face:-1},
-  {f:[9.2,8.12,1.4,0.33],back:[9.2,8.12,1.4,0.07],seats:[[9.45,8.32],[9.95,8.32],[10.45,8.32]],face:1}
+  {f:[13.05,13.9,0.35,1.4],back:[13.05,13.9,0.08,1.4],seats:[[13.32,14.15],[13.32,14.62],[13.32,15.1]],face:1},
+  {f:[15.6,13.75,0.35,1.4],back:[15.87,13.75,0.08,1.4],seats:[[15.72,13.98],[15.72,14.45],[15.72,14.92]],face:-1},
+  {f:[13.2,12.12,1.4,0.33],back:[13.2,12.12,1.4,0.07],seats:[[13.45,12.32],[13.95,12.32],[14.45,12.32]],face:1}
 ];
-const PLANTS = [[9.18,9.18],[11.8,11.8],[8.35,11.7]];
-const TREES = [[-1.6,2.5],[-1.4,6.2],[-1.7,10.4],[2.2,-1.6],[6.5,-1.5],[10.6,-1.7],[14.6,2.4],[14.9,5.8],[14.5,13.4],[3.2,14.6],[8.4,14.7],[-1.2,14],[16.4,8.2],[17,12.4]];
+const PLANTS = [[13.18,13.18],[15.8,15.8],[12.35,15.7]];
+const TREES_OUT = [[-1.6,4.5],[-1.4,9],[-1.7,13.4],[3,-1.6],[8.5,-1.5],[13.6,-1.7],[18.6,3.4],[18.9,8.8],[18.5,17.4],[4.2,18.6],[10.4,18.7],[-1.2,18],[20.6,11.2],[21,16.6],[15,18.9]];
 const RLAY = {
   gp:{pat:[1.65,2.0],doc:[1.65,0.55],staff:'doctor'},
+  lab:{doc:[1.3,1.25],staff:'sci',pace:1},
   magnet:{pat:[0.9,1.9],doc:[2.3,0.85],staff:'doctor',float:1},
   joke:{pat:[1.18,2.18],doc:[0.9,0.62],docZ:.12,staff:'clown',sit:1},
   spa:{pat:[1.15,0.95],doc:[1.2,1.85],staff:'spa',lie:1,patZ:.27},
+  reboot:{pat:[0.85,1.6],doc:[2.2,0.8],staff:'it',blink:1},
   freeze:{pat:[0.93,0.83],doc:[2.3,0.9],staff:'doctor',hide:1},
   cat:{pat:[1.75,1.85],doc:[1.75,0.85],docZ:.22,staff:'cat'}
 };
@@ -224,53 +292,75 @@ const PANTS=['#3b4a6b','#4a3b2f','#2f2f3a','#5a6b7a'];
 const pick = a => a[Math.floor(Math.random()*a.length)];
 
 // ================= 狀態 =================
-const SAVE_KEY = 'weird-clinic-v1';
-let S, RT = {}, patients = [], RQ = [], seats = [], litter = [], jans = [], floats = [];
+const SAVE_KEY = 'weird-clinic-v1', MONTH = 45, YEAR = MONTH*12;
+let S, RT = {}, patients = [], RQ = [], seats = [], litter = [], jans = [], floats = [], ducks = [], ufo = null, emerg = null, bus = 0;
 let modalQ = [], modalOpen = false, spawnT = 4, eventT = 60, flavorT = 20, saveT = 0, cloudT = 0, recT = 0, nextId = 1, litId = 1;
+let emergT = 150, duckT = 80, ufoT = 60, labBoomT = 30, goalT = 0;
 let placing = null, booted = false, lastTitle = '', sheetFn = null, dirtyWarned = false;
 
+function newYearStats(){ return {cured0:S.stats.cured,earned0:S.stats.earned,lost0:S.stats.lost,slips:0,cleans:0,emerg:0,ducks:0,cleanSum:0,cleanN:0}; }
 function newState(){
-  return {v:2,money:300,rep:0,rooms:[],lobby:{bench:1,plant:0,vend:0,jan:0},dex:{},seen:{},
-    stats:{cured:0,earned:0,lost:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1}};
+  return {v:3,money:300,rep:0,rooms:[],lobby:{bench:1,plant:0,vend:0,jan:0},land:{north:0,west:0,corner:0},rp:0,res:{},dex:{},seen:{},
+    stats:{cured:0,earned:0,lost:0,emergWin:0,cleans:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1},time:0,goals:null,ys:null};
 }
 function migrate(s){
   if(!s) return null;
-  if(s.v===2) { s.lobby = Object.assign({bench:1,plant:0,vend:0,jan:0}, s.lobby||{}); return s; }
   if(s.v===1){
-    const n = newState(); ['money','rep','dex','seen','stats','buffs','t','day','tut','muted','unl'].forEach(k=>{ if(s[k]!==undefined) n[k]=s[k]; });
-    let idx=0; (s.tiles||[]).filter(t=>t.type!=='reception' && ROOMS[t.type]).forEach(t=>{ if(idx<SLOT_ORDER.length){ const [i,j]=SLOT_ORDER[idx++]; n.rooms.push({i,j,type:t.type,lvl:t.lvl||1,n:t.n||0}); } });
-    return n;
+    const n={v:2,rooms:[],lobby:{bench:1,plant:0,vend:0,jan:0}}; ['money','rep','dex','seen','stats','buffs','t','day','tut','muted','unl'].forEach(k=>{ if(s[k]!==undefined) n[k]=s[k]; });
+    const ORDER=[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2]]; let idx=0;
+    (s.tiles||[]).filter(t=>t.type!=='reception'&&ROOMS[t.type]).forEach(t=>{ if(idx<ORDER.length){ const [i,j]=ORDER[idx++]; n.rooms.push({i,j,type:t.type,lvl:t.lvl||1,n:t.n||0}); } });
+    s=n;
   }
-  return null;
+  if(s.v===2){ s.rooms=(s.rooms||[]).map(r=>Object.assign({},r,{i:r.i+1,j:r.j+1})); s.v=3; if(!s.tut) s.tut=2; }
+  if(s.v!==3) return null;
+  const d=newState();
+  for(const k in d){ if(s[k]===undefined) s[k]=d[k]; }
+  s.lobby=Object.assign({bench:1,plant:0,vend:0,jan:0},s.lobby); s.land=Object.assign({north:0,west:0,corner:0},s.land); s.stats=Object.assign({cured:0,earned:0,lost:0,emergWin:0,cleans:0},s.stats);
+  return s;
 }
-function loadLocal(){ try{ const j = localStorage.getItem(SAVE_KEY); if(j) return migrate(JSON.parse(j)); }catch(e){} return null; }
-function saveLocal(){ S.t = Date.now(); try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function loadLocal(){ try{ const j=localStorage.getItem(SAVE_KEY); if(j) return migrate(JSON.parse(j)); }catch(e){} return null; }
+function saveLocal(){ S.t=Date.now(); try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
 const rkey = r => r.i+','+r.j;
 const roomAt = (i,j) => S.rooms.find(r=>r.i===i&&r.j===j);
 const roomByKey = k => S.rooms.find(r=>rkey(r)===k);
+const has = id => !!S.res[id];
 function resetRuntime(){
-  RT = {}; S.rooms.forEach(r=>RT[rkey(r)]={queue:[],cur:null,prog:0});
-  patients=[]; RQ=[]; litter=[]; floats=[]; seats=[]; syncJanitors(true);
+  RT={}; S.rooms.forEach(r=>RT[rkey(r)]={queue:[],cur:null,prog:0});
+  patients=[]; RQ=[]; litter=[]; floats=[]; seats=[]; ducks=[]; ufo=null; emerg=null; bus=0; syncJanitors(true);
+  if(!S.ys) S.ys=newYearStats(); if(!S.goals) S.goals=makeGoals();
 }
 const buffOn = k => (S.buffs[k]||0) > Date.now();
 const feeMult = l => 1 + 0.35*(l-1);
 const timeOf = r => ROOMS[r.type].time * Math.pow(0.85, r.lvl-1);
 const upCost = r => Math.round(ROOMS[r.type].cost * 0.8 * Math.pow(1.7, r.lvl-1));
-const spawnInterval = () => Math.max(1.4, 6 - S.rep*0.015);
-const maxPatients = () => 8 + S.rooms.length*3;
-const pool = () => DISEASES.filter(d=>d.rep<=S.rep);
+const spawnInterval = () => Math.max(1.3, 6 - S.rep*0.015) / (has('tvad')?1.25:1);
+const treatRooms = () => S.rooms.filter(r=>!ROOMS[r.type].noPatients);
+const maxPatients = () => 8 + treatRooms().length*3;
+const pool = () => DISEASES.filter(d=>d.rep<=S.rep && !(d.id==='monday'&&buffOn('mondayfree')));
 const cleanPct = () => Math.max(0, 100 - litter.length*5);
-const patienceLimit = () => 40*(1+.12*S.lobby.plant)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
+const patienceLimit = () => 40*(1+.12*S.lobby.plant)*(has('comfy')?1.25:1)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
+const labRate = () => S.rooms.filter(r=>r.type==='lab').reduce((s,r)=>s+.5*r.lvl,0);
 function seatList(){ const out=[]; for(let b=0;b<S.lobby.bench;b++) BENCHES[b].seats.forEach(s=>out.push(s)); return out; }
-function titleOf(r){ let t = TITLES[0][1]; TITLES.forEach(([n,s])=>{ if(r>=n) t=s; }); return t; }
-function fmt(n){ n = Math.floor(n); if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e4) return (n/1e3).toFixed(1)+'K'; return n.toLocaleString('en-US'); }
+function titleOf(r){ let t=TITLES[0][1]; TITLES.forEach(([n,s])=>{ if(r>=n) t=s; }); return t; }
+function fmt(n){ n=Math.floor(n); const neg=n<0; n=Math.abs(n); let s; if(n>=1e6) s=(n/1e6).toFixed(1)+'M'; else if(n>=1e4) s=(n/1e3).toFixed(1)+'K'; else s=n.toLocaleString('en-US'); return (neg?'-':'')+s; }
+const yearNo = () => Math.floor(S.time/YEAR)+1, monthNo = () => Math.floor((S.time%YEAR)/MONTH)+1;
+
+// ================= 土地 =================
+function wingOf(i,j){ for(const k in WINGS) if(WINGS[k].slots.some(([a,b])=>a===i&&b===j)) return k; return null; }
+function slotOpen(i,j){ if(i<0||j<0||i>=NS||j>=NS) return false; const w=wingOf(i,j); return !w || !!S.land[w]; }
+const isLobby = s => s && s.i===LOBBY.i && s.j===LOBBY.j;
+function slotOf(x,y){ if(x<0||y<0||x>=MW||y>=MW) return null; if(x%4===0||y%4===0) return null; return {i:Math.floor(x/4), j:Math.floor(y/4)}; }
+function inside(x,y){
+  if(x<0||y<0||x>=MW||y>=MW) return false;
+  const is=x%4===0?[x/4-1,x/4]:[Math.floor(x/4)], js=y%4===0?[y/4-1,y/4]:[Math.floor(y/4)];
+  for(const i of is) for(const j of js) if(slotOpen(i,j)) return true; return false;
+}
+const openSlots = () => { const o=[]; for(let j=0;j<NS;j++) for(let i=0;i<NS;i++) if(slotOpen(i,j)&&!(i===LOBBY.i&&j===LOBBY.j)) o.push([i,j]); return o; };
 
 // ================= 走路 =================
-function slotOf(x,y){ if(x<0||y<0||x>=MW||y>=MW) return null; if(x%4===0||y%4===0) return null; return {i:Math.floor(x/4), j:Math.floor(y/4)}; }
-const isLobby = s => s && s.i===2 && s.j===2;
 function walkable(x,y){
-  if(y===10 && x>=13 && x<=16) return true;
-  if(x<0||y<0||x>=MW||y>=MW) return false;
+  if(y===14 && x>=17 && x<=20) return true;
+  if(!inside(x,y)) return false;
   const s=slotOf(x,y); if(!s || isLobby(s)) return true;
   return !!roomAt(s.i,s.j);
 }
@@ -284,9 +374,9 @@ function canStep(ax,ay,bx,by){
 }
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 function bfs(sx,sy,tx,ty){
-  const K=(x,y)=>y*32+x+8, prev=new Map([[K(sx,sy),null]]), q=[[sx,sy]];
+  const K=(x,y)=>(y+4)*40+x+4, prev=new Map([[K(sx,sy),null]]), q=[[sx,sy]];
   while(q.length){ const [x,y]=q.shift(); if(x===tx&&y===ty) break;
-    for(const [dx,dy] of DIRS){ const nx=x+dx, ny=y+dy; if(nx<-1||ny<-1||nx>17||ny>14||prev.has(K(nx,ny))) continue; if(!canStep(x,y,nx,ny)) continue; prev.set(K(nx,ny),[x,y]); q.push([nx,ny]); } }
+    for(const [dx,dy] of DIRS){ const nx=x+dx, ny=y+dy; if(nx<-2||ny<-2||nx>22||ny>20||prev.has(K(nx,ny))) continue; if(!canStep(x,y,nx,ny)) continue; prev.set(K(nx,ny),[x,y]); q.push([nx,ny]); } }
   if(!prev.has(K(tx,ty))) return null;
   const path=[]; let c=[tx,ty]; while(c){ path.push(c); c=prev.get(K(c[0],c[1])); } return path.reverse();
 }
@@ -299,15 +389,16 @@ function goTo(p, tx, ty){
 }
 function retarget(p,pos){ const pt={x:pos[0],y:pos[1]}; if(p.path.length) p.path[p.path.length-1]=pt; else p.path=[pt]; }
 const qPos = (r,k) => { const X=4*r.i+4.5, Y=4*r.j+2.5, off=[0,.75,-.75,1.5][k]||1.5; return [X+(k>=3?.25:0), Y+off]; };
-function roomSpot(r, which){ const L=RLAY[r.type], a=L[which]; return [4*r.i+1+a[0], 4*r.j+1+a[1]]; }
+function roomSpot(r, which){ const a=RLAY[r.type][which]; return [4*r.i+1+a[0], 4*r.j+1+a[1]]; }
+function randomCorridor(){ for(let k=0;k<30;k++){ const x=Math.floor(Math.random()*MW), y=Math.floor(Math.random()*MW); if(walkable(x,y)&&!roomKeyAt(x,y)) return [x+.5,y+.5]; } return [14.5,14.5]; }
 
 // ================= 音效 =================
-let actx = null;
-function ensureAudio(){ try{ if(!actx){ const A = window.AudioContext||window.webkitAudioContext; if(A) actx = new A(); } if(actx && actx.state==='suspended') actx.resume().catch(()=>{}); }catch(e){} }
-function beep(f, d=.08, delay=0, type='sine', vol=.06){
-  if((S && S.muted) || !actx) return;
-  try{ const t0 = actx.currentTime+delay, o = actx.createOscillator(), g = actx.createGain();
-    o.type = type; o.frequency.setValueAtTime(f, t0); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0+d);
+let actx=null;
+function ensureAudio(){ try{ if(!actx){ const A=window.AudioContext||window.webkitAudioContext; if(A) actx=new A(); } if(actx&&actx.state==='suspended') actx.resume().catch(()=>{}); }catch(e){} }
+function beep(f,d=.08,delay=0,type='sine',vol=.06){
+  if((S&&S.muted)||!actx) return;
+  try{ const t0=actx.currentTime+delay, o=actx.createOscillator(), g=actx.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,t0); g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(.0001,t0+d);
     o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+d+.02); }catch(e){}
 }
 const sfx = {
@@ -316,60 +407,62 @@ const sfx = {
   bad:()=>{ beep(220,.18,0,'sawtooth',.03); },
   pop:()=>{ beep(600,.06,0,'triangle',.06); },
   slip:()=>{ beep(700,.25,0,'sine',.05); beep(300,.25,.12,'sine',.05); },
+  quack:()=>{ beep(520,.07,0,'square',.04); beep(440,.09,.08,'square',.04); },
+  siren:()=>{ [0,1,2,3].forEach(k=>beep(k%2?660:880,.18,k*.2,'triangle',.05)); },
+  boom:()=>{ beep(90,.3,0,'sawtooth',.06); },
+  ufo:()=>{ [0,1,2,3,4].forEach(k=>beep(400+k*120,.1,k*.06,'sine',.04)); },
   fan:()=>{ [523,659,784,1047].forEach((f,i)=>beep(f,.14,i*.09,'triangle',.05)); }
 };
 
 // ================= 鏡頭 =================
-const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), stage = document.getElementById('stage');
-let W=0,H=0,tw=40,th=20,zoom=1,camX=7.2,camY=7,baseTw=40;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), stage=document.getElementById('stage');
+const HOME={x:10.6,y:10.4};
+let W=0,H=0,tw=40,th=20,zoom=1,camX=HOME.x,camY=HOME.y,baseTw=40;
 function layout(){
-  const r = stage.getBoundingClientRect(); W = r.width; H = r.height;
-  const dpr = Math.min(2, window.devicePixelRatio||1);
-  cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
-  baseTw = Math.max(30, Math.min(W/8.6, H/5.2)); applyZoom();
+  const r=stage.getBoundingClientRect(); W=r.width; H=r.height;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+  baseTw=Math.max(30,Math.min(W/8.6,H/5.2)); applyZoom();
 }
-function applyZoom(){ zoom=Math.max(.5,Math.min(2.4,zoom)); tw=baseTw*zoom; th=tw/2; }
-const iso = (x,y)=>({x: W/2 + ((x-camX)-(y-camY))*tw/2, y: H/2 + 10 + ((x-camX)+(y-camY))*th/2});
+function applyZoom(){ zoom=Math.max(.45,Math.min(2.4,zoom)); tw=baseTw*zoom; th=tw/2; }
+const iso=(x,y)=>({x:W/2+((x-camX)-(y-camY))*tw/2, y:H/2+10+((x-camX)+(y-camY))*th/2});
 function toWorld(sx,sy){ const a=(sx-W/2)/(tw/2), b=(sy-H/2-10)/(th/2); return {x:camX+(a+b)/2, y:camY+(b-a)/2}; }
-function clampCam(){ camX=Math.max(-1,Math.min(15,camX)); camY=Math.max(-1,Math.min(14,camY)); }
-function zoomAt(f, sx, sy){ const before=toWorld(sx,sy); zoom*=f; applyZoom(); const after=toWorld(sx,sy); camX+=before.x-after.x; camY+=before.y-after.y; clampCam(); }
+function clampCam(){ camX=Math.max(-1,Math.min(20,camX)); camY=Math.max(-1,Math.min(18,camY)); }
+function zoomAt(f,sx,sy){ const before=toWorld(sx,sy); zoom*=f; applyZoom(); const after=toWorld(sx,sy); camX+=before.x-after.x; camY+=before.y-after.y; clampCam(); }
 
 // ================= 繪圖工具 =================
-function shade(hex, amt){
-  const c = parseInt(hex.slice(1),16); const ch = [c>>16, c>>8&255, c&255].map(v=>Math.max(0,Math.min(255,Math.round(amt<0? v*(1+amt) : v+(255-v)*amt))));
-  return `rgb(${ch[0]},${ch[1]},${ch[2]})`;
-}
-function poly(pts, fill, stroke, lw){ ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); if(fill){ctx.fillStyle=fill; ctx.fill();} if(stroke){ctx.strokeStyle=stroke; ctx.lineWidth=lw||1; ctx.stroke();} }
-const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-function emoji(ch, x, y, size){ ctx.font = `${Math.round(size)}px ${EMOJI_FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ch, x, y); }
+function shade(hex,amt){ const c=parseInt(hex.slice(1),16); const ch=[c>>16,c>>8&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)))); return `rgb(${ch[0]},${ch[1]},${ch[2]})`; }
+function poly(pts,fill,stroke,lw){ ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();} }
+const EMOJI_FONT='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+function emoji(ch,x,y,size){ if(!ch) return; ctx.font=`${Math.round(size)}px ${EMOJI_FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ch,x,y); }
+function txt(t,x,y,size,col,weight=800,stroke){ ctx.font=`${weight} ${Math.round(size)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; if(stroke){ ctx.lineWidth=3; ctx.strokeStyle=stroke; ctx.strokeText(t,x,y); } ctx.fillStyle=col; ctx.fillText(t,x,y); }
 function rrect(x,y,w,h,r,fill,stroke){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();} }
 function circle(x,y,r,fill){ ctx.beginPath(); ctx.arc(x,y,Math.max(.5,r),0,Math.PI*2); ctx.fillStyle=fill; ctx.fill(); }
 function ellipse(x,y,rx,ry,fill){ ctx.beginPath(); ctx.ellipse(x,y,Math.max(.5,rx),Math.max(.5,ry),0,0,Math.PI*2); ctx.fillStyle=fill; ctx.fill(); }
-const P3 = (x,y,z)=>{ const q=iso(x,y); return {x:q.x, y:q.y - z*tw}; };
+const P3=(x,y,z)=>{ const q=iso(x,y); return {x:q.x,y:q.y-z*tw}; };
 function box(x,y,w,d,h,col,z=0,alpha){
   if(alpha) ctx.globalAlpha=alpha;
   const top=[P3(x,y,z+h),P3(x+w,y,z+h),P3(x+w,y+d,z+h),P3(x,y+d,z+h)];
-  poly([P3(x,y+d,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x,y+d,z+h)], shade(col,-.06));
-  poly([P3(x+w,y,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x+w,y,z+h)], shade(col,-.22));
-  poly(top, shade(col,.12), 'rgba(60,40,20,.12)');
-  ctx.globalAlpha=1;
-  const c=P3(x+w/2,y+d/2,z+h); return c;
+  poly([P3(x,y+d,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x,y+d,z+h)],shade(col,-.06));
+  poly([P3(x+w,y,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x+w,y,z+h)],shade(col,-.22));
+  poly(top,shade(col,.12),'rgba(60,40,20,.12)');
+  ctx.globalAlpha=1; return P3(x+w/2,y+d/2,z+h);
 }
-function wallX(X,y0,y1,h,col,stripe,win){ // 沿 y 方向的牆（固定 x）
+function wallX(X,y0,y1,h,col,stripe,win){
   const t=.05;
-  poly([P3(X+t,y0,0),P3(X+t,y1,0),P3(X+t,y1,h),P3(X+t,y0,h)], shade(col,-.2));
-  if(stripe) poly([P3(X+t,y0,0),P3(X+t,y1,0),P3(X+t,y1,Math.min(h,.07)),P3(X+t,y0,Math.min(h,.07))], stripe);
-  if(win && h>.4) poly([P3(X+t,y0+.25,h*.42),P3(X+t,y1-.25,h*.42),P3(X+t,y1-.25,h*.8),P3(X+t,y0+.25,h*.8)], '#bfe0f2', 'rgba(255,255,255,.8)');
-  poly([P3(X-t,y0,h),P3(X+t,y0,h),P3(X+t,y1,h),P3(X-t,y1,h)], shade(col,.3));
-  poly([P3(X-t,y1,0),P3(X+t,y1,0),P3(X+t,y1,h),P3(X-t,y1,h)], shade(col,-.05));
+  poly([P3(X+t,y0,0),P3(X+t,y1,0),P3(X+t,y1,h),P3(X+t,y0,h)],shade(col,-.2));
+  if(stripe) poly([P3(X+t,y0,0),P3(X+t,y1,0),P3(X+t,y1,Math.min(h,.07)),P3(X+t,y0,Math.min(h,.07))],stripe);
+  if(win&&h>.4) poly([P3(X+t,y0+.25,h*.42),P3(X+t,y1-.25,h*.42),P3(X+t,y1-.25,h*.8),P3(X+t,y0+.25,h*.8)],'#bfe0f2','rgba(255,255,255,.8)');
+  poly([P3(X-t,y0,h),P3(X+t,y0,h),P3(X+t,y1,h),P3(X-t,y1,h)],shade(col,.3));
+  poly([P3(X-t,y1,0),P3(X+t,y1,0),P3(X+t,y1,h),P3(X-t,y1,h)],shade(col,-.05));
 }
-function wallY(Y,x0,x1,h,col,stripe,win){ // 沿 x 方向的牆（固定 y）
+function wallY(Y,x0,x1,h,col,stripe,win){
   const t=.05;
-  poly([P3(x0,Y+t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x0,Y+t,h)], shade(col,-.04));
-  if(stripe) poly([P3(x0,Y+t,0),P3(x1,Y+t,0),P3(x1,Y+t,Math.min(h,.07)),P3(x0,Y+t,Math.min(h,.07))], stripe);
-  if(win && h>.4) poly([P3(x0+.25,Y+t,h*.42),P3(x1-.25,Y+t,h*.42),P3(x1-.25,Y+t,h*.8),P3(x0+.25,Y+t,h*.8)], '#cbe8f7', 'rgba(255,255,255,.8)');
-  poly([P3(x0,Y-t,h),P3(x1,Y-t,h),P3(x1,Y+t,h),P3(x0,Y+t,h)], shade(col,.3));
-  poly([P3(x1,Y-t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x1,Y-t,h)], shade(col,-.22));
+  poly([P3(x0,Y+t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x0,Y+t,h)],shade(col,-.04));
+  if(stripe) poly([P3(x0,Y+t,0),P3(x1,Y+t,0),P3(x1,Y+t,Math.min(h,.07)),P3(x0,Y+t,Math.min(h,.07))],stripe);
+  if(win&&h>.4) poly([P3(x0+.25,Y+t,h*.42),P3(x1-.25,Y+t,h*.42),P3(x1-.25,Y+t,h*.8),P3(x0+.25,Y+t,h*.8)],'#cbe8f7','rgba(255,255,255,.8)');
+  poly([P3(x0,Y-t,h),P3(x1,Y-t,h),P3(x1,Y+t,h),P3(x0,Y+t,h)],shade(col,.3));
+  poly([P3(x1,Y-t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x1,Y-t,h)],shade(col,-.22));
 }
 function drawPlant(x,y){ box(x-.13,y-.13,.26,.26,.18,'#c8734a'); const c=P3(x,y,.3); circle(c.x,c.y,tw*.13,'#4f9a4a'); circle(c.x-tw*.07,c.y+tw*.03,tw*.09,'#5fb35a'); circle(c.x+tw*.07,c.y-tw*.03,tw*.08,'#3f8a3c'); }
 function drawTree(x,y){ const b=iso(x,y); ellipse(b.x,b.y,tw*.32,tw*.13,'rgba(30,60,20,.25)'); ctx.fillStyle='#8a5a36'; ctx.fillRect(b.x-tw*.04,b.y-tw*.45,tw*.08,tw*.45);
@@ -377,53 +470,66 @@ function drawTree(x,y){ const b=iso(x,y); ellipse(b.x,b.y,tw*.32,tw*.13,'rgba(30
 
 // ================= 小人 =================
 function drawPerson(x,y,o){
-  const b=iso(x,y), s=tw, z=(o.z||0)*tw;
-  let bx=b.x, by=b.y-z;
-  if(o.shake) bx += Math.sin(clock*45+o.seed)*s*.025;
-  if(o.float) by -= Math.abs(Math.sin(clock*3))*s*.12;
-  if(o.slip){ ctx.save(); ctx.translate(bx,by-s*.3); ctx.rotate(Math.sin(clock*25)*0.9); ctx.translate(-bx,-(by-s*.3)); }
-  ellipse(b.x, b.y-z, s*.14, s*.055, 'rgba(0,0,0,.2)');
+  const b=iso(x,y), s=tw*(o.scale||1), z=(o.z||0)*tw;
+  let bx=b.x, by=b.y-z-(o.lift||0)*tw;
+  if(o.shake) bx+=Math.sin(clock*45+o.seed)*s*.025;
+  if(o.float) by-=Math.abs(Math.sin(clock*3))*s*.12;
+  if(o.alpha!==undefined) ctx.globalAlpha=o.alpha;
+  ctx.save();
+  if(o.slip){ ctx.translate(bx,by-s*.3); ctx.rotate(Math.sin(clock*25)*.9); ctx.translate(-bx,-(by-s*.3)); }
+  if(o.back){ ctx.translate(bx,0); ctx.scale(-1,1); ctx.translate(-bx,0); }
+  ellipse(b.x,b.y-z,s*.14,s*.055,'rgba(0,0,0,.2)');
   if(o.glow){ const g=ctx.createRadialGradient(bx,by-s*.4,0,bx,by-s*.4,s*.45); g.addColorStop(0,'rgba(255,120,40,.55)'); g.addColorStop(1,'rgba(255,120,40,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(bx,by-s*.4,s*.45,0,Math.PI*2); ctx.fill(); }
-  if(o.cat){ drawCat(bx,by,s*(o.catScale||1),o); if(o.slip) ctx.restore(); return; }
+  if(o.cat){ drawCat(bx,by,s*(o.catScale||1),o); ctx.restore(); ctx.globalAlpha=1; return; }
   ctx.lineCap='round';
   if(o.lie){
-    const lx=bx, ly=by;
-    rrect(lx-s*.2, ly-s*.1, s*.36, s*.11, s*.05, o.shirt);
-    circle(lx-s*.24, ly-s*.07, s*.075, o.skin); ctx.beginPath(); ctx.arc(lx-s*.24, ly-s*.07, s*.075, Math.PI*.6, Math.PI*1.5); ctx.fillStyle=o.hair; ctx.fill();
-    if(o.spots){ circle(lx-s*.05,ly-s*.06,s*.015,'#e2574c'); circle(lx+s*.06,ly-s*.04,s*.015,'#e2574c'); }
-    if(o.slip) ctx.restore(); return;
+    rrect(bx-s*.2,by-s*.1,s*.36,s*.11,s*.05,o.shirt);
+    circle(bx-s*.24,by-s*.07,s*.075,o.skin); ctx.beginPath(); ctx.arc(bx-s*.24,by-s*.07,s*.075,Math.PI*.6,Math.PI*1.5); ctx.fillStyle=o.hair; ctx.fill();
+    if(o.sprout){ ctx.strokeStyle='#3f8a3c'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(bx-s*.3,by-s*.08); ctx.lineTo(bx-s*.38,by-s*.12); ctx.stroke(); }
+    if(o.spots){ circle(bx-s*.05,by-s*.06,s*.015,'#e2574c'); circle(bx+s*.06,by-s*.04,s*.015,'#e2574c'); }
+    ctx.restore(); ctx.globalAlpha=1; return;
   }
-  const sit=!!o.sit, legH=sit? s*.1 : s*.22, jy=o.jelly? 1+Math.sin(clock*8+o.seed)*.1 : 1;
-  const bodyW=s*(o.belly?.27:.19), bodyH=s*.26*jy, hipY=by-legH;
-  const ph=o.walk? Math.sin(o.phase) : 0;
+  const sit=!!o.sit, legH=sit?s*.1:s*.22, jy=o.jelly?1+Math.sin(clock*8+o.seed)*.1:1;
+  const bodyW=s*(o.belly?.27:.19), bodyH=s*.26*jy, hipY=by-legH, ph=o.walk?Math.sin(o.phase):0;
   ctx.strokeStyle=o.pants; ctx.lineWidth=Math.max(2,s*.065);
   if(sit){ const f=o.face||1; ctx.beginPath(); ctx.moveTo(bx-s*.04,hipY); ctx.lineTo(bx-s*.04+f*s*.1,hipY+s*.04); ctx.lineTo(bx-s*.04+f*s*.1,by); ctx.moveTo(bx+s*.04,hipY); ctx.lineTo(bx+s*.04+f*s*.1,hipY+s*.04); ctx.lineTo(bx+s*.04+f*s*.1,by); ctx.stroke(); }
   else { ctx.beginPath(); ctx.moveTo(bx-s*.045,hipY); ctx.lineTo(bx-s*.045+ph*s*.05,by-s*.01); ctx.moveTo(bx+s*.045,hipY); ctx.lineTo(bx+s*.045-ph*s*.05,by-s*.01); ctx.stroke(); }
   if(o.cart){ const cx=bx+s*.22, cy=by; ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=Math.max(1,s*.025); rrect(cx-s*.1,cy-s*.3,s*.2,s*.16,2,'rgba(220,230,245,.6)','#8a93a6'); circle(cx-s*.07,cy-s*.02,s*.025,'#555'); circle(cx+s*.07,cy-s*.02,s*.025,'#555'); emoji('📦',cx,cy-s*.32,s*.13); }
-  const bodyCol = o.jelly? 'rgba(120,220,140,.85)' : (o.coat||o.shirt);
-  rrect(bx-bodyW/2, hipY-bodyH, bodyW, bodyH, s*.06, bodyCol);
-  if(o.coat){ ctx.fillStyle=o.shirt; ctx.fillRect(bx-s*.025, hipY-bodyH, s*.05, bodyH*.6); }
+  const bodyCol=o.jelly?'rgba(120,220,140,.85)':(o.coat||o.shirt);
+  rrect(bx-bodyW/2,hipY-bodyH,bodyW,bodyH,s*.06,bodyCol);
+  if(o.coat){ ctx.fillStyle=o.shirt; ctx.fillRect(bx-s*.025,hipY-bodyH,s*.05,bodyH*.6); }
   if(o.keys){ ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.lineWidth=1; for(let i=1;i<3;i++){ ctx.beginPath(); ctx.moveTo(bx-bodyW/2,hipY-bodyH*i/3); ctx.lineTo(bx+bodyW/2,hipY-bodyH*i/3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx-bodyW/2+bodyW*i/3,hipY-bodyH); ctx.lineTo(bx-bodyW/2+bodyW*i/3,hipY); ctx.stroke(); } }
-  if(o.spots){ [[-.05,-.6],[.04,-.35],[-.02,-.15],[.06,-.75]].forEach(([dx,dy])=>circle(bx+dx*s,hipY+dy*bodyH,s*.018,'#e2574c')); }
+  if(o.spots) [[-.05,-.6],[.04,-.35],[-.02,-.15],[.06,-.75]].forEach(([dx,dy])=>circle(bx+dx*s,hipY+dy*bodyH,s*.018,'#e2574c'));
   if(o.holdcat){ ellipse(bx+s*.02,hipY-bodyH*.45,s*.09,s*.05,'#f0a04b'); circle(bx+s*.1,hipY-bodyH*.6,s*.04,'#f0a04b'); }
-  // 手
   const shY=hipY-bodyH+s*.05, armL=s*.15, skinC=o.zombie?'#9fd39a':o.skin;
   ctx.strokeStyle=bodyCol; ctx.lineWidth=Math.max(2,s*.05);
   if(o.zombie){ ctx.beginPath(); ctx.moveTo(bx-bodyW/2,shY); ctx.lineTo(bx-bodyW/2+s*.2,shY+s*.02); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+bodyW/2+s*.18,shY+s*.03); ctx.stroke(); }
   else if(o.phone){ ctx.beginPath(); ctx.moveTo(bx-bodyW/2,shY); ctx.lineTo(bx-bodyW/2-ph*s*.03,shY+armL); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+s*.06,shY-(o.tilt?s*.1:-s*.02)); ctx.stroke(); ctx.fillStyle='#222'; ctx.fillRect(bx+s*.03,shY-(o.tilt?s*.18:s*.06),s*.06,s*.09); ctx.fillStyle='#7cc6fe'; ctx.fillRect(bx+s*.04,shY-(o.tilt?s*.17:s*.05),s*.04,s*.06); }
-  else if(o.mop){ ctx.beginPath(); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+s*.14,shY+s*.1); ctx.stroke(); const sw=o.mopAnim? Math.sin(clock*12)*s*.06:0; ctx.strokeStyle='#8a5a36'; ctx.lineWidth=Math.max(1.5,s*.025); ctx.beginPath(); ctx.moveTo(bx+s*.16,shY-s*.12); ctx.lineTo(bx+s*.2+sw,by); ctx.stroke(); ellipse(bx+s*.2+sw,by-s*.01,s*.07,s*.03,'#d9d4c4'); }
-  else if(!sit && !o.cart){ ctx.beginPath(); ctx.moveTo(bx-bodyW/2,shY); ctx.lineTo(bx-bodyW/2-ph*s*.04,shY+armL); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+bodyW/2+ph*s*.04,shY+armL); ctx.stroke(); }
+  else if(o.mop){ ctx.beginPath(); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+s*.14,shY+s*.1); ctx.stroke(); const sw=o.mopAnim?Math.sin(clock*12)*s*.06:0; ctx.strokeStyle='#8a5a36'; ctx.lineWidth=Math.max(1.5,s*.025); ctx.beginPath(); ctx.moveTo(bx+s*.16,shY-s*.12); ctx.lineTo(bx+s*.2+sw,by); ctx.stroke(); ellipse(bx+s*.2+sw,by-s*.01,s*.07,s*.03,'#d9d4c4'); }
+  else if(o.flask){ ctx.beginPath(); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+s*.14,shY+s*.04); ctx.stroke(); emoji('🧪',bx+s*.17,shY-s*.02,s*.16); }
+  else if(!sit&&!o.cart&&!o.invisible){ ctx.beginPath(); ctx.moveTo(bx-bodyW/2,shY); ctx.lineTo(bx-bodyW/2-ph*s*.04,shY+armL); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+bodyW/2+ph*s*.04,shY+armL); ctx.stroke(); }
   else if(o.cart){ ctx.beginPath(); ctx.moveTo(bx+bodyW/2,shY); ctx.lineTo(bx+s*.14,shY+s*.06); ctx.stroke(); }
-  // 頭
   const hx=bx+(o.tilt?s*.05:0), hy=hipY-bodyH-s*.085, hr=s*.085;
-  circle(hx,hy,hr,o.jelly?'rgba(150,230,160,.95)':skinC);
-  ctx.beginPath(); ctx.arc(hx,hy,hr,Math.PI*1.05,Math.PI*1.95); ctx.fillStyle=o.hair; ctx.fill();
-  if(o.nose) circle(hx+s*.02,hy+s*.015,s*.025,'#e2574c');
-  if(o.cap){ ctx.fillStyle=o.cap; ctx.fillRect(hx-hr*.8,hy-hr*1.15,hr*1.6,hr*.5); }
-  // 頭上氣泡
-  if(o.bubble && s*.16>=7){ const bt=hy-hr-s*.16; circle(hx,bt,s*.11,'rgba(255,255,255,.95)'); emoji(o.bubble,hx,bt+1,s*.15); }
-  if(o.angry && s*.12>=6) emoji('💢',hx+s*.12,hy-s*.08,s*.12);
-  if(o.slip) ctx.restore();
+  if(o.invisible){ // 只看得到帽子和墨鏡
+    ctx.fillStyle='#3b2f2a'; ctx.fillRect(hx-hr*1.1,hy-hr*1.05,hr*2.2,hr*.35); ctx.fillRect(hx-hr*.7,hy-hr*1.7,hr*1.4,hr*.7);
+    ellipse(hx-hr*.4,hy-hr*.1,hr*.32,hr*.22,'#111'); ellipse(hx+hr*.4,hy-hr*.1,hr*.32,hr*.22,'#111');
+  } else {
+    if(o.catears){ poly([{x:hx-hr*.9,y:hy-hr*.4},{x:hx-hr*.7,y:hy-hr*1.6},{x:hx-hr*.1,y:hy-hr*.85}],o.hair); poly([{x:hx+hr*.9,y:hy-hr*.4},{x:hx+hr*.7,y:hy-hr*1.6},{x:hx+hr*.1,y:hy-hr*.85}],o.hair); }
+    circle(hx,hy,hr,o.jelly?'rgba(150,230,160,.95)':skinC);
+    ctx.beginPath(); ctx.arc(hx,hy,hr,Math.PI*1.05,Math.PI*1.95); ctx.fillStyle=o.hair; ctx.fill();
+    if(o.nose) circle(hx+s*.02,hy+s*.015,s*.025,'#e2574c');
+    if(o.goggles){ ctx.fillStyle='#5a6b7a'; ctx.fillRect(hx-hr,hy-hr*.35,hr*2,hr*.35); circle(hx-hr*.4,hy-hr*.18,hr*.3,'#bfe6ff'); circle(hx+hr*.4,hy-hr*.18,hr*.3,'#bfe6ff'); }
+    if(o.glasses){ ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(hx-hr*.75,hy-hr*.15,hr*.6,hr*.4); ctx.strokeRect(hx+hr*.15,hy-hr*.15,hr*.6,hr*.4); }
+    if(o.cap){ ctx.fillStyle=o.cap; ctx.fillRect(hx-hr*.8,hy-hr*1.15,hr*1.6,hr*.5); }
+    if(o.sprout){ const gr=1+Math.sin(clock*2+o.seed)*.15; ctx.strokeStyle='#3f8a3c'; ctx.lineWidth=Math.max(1.5,s*.02); ctx.beginPath(); ctx.moveTo(hx,hy-hr); ctx.lineTo(hx,hy-hr-s*.09*gr); ctx.stroke(); ellipse(hx-s*.035,hy-hr-s*.09*gr,s*.035,s*.018,'#5fb35a'); ellipse(hx+s*.035,hy-hr-s*.1*gr,s*.035,s*.018,'#4f9a4a'); }
+    if(o.antenna){ ctx.strokeStyle='#777'; ctx.lineWidth=Math.max(1.5,s*.02); ctx.beginPath(); ctx.moveTo(hx+hr*.3,hy-hr); ctx.lineTo(hx+hr*.6,hy-hr-s*.16); ctx.stroke(); circle(hx+hr*.6,hy-hr-s*.16,s*.025,'#e2574c');
+      const k=Math.floor(clock*3)%4; ctx.strokeStyle='rgba(80,160,255,.8)'; for(let a=1;a<=k;a++){ ctx.beginPath(); ctx.arc(hx+hr*.6,hy-hr-s*.16,s*.04*a,-Math.PI*.8,-Math.PI*.2); ctx.stroke(); } }
+  }
+  if(o.notes){ const t=clock*2+o.seed; ['♪','♫','♪'].forEach((n,k)=>{ const a=t+k*2.1; txt(n,hx+Math.cos(a)*s*.25,hy-s*.05+Math.sin(a*1.3)*s*.12,s*.16,['#e2574c','#4d7cc7','#9b6dd6'][k],900); }); }
+  ctx.restore();
+  if(o.bubble && s*.16>=7){ const bt=hy-hr-s*.16-(o.antenna||o.sprout||o.catears?s*.08:0); const bxx=o.back?2*bx-hx:hx; circle(bxx,bt,s*.11,'rgba(255,255,255,.95)'); emoji(o.bubble,bxx,bt+1,s*.15); if(o.em) emoji('🚨',bxx+s*.13,bt-s*.06,s*.12); }
+  if(o.angry && s*.12>=6) emoji('💢',(o.back?2*bx-hx:hx)+s*.12,hy-s*.08,s*.12);
+  ctx.globalAlpha=1;
 }
 function drawCat(bx,by,s,o){
   const c=o.catColor||'#f0a04b';
@@ -437,88 +543,107 @@ function drawCat(bx,by,s,o){
   if(o.grumpy){ ctx.beginPath(); ctx.moveTo(hx-s*.05,hy-s*.01); ctx.lineTo(hx-s*.015,hy); ctx.moveTo(hx+s*.05,hy-s*.01); ctx.lineTo(hx+s*.015,hy); ctx.stroke(); }
   else { circle(hx-s*.035,hy-s*.005,s*.014,'#3b2f2a'); circle(hx+s*.035,hy-s*.005,s*.014,'#3b2f2a'); }
   if(o.stetho){ ctx.strokeStyle='#5a6b7a'; ctx.beginPath(); ctx.arc(hx,hy+s*.07,s*.05,0,Math.PI); ctx.stroke(); }
-  if(o.bubble && s*.16>=7){ const bt=hy-s*.25; circle(hx,bt,s*.11,'rgba(255,255,255,.95)'); emoji(o.bubble,hx,bt+1,s*.15); }
+  if(o.bubble && s*.16>=7){ const bt=hy-s*.25; circle(hx,bt,s*.11,'rgba(255,255,255,.95)'); emoji(o.bubble,hx,bt+1,s*.15); if(o.em) emoji('🚨',hx+s*.13,bt-s*.06,s*.12); }
   if(o.angry && s*.12>=6) emoji('💢',hx+s*.12,hy-s*.1,s*.12);
 }
 
 // ================= 場景繪製 =================
-let clock = 0;
+let clock=0;
 function staffLook(kind,seed){
   if(kind==='doctor') return {skin:SKINS[seed%5],hair:HAIRS[seed%6],shirt:'#7cc6fe',coat:'#ffffff',pants:'#5a6b7a'};
   if(kind==='clown') return {skin:'#f5d0b5',hair:'#ff7a59',shirt:'#e2574c',coat:'#f2c14e',pants:'#4d7cc7',nose:1};
   if(kind==='spa') return {skin:SKINS[(seed+2)%5],hair:'#3b2a20',shirt:'#5fd0aa',pants:'#3f9c80'};
+  if(kind==='sci') return {skin:SKINS[(seed+1)%5],hair:'#e9e9e9',shirt:'#9be3c7',coat:'#ffffff',pants:'#4a4f5c',goggles:1,flask:1};
+  if(kind==='it') return {skin:SKINS[(seed+3)%5],hair:'#1e1e1e',shirt:'#5a6b7a',pants:'#2f2f3a',glasses:1};
   if(kind==='recep') return {skin:'#f5d0b5',hair:'#3b2a20',shirt:'#f6a6c1',pants:'#5a3b4a'};
   if(kind==='jan') return {skin:'#e8b48f',hair:'#8a8a8a',shirt:'#4d7cc7',pants:'#3b5a9a',cap:'#e2574c',mop:1};
   return {};
 }
-function roomFurniture(r, list){
+function roomFurniture(r,list){
   const X=4*r.i+1, Y=4*r.j+1, t=r.type, rt=RT[rkey(r)], busy=rt&&rt.cur&&rt.cur.state==='treat';
   const add=(d,fn)=>list.push({d,fn});
-  const F=(x,y,w,dd,h,c,z,extra)=>add(X+x+w/2+Y+y+dd/2,()=>{ const top=box(X+x,Y+y,w,dd,h,c,z||0,extra&&extra.alpha); if(extra&&extra.emo) emoji(extra.emo,top.x,top.y-tw*(extra.lift||.12),tw*(extra.size||.3)); if(extra&&extra.post) extra.post(top); });
+  const F=(x,y,w,dd,h,c,z,ex)=>add(X+x+w/2+Y+y+dd/2,()=>{ const top=box(X+x,Y+y,w,dd,h,c,z||0,ex&&ex.alpha); if(ex&&ex.emo) emoji(ex.emo,top.x,top.y-tw*(ex.lift||.12),tw*(ex.size||.3)); if(ex&&ex.post) ex.post(top); });
   if(t==='gp'){ F(.1,.1,.55,.35,.7,'#f4f4f4'); F(1.0,.85,1.2,.5,.3,'#c98b4f'); F(1.4,.9,.32,.2,.22,'#4a4f5c',.3); F(.15,1.65,.55,1.1,.22,'#e6f2ff'); add(X+2.6+Y+.35,()=>drawPlant(X+2.6,Y+.35)); }
+  if(t==='lab'){ F(.15,.15,1.7,.5,.32,'#e8eef5',0,{post:top=>{ emoji('⚗️',top.x-tw*.3,top.y-tw*.1,tw*.22); emoji('🧪',top.x+tw*.05,top.y-tw*.1,tw*.2); emoji('🧫',top.x+tw*.35,top.y-tw*.04,tw*.16); }}); F(2.1,.2,.75,.75,.95,'#9be3c7',0,{emo:'🧬',size:.32,post:top=>{ for(let k=0;k<3;k++){ const ph=(clock*.8+k/3)%1; circle(top.x+Math.sin(k*2+clock)*tw*.08,top.y-tw*.2-ph*tw*.5,tw*.03*(1-ph)+1,'rgba(120,230,170,'+(1-ph)+')'); } }}); F(.2,2.3,.5,.5,.5,'#ffe08a',0,{emo:'💡',size:.2}); add(X+2.5+Y+2.4,()=>{ const p=P3(X+2.5,Y+2.4,.02); ctx.save(); ctx.globalAlpha=.25; ellipse(p.x,p.y,tw*.25,tw*.1,'#3b2f2a'); ctx.restore(); }); }
   if(t==='magnet'){ F(.2,.15,1.3,.85,.85,'#cfd6e6',0,{emo:'🧲',size:.42,lift:-.05,post:top=>{ if(busy){ ctx.strokeStyle='rgba(255,90,120,.6)'; ctx.lineWidth=2; for(let k=0;k<3;k++){ const rr=tw*(.15+((clock*1.5+k/3)%1)*.35); ctx.beginPath(); ctx.arc(top.x,top.y+tw*.25,rr,0,Math.PI*2); ctx.stroke(); } } }}); F(.45,1.45,.9,.9,.05,'#ff8fa3'); F(2.0,.2,.6,.4,.45,'#8a93a6',0,{emo:'🎛️',size:.2}); }
-  if(t==='joke'){ F(.15,.15,1.5,1.1,.12,'#a77be0'); add(X+.95+Y+.95,()=>{ const b=P3(X+1.2,Y+.95,.12), tp=P3(X+1.2,Y+.95,.62); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(tp.x,tp.y); ctx.stroke(); circle(tp.x,tp.y,tw*.04,'#555'); }); F(.95,1.95,.45,.45,.18,'#e2574c'); F(2.5,.2,.25,.25,.6,'#3b2f2a',0,{emo:busy?'💡':'',size:.2}); if(busy) add(X+3+Y+1,()=>{ const p=P3(X+1.6,Y+1.4,.9); ctx.font=`900 ${Math.round(tw*.16)}px sans-serif`; ctx.textAlign='center'; ctx.fillStyle='rgba(120,160,255,.9)'; ctx.fillText(['❄ 冷','❄ 梗','❄ 好冷'][Math.floor(clock*2)%3],p.x,p.y); }); }
+  if(t==='joke'){ F(.15,.15,1.5,1.1,.12,'#a77be0'); add(X+.95+Y+.95,()=>{ const b=P3(X+1.2,Y+.95,.12), tp=P3(X+1.2,Y+.95,.62); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(tp.x,tp.y); ctx.stroke(); circle(tp.x,tp.y,tw*.04,'#555'); }); F(.95,1.95,.45,.45,.18,'#e2574c'); F(2.5,.2,.25,.25,.6,'#3b2f2a',0,{emo:busy?'💡':'',size:.2}); if(busy) add(X+3+Y+1,()=>{ const p=P3(X+1.6,Y+1.4,.9); txt(['❄ 冷','❄ 梗','❄ 好冷'][Math.floor(clock*2)%3],p.x,p.y,tw*.16,'rgba(120,160,255,.9)',900); }); }
   if(t==='spa'){ F(.3,.55,1.7,.75,.25,'#ffffff'); F(.33,.6,.35,.65,.08,'#5fd0aa',.25); add(X+2.6+Y+.35,()=>drawPlant(X+2.6,Y+.35)); F(2.45,2.35,.22,.22,.25,'#d6b8f5',0,{emo:busy?'💨':'',size:.18}); }
-  if(t==='freeze'){ F(.45,.35,.95,.95,1.05,'#bfe6ff',0,{alpha:.92,post:top=>{ const c=P3(X+.93,Y+1.3,.55); emoji(busy?'🥶':'❄️',c.x+(busy?Math.sin(clock*30)*2:0),c.y,tw*.3); }}); F(2.0,.25,.6,.4,.45,'#8a93a6',0,{emo:'🌡️',size:.2}); F(.3,2.3,.4,.4,.3,'#e6f6ff'); }
+  if(t==='reboot'){ F(.25,.2,1.1,.75,.95,'#3b4a6b',0,{post:top=>{ const c=P3(X+.8,Y+.95,.55); circle(c.x,c.y,tw*.16,busy&&Math.floor(clock*4)%2?'#3fae7a':'#2b3550'); txt('⏻',c.x,c.y,tw*.2,'#fff',900); if(busy) txt(['重新啟動中','重新啟動中.','重新啟動中..','重新啟動中...'][Math.floor(clock*3)%4],top.x,top.y-tw*.18,tw*.13,'#fff',800,'#3b4a6b'); }}); F(1.9,.5,.9,.45,.3,'#c98b4f'); F(2.2,.55,.35,.22,.24,'#2b2b2b',.3,{emo:busy?'⌛':'💾',size:.14,lift:.04}); }
+  if(t==='freeze'){ F(.45,.35,.95,.95,1.05,'#bfe6ff',0,{alpha:.92,post:()=>{ const c=P3(X+.93,Y+1.3,.55); emoji(busy?'🥶':'❄️',c.x+(busy?Math.sin(clock*30)*2:0),c.y,tw*.3); }}); F(2.0,.25,.6,.4,.45,'#8a93a6',0,{emo:'🌡️',size:.2}); F(.3,2.3,.4,.4,.3,'#e6f6ff'); }
   if(t==='cat'){ F(.25,.25,.6,.6,.25,'#d8b48a'); F(.35,.35,.4,.4,.35,'#c49a6c',.25); F(.3,.3,.5,.5,.06,'#e2574c',.6); F(1.3,.6,.9,.5,.22,'#c98b4f'); add(X+.5+Y+2.3,()=>{ const c=P3(X+.5,Y+2.3,.06); emoji('🧶',c.x,c.y,tw*.2); }); }
-  // 醫護人員
-  const L=RLAY[t], [dx,dy]=roomSpot(r,'doc');
-  add(dx+dy, ()=>{ if(L.staff==='cat') drawPerson(dx,dy,{cat:1,catScale:1.25,z:L.docZ||0,stetho:1,catColor:'#f6d7a7',seed:r.i}); else drawPerson(dx,dy,Object.assign(staffLook(L.staff,r.i*3+r.j),{z:L.docZ||0,walk:busy,phase:clock*6,seed:r.i})); });
+  const L=RLAY[t], d0=roomSpot(r,'doc'); let dx=d0[0], dy=d0[1];
+  if(L.pace){ dx+=Math.sin(clock*.7+r.i)*.6; }
+  add(dx+dy,()=>{ if(L.staff==='cat') drawPerson(dx,dy,{cat:1,catScale:1.25,z:L.docZ||0,stetho:1,catColor:'#f6d7a7',seed:r.i}); else drawPerson(dx,dy,Object.assign(staffLook(L.staff,r.i*3+r.j),{z:L.docZ||0,walk:busy||L.pace,phase:clock*6,seed:r.i})); });
 }
 function lobbyFurniture(list){
   const add=(d,fn)=>list.push({d,fn});
-  add(9.9+9.25+.4, ()=>{ const top=box(9.9,9.25,1.3,.45,.35,'#e9a23b'); emoji('🛎️',top.x+tw*.2,top.y-tw*.08,tw*.18); box(10.3,9.3,.3,.18,.2,'#4a4f5c',.35); });
-  add(10.55+8.95, ()=>drawPerson(10.55,8.95,Object.assign(staffLook('recep'),{walk:RQ.length&&!RQ[0].path.length,phase:clock*4,seed:7})));
-  for(let b=0;b<S.lobby.bench;b++){ const B=BENCHES[b]; add(B.f[0]+B.f[1]-.3, ()=>{ box(B.back[0],B.back[1],B.back[2],B.back[3],.36,'#2f86ba'); box(B.f[0],B.f[1],B.f[2],B.f[3],.15,'#3fa0d8'); }); }
+  add(13.9+13.25+.4,()=>{ const top=box(13.9,13.25,1.3,.45,.35,'#e9a23b'); emoji(has('fastdesk')?'🖨️':'🛎️',top.x+tw*.2,top.y-tw*.08,tw*.18); box(14.3,13.3,.3,.18,.2,'#4a4f5c',.35); });
+  add(14.55+12.95,()=>drawPerson(14.55,12.95,Object.assign(staffLook('recep'),{walk:RQ.length&&!RQ[0].path.length,phase:clock*4,seed:7})));
+  for(let b=0;b<S.lobby.bench;b++){ const B=BENCHES[b]; add(B.f[0]+B.f[1]-.3,()=>{ box(B.back[0],B.back[1],B.back[2],B.back[3],.36,has('comfy')?'#c06bd6':'#2f86ba'); box(B.f[0],B.f[1],B.f[2],B.f[3],.15,has('comfy')?'#d98be8':'#3fa0d8'); }); }
   for(let k=0;k<S.lobby.plant;k++){ const [px,py]=PLANTS[k]; add(px+py,()=>drawPlant(px,py)); }
-  if(S.lobby.vend) add(11.55+9.05+.4, ()=>{ const top=box(11.55,9.05,.4,.32,.75,'#e2574c'); emoji('🥤',top.x,top.y-tw*.1,tw*.2); });
+  if(S.lobby.vend) add(15.55+13.05+.4,()=>{ const top=box(15.55,13.05,.4,.32,.75,'#e2574c'); emoji(has('soda')?'🧃':'🥤',top.x,top.y-tw*.1,tw*.2); });
+  if(has('luckycat')) add(14.9+13.3,()=>{ const c=P3(15.05,13.4,.35); emoji('🐱',c.x,c.y-tw*.08+Math.sin(clock*6)*1.5,tw*.2); });
+}
+function drawGround(){
+  ctx.fillStyle='#7fb85e'; ctx.fillRect(0,0,W,H);
+  for(let y=-1;y<=MW;y++) for(let x=-1;x<=MW;x++){
+    let near=false; for(let a=-1;a<=1&&!near;a++) for(let c=-1;c<=1&&!near;c++) if(inside(x+a,y+c)) near=true;
+    if(near && !inside(x,y)) poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],'#e5dccb');
+  }
+  for(let x=17;x<=21;x++) poly([iso(x,13.8),iso(x+1,13.8),iso(x+1,15.2),iso(x,15.2)],x%2?'#e8dfcf':'#ddd2bf');
+  for(let x=17;x<=22;x++) poly([iso(x,15.2),iso(x+1,15.2),iso(x+1,16.8),iso(x,16.8)],'#8a8f99');
+  for(let x=17;x<=22;x+=1) poly([iso(x+.2,15.95),iso(x+.7,15.95),iso(x+.7,16.05),iso(x+.2,16.05)],'#f2f2f2');
+  poly([iso(17,14.1),iso(17.7,14.1),iso(17.7,14.9),iso(17,14.9)],'#e2574c');
 }
 function drawFloor(){
   const pulse=.5+.5*Math.sin(clock*5);
   for(let y=0;y<MW;y++) for(let x=0;x<MW;x++){
+    if(!inside(x,y)) continue;
     const s=slotOf(x,y); let c;
     if(!s) c=(x+y)%2?'#d4cde8':'#c7bfe0';
     else if(isLobby(s)) c=(x+y)%2?'#eef5fd':'#d6e6f6';
-    else { const r=roomAt(s.i,s.j); if(r) c=ROOMS[r.type].floor[(x+y)%2]; else c= placing? `rgba(140,215,150,${.55+.35*pulse})` : ((x+y)%2?'#e6dcc8':'#ddd1ba'); }
-    poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)], c, 'rgba(90,70,110,.12)');
+    else { const r=roomAt(s.i,s.j); if(r) c=ROOMS[r.type].floor[(x+y)%2]; else c=placing?`rgba(140,215,150,${.55+.35*pulse})`:((x+y)%2?'#e6dcc8':'#ddd1ba'); }
+    poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],c,'rgba(90,70,110,.12)');
   }
-  // 空地標示 & 門口地墊
-  for(const [i,j] of SLOT_ORDER){
+  for(const [i,j] of openSlots()){
     const r=roomAt(i,j), c=iso(4*i+2.5,4*j+2.5);
     if(!r){ ctx.setLineDash([5,4]); poly([iso(4*i+1.1,4*j+1.1),iso(4*i+3.9,4*j+1.1),iso(4*i+3.9,4*j+3.9),iso(4*i+1.1,4*j+3.9)],null,'rgba(120,90,60,.45)',1.5); ctx.setLineDash([]);
-      ctx.fillStyle='rgba(120,90,60,.55)'; ctx.font=`800 ${Math.round(tw*.32)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('+',c.x,c.y-tw*.05);
-      if(tw>=30){ ctx.font=`700 ${Math.round(tw*.17)}px sans-serif`; ctx.fillText('空地',c.x,c.y+tw*.22); } }
-    else { const R=ROOMS[r.type]; poly([iso(4*i+4,4*j+2.15),iso(4*i+4.5,4*j+2.15),iso(4*i+4.5,4*j+2.85),iso(4*i+4,4*j+2.85)], shade(R.color,.35)); }
+      txt('+',c.x,c.y-tw*.05,tw*.32,'rgba(120,90,60,.55)'); if(tw>=30) txt('空地',c.x,c.y+tw*.22,tw*.17,'rgba(120,90,60,.55)',700); }
+    else poly([iso(4*i+4,4*j+2.15),iso(4*i+4.5,4*j+2.15),iso(4*i+4.5,4*j+2.85),iso(4*i+4,4*j+2.85)],shade(ROOMS[r.type].color,.35));
+  }
+  // 未開放土地
+  for(const k in WINGS){ if(S.land[k]) continue; const W2=WINGS[k];
+    W2.slots.forEach(([i,j])=>{ ctx.setLineDash([3,5]); poly([iso(4*i+.6,4*j+.6),iso(4*i+4.4,4*j+.6),iso(4*i+4.4,4*j+4.4),iso(4*i+.6,4*j+4.4)],null,'rgba(255,255,255,.55)',1.5); ctx.setLineDash([]); });
   }
 }
-function drawOutside(){
-  // 外圍人行道
-  poly([iso(-.6,-.6),iso(13.6,-.6),iso(13.6,13.6),iso(-.6,13.6)], '#e5dccb');
-  for(let x=13;x<=17;x++) poly([iso(x,9.8),iso(x+1,9.8),iso(x+1,11.2),iso(x,11.2)], x%2?'#e8dfcf':'#ddd2bf');
-  poly([iso(13,10.1),iso(13.7,10.1),iso(13.7,10.9),iso(13,10.9)], '#e2574c');
+function drawLandLabels(){
+  for(const k in WINGS){ if(S.land[k]) continue; const W2=WINGS[k]; if(W2.needs&&!W2.needs.every(n=>S.land[n])) continue;
+    const [i,j]=W2.slots[Math.floor(W2.slots.length/2)], c=iso(4*i+2.5,4*j+2.5);
+    if(tw>=18){ const lbl=`🔒 ${W2.name} $${fmt(W2.cost)}`; ctx.font=`800 ${Math.round(Math.max(11,tw*.22))}px sans-serif`; const w=ctx.measureText(lbl).width+16, h=Math.max(20,tw*.4); rrect(c.x-w/2,c.y-h/2,w,h,h/2,'rgba(255,253,248,.92)','#d9c9ae'); txt(lbl,c.x,c.y+1,Math.max(11,tw*.22),'#5a4a40'); }
+  }
 }
 function drawLitter(){
   litter.forEach(l=>{ const c=iso(l.x,l.y), s=tw;
     if(l.k==='jelly'){ ellipse(c.x,c.y,s*.17,s*.07,'rgba(110,210,120,.75)'); ellipse(c.x-s*.05,c.y-s*.015,s*.05,s*.02,'rgba(255,255,255,.6)'); }
-    else if(l.k==='keys'){ [[-.08,0],[.02,-.03],[.08,.03],[-.02,.04]].forEach(([dx,dy])=>{ rrect(c.x+dx*s-s*.025,c.y+dy*s-s*.02,s*.05,s*.04,2,'#e8e8ee','#888'); }); }
-    else if(l.k==='paper'){ [['#fff',-.06,0],['#ffe08a',.05,-.02],['#bfe0ff',.0,.03]].forEach(([col,dx,dy])=>{ ctx.fillStyle=col; ctx.fillRect(c.x+dx*s-s*.03,c.y+dy*s-s*.015,s*.06,s*.03); }); }
-    else if(l.k==='ash'){ ellipse(c.x,c.y,s*.13,s*.05,'rgba(90,90,90,.55)'); }
+    else if(l.k==='keys') [[-.08,0],[.02,-.03],[.08,.03],[-.02,.04]].forEach(([dx,dy])=>rrect(c.x+dx*s-s*.025,c.y+dy*s-s*.02,s*.05,s*.04,2,'#e8e8ee','#888'));
+    else if(l.k==='paper') [['#fff',-.06,0],['#ffe08a',.05,-.02],['#bfe0ff',0,.03]].forEach(([col,dx,dy])=>{ ctx.fillStyle=col; ctx.fillRect(c.x+dx*s-s*.03,c.y+dy*s-s*.015,s*.06,s*.03); });
+    else if(l.k==='ash') ellipse(c.x,c.y,s*.13,s*.05,'rgba(90,90,90,.55)');
     else if(l.k==='fur'){ ellipse(c.x,c.y,s*.07,s*.04,'#e9b47a'); ellipse(c.x+s*.05,c.y+s*.01,s*.04,s*.03,'#f4c58d'); }
-    else emoji({bone:'🦴',box:'📦',can:'🥫'}[l.k]||'💩', c.x, c.y-s*.04, s*.17);
+    else if(l.k==='leaf'){ ellipse(c.x,c.y,s*.06,s*.025,'#5fb35a'); ellipse(c.x+s*.06,c.y+s*.02,s*.05,s*.02,'#4f9a4a'); }
+    else emoji({bone:'🦴',box:'📦',can:'🥫'}[l.k]||'💩',c.x,c.y-s*.04,s*.17);
   });
 }
 function draw(){
-  ctx.fillStyle='#7fb85e'; ctx.fillRect(0,0,W,H);
-  drawOutside(); drawFloor(); drawLitter();
+  drawGround(); drawFloor(); drawLitter();
   const list=[];
-  // 外牆（後方高牆、前方矮牆）
-  for(let k=0;k<MW;k++){
-    list.push({d:k+.5-.01,fn:()=>wallY(0,k,k+1,.7,'#e3d5bd',null,k%2===1)});
-    list.push({d:k+.5-.01,fn:()=>wallX(0,k,k+1,.7,'#e3d5bd',null,k%2===1)});
-    list.push({d:k+.5+MW,fn:()=>wallY(MW,k,k+1,.1,'#e3d5bd')});
-    if(k!==10) list.push({d:k+.5+MW,fn:()=>wallX(MW,k,k+1,.1,'#e3d5bd')});
+  // 外牆：依開放範圍自動生成（後方高牆、前方矮牆）
+  for(let y=0;y<MW;y++) for(let x=0;x<MW;x++){
+    if(!inside(x,y)) continue;
+    if(!inside(x,y-1)) list.push({d:x+.5+y-.01,fn:()=>wallY(y,x,x+1,.7,'#e3d5bd',null,x%2===1)});
+    if(!inside(x-1,y)) list.push({d:x+y+.5-.01,fn:()=>wallX(x,y,y+1,.7,'#e3d5bd',null,y%2===1)});
+    if(!inside(x,y+1)) list.push({d:x+.5+y+1,fn:()=>wallY(y+1,x,x+1,.1,'#e3d5bd')});
+    if(!inside(x+1,y) && !(x===16&&y===14)) list.push({d:x+1+y+.5,fn:()=>wallX(x+1,y,y+1,.1,'#e3d5bd')});
   }
-  // 房間牆
   S.rooms.forEach(r=>{ const X=4*r.i+1, Y=4*r.j+1, col=ROOMS[r.type].color;
     for(let k=0;k<3;k++){
       list.push({d:X+k+.5+Y-.01,fn:()=>wallY(Y,X+k,X+k+1,.5,'#f3e6cf',col)});
@@ -529,96 +654,123 @@ function draw(){
     roomFurniture(r,list);
   });
   lobbyFurniture(list);
-  TREES.forEach(([x,y])=>list.push({d:x+y,fn:()=>drawTree(x,y)}));
-  list.push({d:14.3+9.2,fn:()=>{ const b=P3(14.3,9.2,0), t=P3(14.3,9.2,.75); ctx.strokeStyle='#6b4a2f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); rrect(t.x-tw*.55,t.y-tw*.3,tw*1.1,tw*.32,6,'#fffdf8','#e2574c'); ctx.fillStyle='#e2574c'; ctx.font=`900 ${Math.round(tw*.17)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('🏥 怪病診所',t.x,t.y-tw*.14); }});
-  // 病人、清潔阿姨
+  TREES_OUT.forEach(([x,y])=>list.push({d:x+y,fn:()=>drawTree(x,y)}));
+  for(const k in WINGS){ if(S.land[k]) continue; WINGS[k].slots.forEach(([i,j])=>{ [[1.4,1.6],[3,3.1],[3.2,1.2]].forEach(([a,b])=>{ const x=4*i+a, y=4*j+b; list.push({d:x+y,fn:()=>drawTree(x,y)}); }); }); }
+  list.push({d:18.3+13.2,fn:()=>{ const b=P3(18.3,13.2,0), t=P3(18.3,13.2,.75); ctx.strokeStyle='#6b4a2f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); rrect(t.x-tw*.55,t.y-tw*.3,tw*1.1,tw*.32,6,'#fffdf8','#e2574c'); txt('🏥 怪病診所',t.x,t.y-tw*.14,tw*.17,'#e2574c',900); }});
+  if(bus>0) list.push({d:19+16,fn:drawBus});
   const lim=patienceLimit();
   patients.forEach(p=>{ if(p.hidden) return; list.push({d:p.x+p.y+.02,fn:()=>drawPatient(p,lim)}); });
-  jans.forEach(j=>list.push({d:j.x+j.y+.02,fn:()=>drawPerson(j.x,j.y,Object.assign(staffLook('jan'),{walk:j.path.length>0,phase:j.phase,mopAnim:j.state==='clean',seed:j.id}))}));
+  jans.forEach(j=>list.push({d:j.x+j.y+.02,fn:()=>drawPerson(j.x,j.y,Object.assign(staffLook('jan'),{walk:j.path.length>0,phase:j.phase,mopAnim:j.state==='clean',seed:j.id,lift:has('turbomop')&&j.path.length?Math.abs(Math.sin(clock*5))*.06:0}))}));
+  ducks.forEach(d=>list.push({d:d.x+d.y,fn:()=>{ const c=iso(d.x,d.y); ellipse(c.x,c.y,tw*.1,tw*.04,'rgba(0,0,0,.18)'); emoji('🦆',c.x,c.y-tw*.14-Math.abs(Math.sin(d.phase))*tw*.04,tw*.3); }}));
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
-  // 招牌、進度條
+  if(ufo) drawUfo();
+  drawLandLabels();
   S.rooms.forEach(drawSign);
-  floats.forEach(f=>{ ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); ctx.font=`900 ${Math.round(Math.max(13,tw*.3))}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='#fff'; ctx.strokeText(f.text,f.x,f.y); ctx.fillStyle=f.color; ctx.fillText(f.text,f.x,f.y); ctx.globalAlpha=1; });
-  patients.forEach(p=>{ if(p.sayT>0 && !p.hidden) drawSay(p); });
+  floats.forEach(f=>{ ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
+  patients.forEach(p=>{ if(p.sayT>0&&!p.hidden) drawSay(p.x,p.y,p.say); });
+  if(sayStaff && sayStaff.t>0) drawSay(sayStaff.x,sayStaff.y,sayStaff.say);
   drawHint();
+}
+function drawBus(){
+  const x=18.2, y=15.35, off=Math.max(0,bus-5.5)*3;
+  box(x+off,y,2.6,.85,.6,'#ffd23d',.08);
+  for(let k=0;k<4;k++) poly([P3(x+off+.25+k*.6,y+.85,.32),P3(x+off+.65+k*.6,y+.85,.32),P3(x+off+.65+k*.6,y+.85,.55),P3(x+off+.25+k*.6,y+.85,.55)],'#bfe0f2');
+  const c1=iso(x+off+.5,y+.85), c2=iso(x+off+2.1,y+.85); circle(c1.x,c1.y,tw*.09,'#333'); circle(c2.x,c2.y,tw*.09,'#333');
+  const top=P3(x+off+1.3,y+.42,.68); emoji('🚨',top.x,top.y-(Math.floor(clock*4)%2)*2,tw*.25);
+}
+function drawUfo(){
+  const p=ufo.p, c=iso(p.x,p.y), hy=c.y-tw*(2.6-Math.min(1,ufo.t)*.4);
+  ctx.save(); ctx.globalAlpha=.35+.15*Math.sin(clock*20);
+  ctx.beginPath(); ctx.moveTo(c.x-tw*.12,hy+tw*.1); ctx.lineTo(c.x+tw*.12,hy+tw*.1); ctx.lineTo(c.x+tw*.3,c.y); ctx.lineTo(c.x-tw*.3,c.y); ctx.closePath(); ctx.fillStyle='#fff59d'; ctx.fill(); ctx.restore();
+  ellipse(c.x,hy-tw*.06,tw*.16,tw*.12,'#bfe6ff'); ellipse(c.x,hy,tw*.45,tw*.13,'#9aa3b5'); ellipse(c.x,hy-tw*.02,tw*.45,tw*.08,'#c9d0dc');
+  for(let k=-2;k<=2;k++) circle(c.x+k*tw*.16,hy+tw*.04,tw*.03,Math.floor(clock*6+k)%2?'#ffd23d':'#ff7a59');
+}
+function drawPatient(p,lim){
+  const d=DMAP[p.d], fx=FX[p.d]||{};
+  const waiting=['recq','queue','bench'].includes(p.state)&&!p.path.length;
+  const bubble=p.state==='exit'?(p.mood||'😄'):p.state==='confused'?'❓':d.icon;
+  const o=Object.assign({},fx,{skin:p.skin,hair:p.hair,shirt:p.shirt,pants:p.pants,walk:p.path.length>0,phase:p.phase,seed:p.id,bubble,em:p.emerg&&p.state!=='exit',
+    angry:waiting&&p.wait>lim*(p.emerg?1.2:.6),sit:p.state==='bench'&&!p.path.length,face:p.face,slip:p.slip>0,grumpy:1,lift:p.lift||0});
+  if(p.state==='treat'){ const L=RLAY[roomByKey(p.room)?.type]||{}; if(L.sit) o.sit=1; if(L.lie){ o.lie=1; o.z=L.patZ; } if(L.float) o.float=1; if(L.blink) o.alpha=Math.floor(clock*5)%2?1:.25; }
+  if(p.state==='exit'&&p.mood==='😄') Object.keys(fx).forEach(k=>{ if(k!=='cat') o[k]=0; });
+  if(p.state==='exit'&&p.mood!=='😄'){ o.angry=false; }
+  drawPerson(p.x,p.y,o);
+  if(p.state==='treat'){ const rt=RT[p.room]; if(rt){ const c=iso(p.x,p.y), bw=tw*.5, by=c.y-tw*((o.lie?.25:.95)+(o.z||0))-tw*.32; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)','rgba(80,60,40,.4)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,rt.prog)),4,2,'#3fae7a'); } }
+}
+function drawSign(r){
+  const R=ROOMS[r.type], c=P3(4*r.i+2.5,4*r.j+1,.5), rt=RT[rkey(r)];
+  const h=Math.max(14,tw*.32), showName=tw>=34, label=R.name+(r.lvl>1?' Lv'+r.lvl:'');
+  ctx.font=`800 ${Math.round(h*.55)}px sans-serif`;
+  const w=showName?ctx.measureText(label).width+h*1.5:h*1.3;
+  rrect(c.x-w/2,c.y-h-6,w,h,h/2,'rgba(255,253,248,.95)',R.color);
+  emoji(R.icon,c.x-w/2+h*.62,c.y-h/2-6,h*.7);
+  if(showName){ ctx.font=`800 ${Math.round(h*.55)}px sans-serif`; ctx.fillStyle='#3b2f2a'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label,c.x-w/2+h*1.15,c.y-h/2-5); }
+  if(rt&&rt.cur&&RLAY[r.type].hide&&rt.cur.state==='treat'){ const bw=tw*.6, by=c.y+tw*.05; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,rt.prog)),4,2,'#3fae7a'); }
+}
+function drawSay(x,y,say){
+  const c=iso(x,y), fs=Math.max(11,Math.min(15,tw*.28));
+  ctx.font=`700 ${Math.round(fs)}px sans-serif`;
+  const w=Math.min(W*.75,ctx.measureText(say).width+16), hh=fs+12;
+  const bx=Math.max(4,Math.min(W-w-4,c.x-w/2)), by=c.y-tw*1.25-hh;
+  rrect(bx,by,w,hh,10,'#3b2f2a'); ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(say,bx+w/2,by+hh/2+1);
 }
 function drawHint(){
   let pt=null;
-  if(S.tut===1 && !S.rooms.length){ const sl=[[1,2],[0,2],[1,1]].find(([i,j])=>!roomAt(i,j)); if(sl) pt=iso(4*sl[0]+2.5,4*sl[1]+2.5); }
-  else if(S.tut===2 && litter.length){ pt=iso(litter[0].x,litter[0].y); }
+  if(S.tut===1&&!S.rooms.length){ const sl=[[2,3],[1,3],[2,2]].find(([i,j])=>!roomAt(i,j)); if(sl) pt=iso(4*sl[0]+2.5,4*sl[1]+2.5); }
+  else if(S.tut===2&&litter.length) pt=iso(litter[0].x,litter[0].y);
   if(!pt) return;
   const b=Math.abs(Math.sin(clock*4))*tw*.18;
   ctx.globalAlpha=.35+.25*Math.sin(clock*4); circle(pt.x,pt.y,tw*.28,'#fff'); ctx.globalAlpha=1;
   emoji('👆',pt.x+tw*.05,pt.y+tw*.32+b,Math.max(26,tw*.5));
 }
-function drawPatient(p,lim){
-  const d=DMAP[p.d], fx=FX[p.d]||{};
-  const waiting=['recq','queue','bench'].includes(p.state)&&!p.path.length;
-  const bubble = p.state==='exit' ? (p.mood||'😄') : p.state==='confused' ? '❓' : d.icon;
-  const o=Object.assign({}, fx, {skin:p.skin,hair:p.hair,shirt:p.shirt,pants:p.pants,walk:p.path.length>0,phase:p.phase,seed:p.id,bubble,
-    angry: waiting && p.wait>lim*.6, sit: p.state==='bench'&&!p.path.length, face:p.face, slip:p.slip>0, grumpy:1});
-  if(p.state==='treat'){ const L=RLAY[roomByKey(p.room)?.type]||{}; if(L.sit) o.sit=1; if(L.lie){ o.lie=1; o.z=L.patZ; } if(L.float) o.float=1; o.bubble=d.icon; }
-  if(p.state==='exit') { o.angry=false; o.glow=false; if(p.mood==='😄'){ o.jelly=0;o.phone=0;o.zombie=0;o.spots=0;o.keys=0;o.belly=0;o.tilt=0;o.shake=0;o.cart=0;o.holdcat=0; } }
-  drawPerson(p.x,p.y,o);
-  if(p.state==='treat'){ const rt=RT[p.room]; if(rt){ const c=iso(p.x,p.y), bw=tw*.5, by=c.y-tw*((o.lie?.25:.95)+(o.z||0)) - tw*.32; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)','rgba(80,60,40,.4)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,rt.prog)),4,2,'#3fae7a'); } }
-}
-function drawSign(r){
-  const R=ROOMS[r.type], c=P3(4*r.i+2.5,4*r.j+1,.5), rt=RT[rkey(r)];
-  const h=Math.max(14,tw*.32), showName=tw>=34;
-  ctx.font=`800 ${Math.round(h*.55)}px sans-serif`;
-  const w=showName? ctx.measureText(R.name+(r.lvl>1?' Lv'+r.lvl:'')).width+h*1.5 : h*1.3;
-  rrect(c.x-w/2,c.y-h-6,w,h,h/2,'rgba(255,253,248,.95)',R.color);
-  emoji(R.icon,c.x-w/2+h*.62,c.y-h/2-6,h*.7);
-  if(showName){ ctx.fillStyle='#3b2f2a'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(R.name+(r.lvl>1?' Lv'+r.lvl:''),c.x-w/2+h*1.15,c.y-h/2-5); }
-  if(rt && rt.cur && RLAY[r.type].hide && rt.cur.state==='treat'){ const bw=tw*.6, by=c.y+tw*.05; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,rt.prog)),4,2,'#3fae7a'); }
-}
-function drawSay(p){
-  const c=iso(p.x,p.y); const fs=Math.max(11,Math.min(15,tw*.28));
-  ctx.font=`700 ${Math.round(fs)}px sans-serif`;
-  const w=Math.min(W*.75, ctx.measureText(p.say).width+16), hh=fs+12;
-  const bx=Math.max(4,Math.min(W-w-4,c.x-w/2)), by=c.y-tw*1.25-hh;
-  rrect(bx,by,w,hh,10,'#3b2f2a'); ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(p.say,bx+w/2,by+hh/2+1);
-}
 
 // ================= 遊戲邏輯 =================
+function newPatient(d,x,y){ return {id:nextId++,d:d.id,x,y,path:[],state:'recq',wait:0,phase:Math.random()*6,skin:pick(SKINS),hair:pick(HAIRS),shirt:pick(SHIRTS),pants:pick(PANTS),face:1,say:'',sayT:0,slip:0,slipped:{},mood:'',room:null,seat:-1,litterKind:null,litterT:0}; }
 function spawn(){
   if(RQ.length>=RQ_POS.length) return;
-  const d=pick(pool());
-  const p={id:nextId++, d:d.id, x:SPAWN.x, y:SPAWN.y+(Math.random()-.5)*.4, path:[], state:'recq', wait:0, phase:Math.random()*6,
-    skin:pick(SKINS), hair:pick(HAIRS), shirt:pick(SHIRTS), pants:pick(PANTS), face:1, say:'', sayT:0, slip:0, slipped:{}, mood:'', room:null, seat:-1, litterKind:null, litterT:0};
-  patients.push(p); RQ.push(p); goTo(p, ...RQ_POS[RQ.length-1]);
-  if(!S.seen[d.id]){ S.seen[d.id]=1; const R=ROOMS[d.room]; toast(d.icon,'新怪病！'+d.name, S.rooms.some(r=>r.type===d.room)?'':'要蓋 '+R.icon+' '+R.name); }
+  const d=pick(pool()); const p=newPatient(d,SPAWN.x,SPAWN.y+(Math.random()-.5)*.4);
+  patients.push(p); RQ.push(p); goTo(p,...RQ_POS[RQ.length-1]);
+  discover(d);
   if(Math.random()<.1) talk(p);
 }
-function talk(p, txt){ p.say = txt || pick(SAYS); p.sayT = 3; }
-function addRep(n){ S.rep = Math.max(0, S.rep + n); }
-function goExit(p, mood){ p.state='exit'; p.mood=mood; p.hidden=false; p.room=null; goTo(p,13.5,10.5); p.path.push({x:SPAWN.x, y:SPAWN.y+(Math.random()-.5)*.5}); }
+function discover(d){ if(S.seen[d.id]) return; S.seen[d.id]=1; const R=ROOMS[d.room]; toast(d.icon,'新怪病！'+d.name,S.rooms.some(r=>r.type===d.room)?'':'要蓋 '+R.icon+' '+R.name); }
+function talk(p,t){ p.say=t||pick(SAYS); p.sayT=3; }
+function addRep(n){ S.rep=Math.max(0,S.rep+n); }
+function goExit(p,mood){ p.state='exit'; p.mood=mood; p.hidden=false; p.room=null; goTo(p,17.5,14.5); p.path.push({x:SPAWN.x,y:SPAWN.y+(Math.random()-.5)*.5}); }
 function detach(p){
   const i=RQ.indexOf(p); if(i>=0){ RQ.splice(i,1); RQ.forEach((q,k)=>retarget(q,RQ_POS[k])); }
-  if(p.room && RT[p.room]){ const rt=RT[p.room], r=roomByKey(p.room); const k=rt.queue.indexOf(p); if(k>=0){ rt.queue.splice(k,1); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } if(rt.cur===p){ rt.cur=null; rt.prog=0; } }
+  if(p.room&&RT[p.room]){ const rt=RT[p.room], r=roomByKey(p.room); const k=rt.queue.indexOf(p); if(k>=0){ rt.queue.splice(k,1); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } if(rt.cur===p){ rt.cur=null; rt.prog=0; } }
   if(p.seat>=0){ seats[p.seat]=null; p.seat=-1; }
 }
-function lose(p, why){ detach(p); S.stats.lost++; addRep(-1); goExit(p,'😤'); sfx.bad(); ticker(`😤 ${DMAP[p.d].name}患者${why}（聲望 -1）`); }
+function lose(p,why){ detach(p); S.stats.lost++; addRep(-1); if(p.emerg&&emerg) emerg.lost++; goExit(p,'😤'); sfx.bad(); ticker(`😤 ${DMAP[p.d].name}患者${why}（聲望 -1）`); }
 function route(p){
   const d=DMAP[p.d], rooms=S.rooms.filter(r=>r.type===d.room);
   p.room=null;
-  if(!rooms.length){ p.state='confused'; p.wait=0; p.path=[{x:11.2+Math.random()*.3,y:10.1+Math.random()*.4}]; if(Math.random()<.6) talk(p,'請問哪裡可以治'+d.name+'？'); return; }
+  if(!rooms.length){ p.state='confused'; p.wait=0; p.path=[{x:15.2+Math.random()*.3,y:14.1+Math.random()*.4}]; if(Math.random()<.6) talk(p,'請問哪裡可以治'+d.name+'？'); return; }
   let best=null, bl=1e9; rooms.forEach(r=>{ const rt=RT[rkey(r)], l=rt.queue.length+(rt.cur?1:0)+seats.filter(q=>q&&q.room===rkey(r)).length; if(l<bl){ bl=l; best=r; } });
   const rt=RT[rkey(best)];
   if(rt.queue.length<QMAX) return joinQueue(p,best);
-  const sl=seatList(); const free=sl.findIndex((s,k)=>!seats[k]);
+  const sl=seatList(), free=sl.findIndex((s,k)=>!seats[k]);
   if(free>=0){ seats[free]=p; p.seat=free; p.room=rkey(best); p.state='toBench'; goTo(p,...sl[free]); p.face=BENCHES[Math.floor(free/3)].face; return; }
   lose(p,'看到滿滿的人潮，直接回家了');
 }
-function joinQueue(p,r){ const rt=RT[rkey(r)]; rt.queue.push(p); p.room=rkey(r); p.state='toQ'; p.face=1; goTo(p,...qPos(r,rt.queue.length-1)); }
-function cure(p,r){
-  const d=DMAP[p.d], fee=Math.round(d.fee*feeMult(r.lvl)*(buffOn('fee')?1.2:1));
-  S.money+=fee; S.stats.earned+=fee; S.stats.cured++; r.n=(r.n||0)+1;
+function joinQueue(p,r){ const rt=RT[rkey(r)]; if(p.emerg){ let k=0; while(k<rt.queue.length&&rt.queue[k].emerg) k++; rt.queue.splice(k,0,p); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } else rt.queue.push(p); p.room=rkey(r); p.state='toQ'; p.face=1; goTo(p,...qPos(r,rt.queue.indexOf(p))); }
+function payCure(p,fee,where){
+  const d=DMAP[p.d];
+  S.money+=fee; S.stats.earned+=fee; S.stats.cured++;
   const first=!S.dex[d.id]; S.dex[d.id]=(S.dex[d.id]||0)+1; addRep(buffOn('rep')?2:1);
-  const c=P3(4*r.i+2.5,4*r.j+2,.9); floats.push({text:'+$'+fmt(fee),x:c.x,y:c.y,life:1.3,color:'#e09a12'});
-  if(d.litter && Math.random()<.45){ p.litterKind=d.litter; p.litterT=.6+Math.random()*2.5; }
+  floats.push({text:'+$'+fmt(fee),x:where.x,y:where.y,life:1.3,color:'#e09a12'});
+  if(p.emerg&&emerg) emerg.cured++;
+  sfx.coin(); bump('money');
+  return first;
+}
+function cure(p,r){
+  const d=DMAP[p.d], fee=Math.round(d.fee*feeMult(r.lvl)*(buffOn('fee')?1.2:1)*(has('coat')?1.15:1)*(p.emerg?1.5:1));
+  r.n=(r.n||0)+1;
+  const first=payCure(p,fee,P3(4*r.i+2.5,4*r.j+2,.9));
+  if(d.litter&&Math.random()<.45){ p.litterKind=d.litter; p.litterT=.6+Math.random()*2.5; }
   RT[rkey(r)].cur=null; RT[rkey(r)].prog=0;
-  goExit(p,'😄'); sfx.coin(); bump('money');
+  goExit(p,'😄');
   ticker(`${first?'✨ 首次治癒！':'🩹'} ${d.name}：${d.cure}`);
 }
 function movePerson(p,dt,speed){
@@ -632,98 +784,195 @@ function movePerson(p,dt,speed){
 function update(dt){
   clock+=dt;
   floats.forEach(f=>{ f.life-=dt; f.y-=dt*30; }); floats=floats.filter(f=>f.life>0);
-  patients.forEach(p=>{ if(p.sayT>0) p.sayT-=dt; });
-  if(modalOpen || !booted) return;
-  if(!buffOn('closed')){ spawnT -= dt*(buffOn('spawn')?2:1); if(spawnT<=0){ if(patients.length<maxPatients()) spawn(); spawnT=spawnInterval()*(.6+Math.random()*.8); } }
-  const sp=buffOn('speed')?1.5:1, lim=patienceLimit();
-  // 移動
+  patients.forEach(p=>{ if(p.sayT>0) p.sayT-=dt; }); if(sayStaff) sayStaff.t-=dt;
+  if(modalOpen||!booted) return;
+  S.time+=dt; if(Math.floor((S.time-dt)/YEAR)<Math.floor(S.time/YEAR)) yearEnd();
+  if(!buffOn('closed')){ spawnT-=dt*(buffOn('spawn')?2:1); if(spawnT<=0){ if(patients.length<maxPatients()) spawn(); spawnT=spawnInterval()*(.6+Math.random()*.8); } }
+  const sp=(buffOn('speed')?1.5:1)*(buffOn('slow')?.5:1)*(has('stetho')?1.2:1), lim=patienceLimit();
   patients.forEach(p=>{
-    const fx=FX[p.d]||{}, spd=fx.slow?.85:fx.zombie?1.2:1.9;
+    const fx=FX[p.d]||{}, spd=fx.slow?.85:fx.zombie?1.2:fx.back?1.3:1.9;
+    if(p.ufoLift) return;
     const arrived=movePerson(p,dt,spd);
-    if(p.path.length && p.slip<=0 && p.state!=='treat'){ for(const l of litter){ if(l.k==='jelly' && !p.slipped[l.id] && Math.hypot(l.x-p.x,l.y-p.y)<.22){ p.slipped[l.id]=1; if(Math.random()<.35){ p.slip=1; sfx.slip(); ticker('🫠 有人踩到果凍滑了一跤！快請清潔阿姨。'); } } } }
+    if(p.path.length&&p.slip<=0&&p.state!=='treat'&&!has('antislip')){ for(const l of litter){ if(l.k==='jelly'&&!p.slipped[l.id]&&Math.hypot(l.x-p.x,l.y-p.y)<.22){ p.slipped[l.id]=1; if(Math.random()<.35){ p.slip=1; S.ys.slips++; sfx.slip(); ticker('🫠 有人踩到果凍滑了一跤！'); } } } }
     if(arrived){
       if(p.state==='toQ') p.state='queue';
       else if(p.state==='toBench') p.state='bench';
       else if(p.state==='enter'){ p.state='treat'; if(RLAY[roomByKey(p.room)?.type]?.hide) p.hidden=true; }
       else if(p.state==='exit') p.gone=true;
     }
-    if(p.state==='exit' && p.litterKind){ p.litterT-=dt; if(p.litterT<=0){ const tx=Math.floor(p.x), ty=Math.floor(p.y); if(tx>=0&&ty>=0&&tx<MW&&ty<MW&&!roomKeyAt(tx,ty)&&litter.length<30){ litter.push({id:litId++,x:p.x,y:p.y,k:p.litterKind}); } p.litterKind=null; } }
+    if(fx.echo&&p.state!=='exit'&&p.sayT<=0&&Math.random()<dt*.12) talk(p,pick(ECHO));
+    if(p.state==='exit'&&p.litterKind){ p.litterT-=dt; if(p.litterT<=0){ const tx=Math.floor(p.x), ty=Math.floor(p.y); if(inside(tx,ty)&&!roomKeyAt(tx,ty)&&litter.length<30) litter.push({id:litId++,x:p.x,y:p.y,k:p.litterKind}); p.litterKind=null; } }
   });
   // 櫃台
-  if(RQ.length && !RQ[0].path.length){ recT+=dt*sp; if(recT>=.9){ recT=0; const p=RQ.shift(); RQ.forEach((q,k)=>retarget(q,RQ_POS[k])); p.wait=0; route(p); } } else recT=0;
+  if(RQ.length&&!RQ[0].path.length){ recT+=dt*sp*(has('fastdesk')?2:1); if(recT>=.9){ recT=0; const p=RQ.shift(); RQ.forEach((q,k)=>retarget(q,RQ_POS[k])); p.wait=0; route(p); } } else recT=0;
   // 診間
-  S.rooms.forEach(r=>{ const k=rkey(r), rt=RT[k]; if(!rt) return;
-    if(!rt.cur && rt.queue.length){ const p=rt.queue[0]; if(p.state==='queue' && !p.path.length){ rt.queue.shift(); rt.cur=p; p.state='enter'; p.wait=0; goTo(p,...roomSpot(r,'pat')); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } }
-    if(rt.cur && rt.cur.state==='treat'){ rt.prog+=dt*sp/timeOf(r); if(rt.prog>=1){ const p=rt.cur; p.x=4*r.i+3.5; p.y=4*r.j+2.5; p.hidden=false; cure(p,r); } }
+  S.rooms.forEach(r=>{ const k=rkey(r), rt=RT[k]; if(!rt||ROOMS[r.type].noPatients) return;
+    if(!rt.cur&&rt.queue.length){ const p=rt.queue[0]; if(p.state==='queue'&&!p.path.length){ rt.queue.shift(); rt.cur=p; p.state='enter'; p.wait=0; goTo(p,...roomSpot(r,'pat')); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } }
+    if(rt.cur&&rt.cur.state==='treat'){ rt.prog+=dt*sp/timeOf(r); if(rt.prog>=1){ const p=rt.cur; p.x=4*r.i+3.5; p.y=4*r.j+2.5; p.hidden=false; cure(p,r); } }
   });
   // 長椅 → 診間
-  patients.filter(p=>p.state==='bench'||p.state==='toBench').sort((a,b)=>b.wait-a.wait).forEach(p=>{
+  patients.filter(p=>p.state==='bench'||p.state==='toBench').sort((a,b)=>(b.emerg?1e4:0)+b.wait-(a.emerg?1e4:0)-a.wait).forEach(p=>{
     const r=roomByKey(p.room); if(!r){ detach(p); route(p); return; }
     if(RT[p.room].queue.length<QMAX){ seats[p.seat]=null; p.seat=-1; joinQueue(p,r); }
   });
-  // 耐心
+  // 耐心、飲料
   patients.forEach(p=>{
-    if(p.state==='recq'||p.state==='queue'||p.state==='bench'){ if(!p.path.length) p.wait+=dt; if(p.wait>lim) lose(p,'等太久，氣噗噗地走了'); }
+    const L=lim*(p.emerg?2:1);
+    if(p.state==='recq'||p.state==='queue'||p.state==='bench'){ if(!p.path.length) p.wait+=dt; if(p.wait>L) lose(p,'等太久，氣噗噗地走了'); }
     else if(p.state==='confused'){ p.wait+=dt; if(p.wait>3.5) lose(p,'找不到能治的科別，默默離開了'); }
-    if(S.lobby.vend && !p.drank && (p.state==='bench'||p.state==='recq') && Math.random()<dt*.025){ p.drank=1; S.money+=8; S.stats.earned+=8; const c=P3(11.75,9.2,.9); floats.push({text:'+$8',x:c.x,y:c.y,life:1,color:'#e2574c'}); if(Math.random()<.5){ p.litterKind=p.litterKind||'can'; p.litterT=1+Math.random()*2; } }
+    if(S.lobby.vend&&!p.drank&&(p.state==='bench'||p.state==='recq')&&Math.random()<dt*.025){ p.drank=1; const m=has('soda')?16:8; S.money+=m; S.stats.earned+=m; const c=P3(15.75,13.2,.9); floats.push({text:'+$'+m,x:c.x,y:c.y,life:1,color:'#e2574c'}); if(Math.random()<.5){ p.litterKind=p.litterKind||'can'; p.litterT=1+Math.random()*2; } }
   });
   patients=patients.filter(p=>!p.gone);
-  updateJanitors(dt);
-  if(litter.length>=6 && !dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊好髒，病人開始不耐煩了…'); }
+  updateJanitors(dt); updateDucks(dt); updateUfo(dt); updateEmergency(dt); updateLab(dt);
+  if(litter.length>=6&&!dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊好髒，病人開始不耐煩了…'); }
   if(litter.length<3) dirtyWarned=false;
+  S.ys.cleanSum+=cleanPct()*dt; S.ys.cleanN+=dt;
   eventT-=dt; if(eventT<=0){ eventT=70+Math.random()*50; if(S.stats.cured>=3) showEvent(); }
   flavorT-=dt; if(flavorT<=0){ flavorT=22+Math.random()*20; ticker(pick(FLAVOR)); }
+  goalT-=dt; if(goalT<=0){ goalT=1; checkGoals(); }
   checkProgress();
 }
-function syncJanitors(reset){
-  if(reset) jans=[];
-  while(jans.length<S.lobby.jan) jans.push({id:jans.length+1,x:10.5+Math.random()*.6,y:11.4,path:[],state:'idle',t:Math.random()*3,phase:0,target:null});
-}
+function syncJanitors(reset){ if(reset) jans=[]; while(jans.length<S.lobby.jan) jans.push({id:jans.length+1,x:14.5+Math.random()*.6,y:15.4,path:[],state:'idle',t:Math.random()*3,phase:0,target:null}); }
 function updateJanitors(dt){
+  const sp=has('turbomop')?2:1;
   jans.forEach(j=>{
-    if(j.state==='clean'){ j.t-=dt; if(j.t<=0){ const k=litter.indexOf(j.target); if(k>=0) litter.splice(k,1); j.target=null; j.state='idle'; j.t=.5; } return; }
-    if(j.state==='go'){ if(!litter.includes(j.target)){ j.state='idle'; j.path=[]; return; } if(movePerson(j,dt,1.7)||(!j.path.length)){ j.state='clean'; j.t=1.1; } return; }
+    if(j.state==='clean'){ j.t-=dt*sp; if(j.t<=0){ const k=litter.indexOf(j.target); if(k>=0) litter.splice(k,1); j.target=null; j.state='idle'; j.t=.5; } return; }
+    if(j.state==='go'){ if(!litter.includes(j.target)){ j.state='idle'; j.path=[]; return; } if(movePerson(j,dt,1.7*sp)||!j.path.length){ j.state='clean'; j.t=1.1; } return; }
     j.t-=dt; movePerson(j,dt,1.2);
-    const taken=new Set(jans.map(o=>o.target).filter(Boolean));
-    const cand=litter.filter(l=>!taken.has(l));
+    const taken=new Set(jans.map(o=>o.target).filter(Boolean)), cand=litter.filter(l=>!taken.has(l));
     if(cand.length){ cand.sort((a,b)=>Math.hypot(a.x-j.x,a.y-j.y)-Math.hypot(b.x-j.x,b.y-j.y)); j.target=cand[0]; j.state='go'; goTo(j,j.target.x,j.target.y); return; }
-    if(j.t<=0 && !j.path.length){ j.t=4+Math.random()*5; const spots=[[10.5,11.5],[8.5,10.5],[11.5,8.5],[6.5,8.5],[8.5,6.5],[12.5,8.5]]; const s=pick(spots); goTo(j,s[0]+Math.random()*.4,s[1]+Math.random()*.4); }
+    if(j.t<=0&&!j.path.length){ j.t=4+Math.random()*5; const s=randomCorridor(); goTo(j,s[0],s[1]); }
   });
+}
+// 亂入的鴨子
+function spawnDuck(){ const d={x:SPAWN.x,y:SPAWN.y+(Math.random()-.5)*.3,path:[],phase:0,legs:2+Math.floor(Math.random()*2)}; const s=randomCorridor(); goTo(d,s[0],s[1]); ducks.push(d); }
+function updateDucks(dt){
+  duckT-=dt; if(duckT<=0){ duckT=70+Math.random()*80; if(S.stats.cured>=5){ spawnDuck(); if(Math.random()<.5) ticker(pick(['🦆 一隻鴨子走進來了。沒有人知道為什麼。','🦆 有鴨子在走廊散步，櫃台小姐假裝沒看到。','🦆 鴨子又來了，牠好像在找什麼。'])); } }
+  ducks.forEach(d=>{ if(movePerson(d,dt,1.4)){ if(d.legs>0){ d.legs--; const s=randomCorridor(); goTo(d,s[0],s[1]); } else if(!d.leaving){ d.leaving=1; goTo(d,17.5,14.5); d.path.push({x:SPAWN.x,y:SPAWN.y}); } else d.gone=1; } });
+  ducks=ducks.filter(d=>!d.gone);
+}
+// UFO（研發：外星合作計畫）
+function updateUfo(dt){
+  if(!has('ufo')) return;
+  if(!ufo){ ufoT-=dt; if(ufoT<=0){ ufoT=80+Math.random()*50; const c=patients.filter(p=>(p.state==='queue'||p.state==='bench'||p.state==='recq')&&!p.path.length&&!p.emerg); if(c.length){ ufo={p:pick(c),t:0}; sfx.ufo(); } } return; }
+  ufo.t+=dt; const p=ufo.p; if(p.gone){ ufo=null; return; }
+  if(ufo.t>1) p.ufoLift=Math.min(2,(ufo.t-1)*1.2), p.lift=p.ufoLift;
+  if(ufo.t>3){ detach(p); const d=DMAP[p.d]; const c=iso(p.x,p.y); payCure(p,d.fee,{x:c.x,y:c.y-tw*2}); p.gone=true; ticker(`🛸 外星人順手治好了一位${d.name}患者，還在留言板留下五顆星。`); ufo=null; }
+}
+// 研發室
+function updateLab(dt){
+  const rate=labRate(); if(!rate) return;
+  const before=S.rp; S.rp+=rate*dt;
+  labBoomT-=dt; if(labBoomT<=0){ labBoomT=25+Math.random()*30; const labs=S.rooms.filter(r=>r.type==='lab'); const r=pick(labs); const c=P3(4*r.i+2.5,4*r.j+2,.8); floats.push({text:'💥',x:c.x,y:c.y,life:1,color:'#e2574c'}); S.rp+=5; sfx.boom(); ticker(pick(LAB_LINES)); }
+  if(Math.floor(before/20)!==Math.floor(S.rp/20)) updateLabDot();
+}
+function updateLabDot(){ const can=RESEARCH.some(x=>!has(x.id)&&S.rp>=x.cost); $('labDot').classList.toggle('hidden',!can); }
+// 急診團
+function updateEmergency(dt){
+  if(bus>0) bus-=dt;
+  if(!emerg){ emergT-=dt; if(emergT<=0){ emergT=160+Math.random()*120; startEmergency(); } return; }
+  emerg.t-=dt;
+  if(emerg.toSpawn>0){ emerg.spT-=dt; if(emerg.spT<=0){ emerg.spT=.7; emerg.toSpawn--; const d=DMAP[emerg.d]; const p=newPatient(d,18.4+Math.random()*.8,14.3+Math.random()*.4); p.emerg=1; patients.push(p); route(p); } }
+  if(emerg.t<=0||emerg.cured+emerg.lost>=emerg.n) endEmergency();
+}
+function startEmergency(){
+  const rooms=treatRooms(); if(rooms.length<1||S.stats.cured<8) return;
+  const cand=pool().filter(d=>rooms.some(r=>r.type===d.room)); if(!cand.length) return;
+  const d=pick(cand), n=Math.min(8,3+Math.floor(S.rep/60)), T=Math.round(50+n*12);
+  sfx.siren();
+  queueModal({icon:'🚨',title:'急診團到院！',body:`<p>一台遊覽車載來 <b>${n} 位「${d.name}」</b>患者。<br>${T} 秒內治好大部分，有額外獎金！</p>`,buttons:[
+    {label:'全部收下！',fn:()=>{ emerg={d:d.id,n,cured:0,lost:0,t:T,toSpawn:n,spT:.5}; bus=6.5; discover(d); }},
+    {label:'請他們去別家',ghost:1,fn:()=>{ ticker('🚌 遊覽車開走了，司機看起來有點失望。'); }}]});
+}
+function endEmergency(){
+  const e=emerg; emerg=null;
+  patients.forEach(p=>{ if(p.emerg) p.emerg=0; });
+  const need=Math.ceil(e.n*.75), win=e.cured>=need;
+  if(win){ const m=big(90*e.n), rp=e.n; S.money+=m; S.stats.earned+=m; addRep(rp); S.stats.emergWin++; S.ys.emerg++; sfx.fan();
+    queueModal({icon:'🏆',title:'急診任務成功！',body:`<p>治好 ${e.cured} / ${e.n} 位。遊覽車司機感動到按了三聲喇叭。</p><div class="note" style="text-align:center"><span class="delta pos">💰 +${fmt(m)}　⭐ +${rp}</span></div>`,buttons:[{label:'讚啦'}]}); }
+  else { addRep(-2); sfx.bad(); queueModal({icon:'😵',title:'急診沒趕上…',body:`<p>只治好 ${e.cured} / ${e.n} 位。剩下的人搭遊覽車去下一家了。</p><div class="note" style="text-align:center"><span class="delta neg">⭐ -2</span></div>`,buttons:[{label:'下次加油'}]}); }
 }
 function checkProgress(){
   const tt=titleOf(S.rep), ni=TITLES.findIndex(x=>x[1]===tt), oi=TITLES.findIndex(x=>x[1]===lastTitle);
-  if(lastTitle && ni>oi){ sfx.fan(); queueModal({icon:'🎉',title:'診所升格！',body:`<p>恭喜院長，診所升格為</p><h3 style="margin:2px 0 8px">${tt}</h3><p>病人會來得更頻繁，也會出現更怪的病。</p>`,buttons:[{label:'太好了'}]}); }
+  if(lastTitle&&ni>oi){ sfx.fan(); queueModal({icon:'🎉',title:'診所升格！',body:`<p>恭喜院長，診所升格為</p><h3 style="margin:2px 0 8px">${tt}</h3>`,buttons:[{label:'太好了'}]}); }
   lastTitle=tt;
-  Object.entries(ROOMS).forEach(([k,R])=>{ if(!S.unl[k] && S.rep>=R.rep){ S.unl[k]=1; ticker(`🔓 新科別解鎖：${R.icon} ${R.name}，快去建造吧！`); sfx.pop(); } });
+  Object.entries(ROOMS).forEach(([k,R])=>{ if(!S.unl[k]&&S.rep>=R.rep&&(!R.needs||has(R.needs))){ S.unl[k]=1; toast(R.icon,'新科別：'+R.name,'可以建造了'); } });
+  for(const k in WINGS){ const w=WINGS[k], key='land_'+k; if(!S.land[k]&&!S.unl[key]&&S.rep>=w.rep&&(!w.needs||w.needs.every(n=>S.land[n]))){ S.unl[key]=1; toast('🔓',w.name+'可以擴建了','點地圖上的 🔒 牌子'); } }
 }
 
-// ================= 建造 =================
+// ================= 年度目標與頒獎 =================
+function makeGoals(){
+  const y=yearNo(), dexN=Object.keys(S.dex).length, tr=treatRooms().length, out=[];
+  const C=[
+    {k:'cure',n:40+25*(y-1),t:'治好 {n} 位病人'},
+    {k:'earn',n:Math.round(2500*Math.pow(1.8,y-1)/100)*100,t:'今年賺 ${n}'},
+    {k:'rep',n:S.rep+20+5*y,t:'聲望達到 {n}'},
+    {k:'clean',n:5,t:'親手打掃 {n} 次'},
+    {k:'dex',n:Math.min(DISEASES.length,dexN+2),t:'治好 {n} 種不同的怪病'}
+  ];
+  if(tr<openSlots().length) C.push({k:'rooms',n:tr+1,t:'擁有 {n} 間看診科別'});
+  if(tr>=1&&S.stats.cured>=8) C.push({k:'emerg',n:1,t:'完成 {n} 次急診任務'});
+  while(out.length<3&&C.length){ const g=C.splice(Math.floor(Math.random()*C.length),1)[0]; g.base={cure:S.stats.cured,earn:S.stats.earned,clean:S.stats.cleans,emerg:S.stats.emergWin}[g.k]||0; g.done=0; out.push(g); }
+  return out;
+}
+function goalProg(g){
+  switch(g.k){ case 'cure': return S.stats.cured-g.base; case 'earn': return S.stats.earned-g.base; case 'rep': return S.rep; case 'clean': return S.stats.cleans-g.base;
+    case 'dex': return Object.keys(S.dex).length; case 'rooms': return treatRooms().length; case 'emerg': return S.stats.emergWin-g.base; } return 0;
+}
+const goalText = g => g.t.replace('{n}',g.k==='earn'?fmt(g.n):g.n);
+function checkGoals(){
+  (S.goals||[]).forEach(g=>{ if(!g.done&&goalProg(g)>=g.n){ g.done=1; const m=big(250); S.money+=m; addRep(3); sfx.fan(); toast('🎯','目標達成：'+goalText(g),'💰 +'+fmt(m)+'　⭐ +3'); } });
+  const d=(S.goals||[]).filter(g=>g.done).length; $('dateChip').textContent=`📅 第${yearNo()-0}年 ${monthNo()}月　🎯 ${d}/${(S.goals||[]).length}`;
+}
+function yearEnd(){
+  const y=yearNo()-1, ys=S.ys, cured=S.stats.cured-ys.cured0, earned=S.stats.earned-ys.earned0, lost=S.stats.lost-ys.lost0;
+  const avgClean=ys.cleanN?ys.cleanSum/ys.cleanN:100, dexN=Object.keys(S.dex).length, aw=[];
+  if(avgClean>=90&&cured>=20) aw.push(['clean']);
+  if(ys.slips>=3) aw.push(['slips',ys.slips]);
+  if(ys.cleans>=10) aw.push(['cleans',ys.cleans]);
+  if(earned>=3000*Math.pow(1.8,y-1)) aw.push(['money']);
+  if(cured>=20&&lost<=cured*.05) aw.push(['happy']);
+  if(ys.emerg>=2) aw.push(['emerg',ys.emerg]);
+  if(dexN>=10) aw.push(['dex',dexN]);
+  if(ys.ducks>=3) aw.push(['ducks',ys.ducks]);
+  if(!aw.length) aw.push(['try']);
+  const pickA=aw.sort(()=>Math.random()-.5).slice(0,3);
+  let m=0, rp=0;
+  const html=pickA.map(([k,n])=>{ const A=AWARDS[k], mm=k==='try'?big(50):big(200), r=k==='try'?0:2; m+=mm; rp+=r; return `<div class="award"><div class="ai">${A.icon}</div><div><b>${A.name}</b><span>${A.txt.replace('{n}',n)}</span></div></div>`; }).join('');
+  S.money+=m; S.stats.earned+=m; addRep(rp);
+  const gd=(S.goals||[]).filter(g=>g.done).length;
+  sfx.fan();
+  queueModal({icon:'🎊',title:`第 ${y} 年 年度評鑑`,body:`<p>治好 ${cured} 人・收入 $${fmt(earned)}・目標達成 ${gd}/${(S.goals||[]).length}</p>${html}<div class="note" style="text-align:center"><span class="delta pos">💰 +${fmt(m)}${rp?'　⭐ +'+rp:''}</span></div>`,buttons:[{label:'迎接新的一年',fn:()=>{ S.ys=newYearStats(); S.goals=makeGoals(); toast('📅',`第 ${yearNo()} 年開始！`,'新的年度目標已更新'); saveLocal(); }}]});
+}
+
+// ================= 建造與擴建 =================
 function build(type,i,j){
   const R=ROOMS[type];
-  if(roomAt(i,j)) return false;
+  if(roomAt(i,j)||!slotOpen(i,j)) return false;
   if(S.money<R.cost){ ticker('💸 錢不夠，再多治幾個病人吧。'); sfx.bad(); return false; }
-  // 空地上若有人（極少見）先請他們離開
   S.money-=R.cost; const r={i,j,type,lvl:1,n:0}; S.rooms.push(r); RT[rkey(r)]={queue:[],cur:null,prog:0};
   litter=litter.filter(l=>{ const s=slotOf(Math.floor(l.x),Math.floor(l.y)); return !(s&&s.i===i&&s.j===j); });
   sfx.build(); bump('money'); ticker(`🏗️ ${R.icon} ${R.name}開張了！`); if(S.tut<2) S.tut=2;
   saveLocal(); return true;
 }
 function demolish(r){
-  const k=rkey(r), rt=RT[k];
-  const affected=patients.filter(p=>p.room===k);
+  const k=rkey(r), affected=patients.filter(p=>p.room===k);
   S.rooms=S.rooms.filter(q=>q!==r); delete RT[k];
   affected.forEach(p=>{ if(p.seat>=0){ seats[p.seat]=null; p.seat=-1; } p.hidden=false; p.x=4*r.i+4.5; p.y=4*r.j+2.5; p.room=null; route(p); });
   const refund=Math.round(ROOMS[r.type].cost*.5); S.money+=refund;
   ticker(`🧱 ${ROOMS[r.type].name}拆掉了，回收 $${fmt(refund)}。`); saveLocal();
 }
-function setPlacing(type){
-  placing=type; const b=$('banner');
-  if(type){ $('bannerTxt').textContent=`點一塊發光的空地，放置 ${ROOMS[type].icon} ${ROOMS[type].name}`; b.classList.add('show'); }
-  else b.classList.remove('show');
+function buyWing(k){
+  const w=WINGS[k]; if(S.land[k]||S.money<w.cost||S.rep<w.rep||(w.needs&&!w.needs.every(n=>S.land[n]))) return;
+  S.money-=w.cost; S.land[k]=1; sfx.fan(); bump('money');
+  toast('🏗️',w.name+'擴建完成！','多了 '+w.slots.length+' 塊空地');
+  ticker(pick(['🚧 工人們挖出一個古董馬桶，決定把它留作紀念。','🚧 擴建完成。隔壁阿伯說他會想念這塊地。','🚧 新的土地！鴨子們已經先進去探勘了。']));
+  saveLocal(); refreshSheet();
 }
+function setPlacing(type){ placing=type; const b=$('banner'); if(type){ $('bannerTxt').textContent=`點一塊發光的空地，放置 ${ROOMS[type].icon} ${ROOMS[type].name}`; b.classList.add('show'); } else b.classList.remove('show'); }
 
 // ================= 觸控 =================
-const ptrs=new Map(); let gest=null;
+const ptrs=new Map(); let gest=null, sayStaff=null;
 cv.addEventListener('pointerdown',e=>{
   ensureAudio(); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -733,39 +982,39 @@ cv.addEventListener('pointerdown',e=>{
 cv.addEventListener('pointermove',e=>{
   if(!ptrs.has(e.pointerId)||!gest) return;
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(ptrs.size===1 && !gest.pinch){
+  if(ptrs.size===1&&!gest.pinch){
     if(Math.hypot(e.clientX-gest.sx,e.clientY-gest.sy)>8) gest.moved=true;
-    if(gest.moved){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly; const a=dx/(tw/2), b=dy/(th/2); camX-=(a+b)/2; camY-=(b-a)/2; clampCam(); }
+    if(gest.moved){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly, a=dx/(tw/2), b=dy/(th/2); camX-=(a+b)/2; camY-=(b-a)/2; clampCam(); }
     gest.lx=e.clientX; gest.ly=e.clientY;
-  } else if(ptrs.size===2){
-    const [a,b]=[...ptrs.values()], d=Math.hypot(a.x-b.x,a.y-b.y), r=cv.getBoundingClientRect();
-    if(gest.pinch){ zoomAt(d/gest.pinch,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); }
-    gest.pinch=d;
-  }
+  } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()], d=Math.hypot(a.x-b.x,a.y-b.y), r=cv.getBoundingClientRect(); if(gest.pinch) zoomAt(d/gest.pinch,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); gest.pinch=d; }
 });
 function endPtr(e){
   if(!ptrs.has(e.pointerId)) return;
   ptrs.delete(e.pointerId);
-  if(gest && !gest.moved && !gest.pinch && ptrs.size===0){ const r=cv.getBoundingClientRect(); tap(e.clientX-r.left,e.clientY-r.top); }
+  if(gest&&!gest.moved&&!gest.pinch&&ptrs.size===0){ const r=cv.getBoundingClientRect(); tap(e.clientX-r.left,e.clientY-r.top); }
   if(ptrs.size===0) gest=null; else if(ptrs.size===1){ const [p]=[...ptrs.values()]; gest={sx:p.x,sy:p.y,lx:p.x,ly:p.y,moved:true}; }
 }
 cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);
 cv.addEventListener('wheel',e=>{ e.preventDefault(); const r=cv.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX-r.left,e.clientY-r.top); },{passive:false});
 function tap(sx,sy){
+  const w=toWorld(sx,sy);
   if(!placing){
+    // 鴨子
+    const dk=ducks.find(d=>{ const c=iso(d.x,d.y); return Math.hypot(sx-c.x,sy-(c.y-tw*.15))<tw*.22; });
+    if(dk){ sfx.quack(); S.money+=1; S.ys.ducks++; const c=iso(dk.x,dk.y); floats.push({text:'呱！+$1',x:c.x,y:c.y-tw*.4,life:1,color:'#e09a12'}); return; }
     let hit=null, hd=-1;
-    patients.forEach(p=>{ if(p.hidden) return; const c=iso(p.x,p.y); if(Math.abs(sx-c.x)<tw*.2 && sy<c.y+tw*.05 && sy>c.y-tw*1.0){ if(p.x+p.y>hd){ hd=p.x+p.y; hit=p; } } });
-    if(hit){ talk(hit, Math.random()<.4 ? DMAP[hit.d].desc : null); sfx.pop(); return; }
-    const w=toWorld(sx,sy);
+    patients.forEach(p=>{ if(p.hidden) return; const c=iso(p.x,p.y); if(Math.abs(sx-c.x)<tw*.2&&sy<c.y+tw*.05&&sy>c.y-tw*1.0&&p.x+p.y>hd){ hd=p.x+p.y; hit=p; } });
+    if(hit){ talk(hit,(FX[hit.d]||{}).echo?pick(ECHO):Math.random()<.4?DMAP[hit.d].desc:null); sfx.pop(); return; }
     const l=litter.find(l=>Math.hypot(l.x-w.x,l.y-w.y)<.4);
-    if(l){ litter.splice(litter.indexOf(l),1); sfx.pop(); if(S.tut===2) S.tut=3; const c=iso(l.x,l.y); floats.push({text:'✨',x:c.x,y:c.y-tw*.2,life:.8,color:'#3fae7a'}); if(Math.random()<.3) ticker(pick(['🧹 院長親自打掃，大家都看到了。','🧹 院長默默把地上的東西撿起來，好有風範。','🧹 打掃完，地板亮到可以照出你的黑眼圈。'])); return; }
+    if(l){ litter.splice(litter.indexOf(l),1); S.stats.cleans++; S.ys.cleans++; sfx.pop(); if(S.tut===2) S.tut=3; const c=iso(l.x,l.y); floats.push({text:'✨',x:c.x,y:c.y-tw*.2,life:.8,color:'#3fae7a'}); if(Math.random()<.3) ticker(pick(['🧹 院長親自打掃，大家都看到了。','🧹 院長默默把地上的東西撿起來，好有風範。','🧹 打掃完，地板亮到可以照出你的黑眼圈。'])); return; }
   }
-  const w=toWorld(sx,sy), tx=Math.floor(w.x), ty=Math.floor(w.y), s=slotOf(tx,ty);
+  const tx=Math.floor(w.x), ty=Math.floor(w.y), s=slotOf(tx,ty);
   if(!s) return;
+  if(!slotOpen(s.i,s.j)){ if(!placing) openLand(); return; }
   if(isLobby(s)){ if(!placing) openLobby(); return; }
   const r=roomAt(s.i,s.j);
   if(placing){ if(r){ ticker('這裡已經有房間了，換一塊空地吧。'); return; } if(build(placing,s.i,s.j)) setPlacing(null); return; }
-  if(r) openRoom(r); else openBuild({i:s.i,j:s.j});
+  if(r){ const d=roomSpot(r,'doc'); sayStaff={x:d[0],y:d[1],say:pick(STAFF_SAYS),t:2.5}; openRoom(r); } else openBuild({i:s.i,j:s.j});
 }
 
 // ================= UI =================
@@ -777,39 +1026,48 @@ function hud(){
   if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
   if(rp!==lastRep){ $('rep').textContent='⭐ '+rp; $('title').textContent=titleOf(rp); lastRep=rp; }
   if(cl!==lastClean){ $('clean').textContent='✨ '+cl+'%'; $('clean').classList.toggle('warn',cl<70); lastClean=cl; }
-  const now=Date.now(), bs=Object.entries(S.buffs).filter(([k,v])=>v>now).map(([k,v])=>`<span class="buff">${BUFFNAME[k]} ${Math.ceil((v-now)/1000)}s</span>`).join('');
+  const now=Date.now(); let bs=Object.entries(S.buffs).filter(([k,v])=>v>now&&BUFFNAME[k]).map(([k,v])=>`<span class="buff">${BUFFNAME[k]} ${Math.ceil((v-now)/1000)}s</span>`).join('');
+  if(emerg) bs=`<span class="buff em">🚨 ${DMAP[emerg.d].icon} ${emerg.cured}/${emerg.n}　${Math.ceil(emerg.t)}s</span>`+bs;
   if($('buffs').innerHTML!==bs) $('buffs').innerHTML=bs;
 }
 let tickTimer=null;
 function ticker(msg){ const el=$('ticker'); el.textContent=msg; el.classList.add('flash'); clearTimeout(tickTimer); tickTimer=setTimeout(()=>el.classList.remove('flash'),600); }
+function toast(icon,title,sub){
+  const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icon}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
+  $('toast').appendChild(el); sfx.pop();
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
+}
 function openSheet(fn){ sheetFn=fn; $('sheetBody').innerHTML=fn(); $('sheetWrap').classList.remove('hidden'); }
-function refreshSheet(){ if(sheetFn && !$('sheetWrap').classList.contains('hidden')) $('sheetBody').innerHTML=sheetFn(); }
+function refreshSheet(){ if(sheetFn&&!$('sheetWrap').classList.contains('hidden')) $('sheetBody').innerHTML=sheetFn(); }
 function closeSheet(){ $('sheetWrap').classList.add('hidden'); sheetFn=null; }
 $('sheetBg').onclick=closeSheet;
 $('bannerX').onclick=()=>setPlacing(null);
 $('navBuild').onclick=()=>{ ensureAudio(); openBuild(null); };
 $('navLobby').onclick=()=>{ ensureAudio(); openLobby(); };
+$('navLab').onclick=()=>{ ensureAudio(); openSheet(labHTML); };
 $('navDex').onclick=()=>{ ensureAudio(); openSheet(dexHTML); };
 $('navOffice').onclick=()=>{ ensureAudio(); openOffice(); };
+$('dateChip').onclick=()=>{ ensureAudio(); openSheet(goalsHTML); };
 $('zIn').onclick=()=>zoomAt(1.25,W/2,H/2);
 $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
-(function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs && !isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
-$('zHome').onclick=()=>{ zoom=1; applyZoom(); camX=7.2; camY=7; };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby}[b.dataset.act]; if(f) f(b.dataset.arg); });
+(function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs&&!isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
+$('zHome').onclick=()=>{ zoom=1; applyZoom(); camX=HOME.x; camY=HOME.y; };
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 function treatsChips(type){ return DISEASES.filter(d=>d.room===type).map(d=>`<span class="chip">${S.dex[d.id]||S.seen[d.id]?d.icon+' '+d.name:'❔ ???'}</span>`).join(''); }
 let buildTarget=null;
 function openBuild(slot){ buildTarget=slot; openSheet(buildHTML); }
 function buildHTML(){
-  const free=SLOT_ORDER.filter(([i,j])=>!roomAt(i,j)).length;
+  const free=openSlots().filter(([i,j])=>!roomAt(i,j)).length;
   const items=Object.entries(ROOMS).map(([k,R])=>{
-    const locked=S.rep<R.rep, cant=S.money<R.cost||(!buildTarget&&!free);
+    const lockRep=S.rep<R.rep, lockRes=R.needs&&!has(R.needs), locked=lockRep||lockRes, cant=S.money<R.cost||(!buildTarget&&!free);
+    const lockTxt=lockRep?`🔒<br>聲望 ${R.rep}`:`🔒<br>需研發`;
     return `<div class="item ${locked?'locked':''}"><div class="ic" style="background:${shade(R.color,.6)}">${R.icon}</div>
-      <div class="txt"><div class="nm">${R.name}</div><div class="ds">${R.desc}</div><div class="chips">${treatsChips(k)}</div></div>
-      ${locked?`<div class="ds" style="text-align:right">🔒<br>聲望 ${R.rep}</div>`:`<button class="btn" ${cant?'disabled':''} data-act="pickBuild" data-arg="${k}">$${fmt(R.cost)}</button>`}</div>`;
+      <div class="txt"><div class="nm">${R.name}</div><div class="ds">${R.desc}</div>${R.noPatients?'':`<div class="chips">${treatsChips(k)}</div>`}</div>
+      ${locked?`<div class="ds" style="text-align:right">${lockTxt}</div>`:`<button class="btn" ${cant?'disabled':''} data-act="pickBuild" data-arg="${k}">$${fmt(R.cost)}</button>`}</div>`;
   }).join('');
-  return `<h2>🏗️ 建造新科別</h2><div class="sub">${buildTarget?'蓋在你點的這塊空地上。':(free?'選好之後，點地圖上發光的空地放置。':'空地都蓋滿了！可以拆掉舊的換新科別。')}　現有 💰 ${fmt(S.money)}・空地 ${free} 塊</div>${items}`;
+  return `<h2>🏗️ 建造</h2><div class="sub">💰 ${fmt(S.money)}・空地 ${free} 塊</div>${items}<button class="btn ghost" style="width:100%;margin-top:6px" data-act="openLand">🚧 擴建土地</button>`;
 }
 function pickBuild(k){ if(buildTarget){ if(build(k,buildTarget.i,buildTarget.j)) closeSheet(); else refreshSheet(); } else { closeSheet(); setPlacing(k); } }
 let roomSel=null, confirmDel=false;
@@ -817,33 +1075,56 @@ function openRoom(r){ roomSel=r; confirmDel=false; openSheet(roomHTML); }
 function roomHTML(){
   const r=roomSel; if(!r||!S.rooms.includes(r)) return '<div class="sub">房間不見了。</div>';
   const R=ROOMS[r.type], max=r.lvl>=MAXLV, cost=upCost(r), rt=RT[rkey(r)];
-  return `<h2>${R.icon} ${R.name} <span style="font-size:14px;color:var(--soft)">Lv${r.lvl}</span></h2><div class="sub">${R.desc}</div>
-    <div class="kv"><div>每位診療時間<b>${timeOf(r).toFixed(1)} 秒</b></div><div>收費倍率<b>x${feeMult(r.lvl).toFixed(2)}</b></div>
-    <div>累計治好<b>${r.n||0} 人</b></div><div>門口排隊<b>${rt?rt.queue.length:0} 人</b></div></div>
-    <div class="ds" style="font-size:13px;color:var(--soft)">可以治療：</div><div class="chips">${treatsChips(r.type)}</div>
+  const kv=R.noPatients?`<div>研發點產量<b>${(.5*r.lvl).toFixed(1)} / 秒</b></div><div>目前研發點<b>${Math.floor(S.rp)}</b></div>`
+    :`<div>每位診療時間<b>${timeOf(r).toFixed(1)} 秒</b></div><div>收費倍率<b>x${feeMult(r.lvl).toFixed(2)}</b></div><div>累計治好<b>${r.n||0} 人</b></div><div>門口排隊<b>${rt?rt.queue.length:0} 人</b></div>`;
+  return `<h2>${R.icon} ${R.name} <span style="font-size:14px;color:var(--soft)">Lv${r.lvl}</span></h2><div class="sub">${R.desc}</div><div class="kv">${kv}</div>
+    ${R.noPatients?'':`<div class="chips">${treatsChips(r.type)}</div>`}
     <div class="row"><button class="btn" ${max||S.money<cost?'disabled':''} data-act="upgrade">${max?'已達最高等級':`升級 $${fmt(cost)}`}</button></div>
     <div class="row"><button class="btn ${confirmDel?'danger':'ghost'}" data-act="askDel">${confirmDel?`確定拆除？回收 $${fmt(R.cost*.5)}`:'拆除這間'}</button></div>`;
 }
-function upgrade(){ const r=roomSel, c=upCost(r); if(r.lvl>=MAXLV||S.money<c) return; S.money-=c; r.lvl++; sfx.build(); bump('money'); ticker(`⬆️ ${ROOMS[r.type].name}升到 Lv${r.lvl}，醫生換了一件更亮的白袍。`); saveLocal(); refreshSheet(); }
+function upgrade(){ const r=roomSel, c=upCost(r); if(r.lvl>=MAXLV||S.money<c) return; S.money-=c; r.lvl++; sfx.build(); bump('money'); ticker(`⬆️ ${ROOMS[r.type].name}升到 Lv${r.lvl}。`); saveLocal(); refreshSheet(); }
 function askDel(){ if(!confirmDel){ confirmDel=true; refreshSheet(); return; } demolish(roomSel); closeSheet(); }
 function openLobby(){ openSheet(lobbyHTML); }
 function lobbyHTML(){
   const items=Object.entries(LOBBY_UP).map(([k,U])=>{
-    const lv=S.lobby[k], max=lv>=U.max, cost=U.cost[k==='bench'?lv:lv]||0;
-    const lvTxt = k==='vend' ? (lv?'已設置':'未設置') : k==='bench' ? `${lv*3} 個座位` : `${lv} / ${U.max}`;
+    const lv=S.lobby[k], max=lv>=U.max, cost=U.cost[lv]||0;
+    const lvTxt=k==='vend'?(lv?'已設置':'未設置'):k==='bench'?`${lv*3} 個座位`:`${lv} / ${U.max}`;
     return `<div class="item"><div class="ic" style="background:#eef5fd">${U.icon}</div><div class="txt"><div class="nm">${U.name}　<span style="font-size:12px;color:var(--soft)">${lvTxt}</span></div><div class="ds">${U.desc}</div></div>
       <button class="btn" ${max||S.money<cost?'disabled':''} data-act="buyLobby" data-arg="${k}">${max?'已滿':'$'+fmt(cost)}</button></div>`;
   }).join('');
-  return `<h2>🛋️ 大廳與走廊</h2><div class="sub">整潔度 ${cleanPct()}%</div>${items}`;
+  return `<h2>🛋️ 大廳</h2><div class="sub">整潔度 ${cleanPct()}%</div>${items}`;
 }
 function buyLobby(k){
   const U=LOBBY_UP[k], lv=S.lobby[k]; if(lv>=U.max) return; const cost=U.cost[lv]; if(S.money<cost) return;
   S.money-=cost; S.lobby[k]=lv+1; sfx.build(); bump('money');
-  if(k==='jan'){ syncJanitors(); ticker('🧹 新的清潔阿姨報到！她說她什麼都見過。'); }
-  else if(k==='bench') ticker('🪑 大廳多了一排長椅，病人坐下就不想走了。');
-  else if(k==='plant') ticker('🪴 擺了一盆植物，大家的心情好像比較平靜了。');
-  else ticker('🥤 飲料販賣機上線！它好像會偷偷觀察每個人。');
+  ticker({jan:'🧹 新的清潔阿姨報到！她說她什麼都見過。',bench:'🪑 大廳多了一排長椅，病人坐下就不想走了。',plant:'🪴 擺了一盆植物，大家的心情好像比較平靜了。',vend:'🥤 飲料販賣機上線！它好像會偷偷觀察每個人。'}[k]);
+  if(k==='jan') syncJanitors();
   saveLocal(); refreshSheet();
+}
+function labHTML(){
+  const rate=labRate();
+  const items=RESEARCH.map(x=>{ const done=has(x.id), can=S.rp>=x.cost;
+    return `<div class="item ${done?'done':''}"><div class="ic" style="background:#eefbf5">${x.icon}</div><div class="txt"><div class="nm">${x.name}</div><div class="ds">${x.desc}</div></div>
+      ${done?'<div class="ds">✅ 完成</div>':`<button class="btn" ${can?'':'disabled'} data-act="buyRes" data-arg="${x.id}">🔬 ${x.cost}</button>`}</div>`; }).join('');
+  return `<h2>🔬 研發</h2><div class="sub">研發點 <b>${Math.floor(S.rp)}</b>　${rate?`（每秒 +${rate.toFixed(1)}）`:'・先蓋一間 🔬 研發室才會產生研發點'}</div>${items}`;
+}
+function buyRes(id){
+  const x=RESEARCH.find(r=>r.id===id); if(!x||has(id)||S.rp<x.cost) return;
+  S.rp-=x.cost; S.res[id]=1; sfx.fan(); toast(x.icon,'研發完成：'+x.name,'');
+  if(id==='reboot') ticker('🔌 重開機理論完成！科學家們決定先把自己重開機一次。');
+  updateLabDot(); saveLocal(); refreshSheet();
+}
+function openLand(){ openSheet(landHTML); }
+function landHTML(){
+  const items=Object.entries(WINGS).map(([k,w])=>{ const done=S.land[k], needOk=!w.needs||w.needs.every(n=>S.land[n]), lock=S.rep<w.rep||!needOk;
+    return `<div class="item ${done?'done':lock?'locked':''}"><div class="ic" style="background:#eaf5e2">🚧</div><div class="txt"><div class="nm">${w.name}</div><div class="ds">${w.desc}</div></div>
+      ${done?'<div class="ds">✅ 已擴建</div>':lock?`<div class="ds" style="text-align:right">🔒<br>${needOk?'聲望 '+w.rep:'先擴建北翼和西翼'}</div>`:`<button class="btn" ${S.money<w.cost?'disabled':''} data-act="buyWing" data-arg="${k}">$${fmt(w.cost)}</button>`}</div>`; }).join('');
+  return `<h2>🚧 擴建土地</h2><div class="sub">💰 ${fmt(S.money)}</div>${items}`;
+}
+function goalsHTML(){
+  const items=(S.goals||[]).map(g=>{ const p=Math.min(g.n,goalProg(g)); return `<div class="item ${g.done?'done':''}"><div class="ic" style="background:#fff7e6">${g.done?'✅':'🎯'}</div><div class="txt"><div class="nm">${goalText(g)}</div><div class="bar"><i style="width:${Math.round(p/g.n*100)}%"></i></div><div class="ds">${g.k==='earn'?fmt(p):Math.floor(p)} / ${g.k==='earn'?fmt(g.n):g.n}</div></div></div>`; }).join('');
+  const left=YEAR-(S.time%YEAR), mm=Math.floor(left/60), ss=Math.floor(left%60);
+  return `<h2>📅 第 ${yearNo()} 年 ${monthNo()} 月</h2><div class="sub">年底評鑑倒數 ${mm} 分 ${ss} 秒</div>${items}`;
 }
 function dexHTML(){
   const found=DISEASES.filter(d=>S.dex[d.id]).length;
@@ -852,28 +1133,24 @@ function dexHTML(){
     if(S.seen[d.id]) return `<div class="card"><div class="big">${d.icon}</div><div class="nm">${d.name}</div>${d.desc}<div class="chips"><span class="chip">尚未治癒</span><span class="chip">需要 ${ROOMS[d.room].icon}</span></div></div>`;
     return `<div class="card unk"><div class="big">❔</div><div class="nm">？？？</div>${S.rep>=d.rep?'即將出現…':`聲望 ${d.rep} 後出現`}</div>`;
   }).join('');
-  return `<h2>📖 怪病圖鑑</h2><div class="sub">已治癒 ${found} / ${DISEASES.length} 種怪病</div><div class="dex">${cards}</div>`;
+  return `<h2>📖 怪病圖鑑</h2><div class="sub">已治癒 ${found} / ${DISEASES.length} 種</div><div class="dex">${cards}</div>`;
 }
 let confirmReset=false;
 function openOffice(){ confirmReset=false; openSheet(officeHTML); }
 function officeHTML(){
-  return `<h2>🏥 院長室</h2><div class="sub">${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔（換裝置也接得上）':'📱 本機存檔'}</div>
+  return `<h2>🏥 院長室</h2><div class="sub">${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>累計治好<b>${fmt(S.stats.cured)} 人</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div>
-    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>科別數<b>${S.rooms.length} 間</b></div></div>
+    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>急診成功<b>${S.stats.emergWin} 次</b></div></div>
+    <button class="btn ghost" style="width:100%;margin-bottom:8px" data-act="openGoals">🎯 今年的目標</button>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
+    ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：用 Safari 開 → 下方「分享」→「加入主畫面」<br>Android：用 Chrome 開 → 右上「⋮」→「加到主畫面」或「安裝應用程式」</div>`:''}
-    <div class="sub" style="margin-top:14px">怪病診所 v0.4</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v0.5</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
-function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); S.tut=1; }
+function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
 
 // ================= 對話框 =================
-function toast(icon,title,sub){
-  const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icon}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
-  $('toast').appendChild(el); sfx.pop();
-  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
-}
 function queueModal(m){ modalQ.push(m); if(!modalOpen) nextModal(); }
 function nextModal(){
   const m=modalQ.shift(); if(!m){ modalOpen=false; $('modalWrap').classList.add('hidden'); return; }
@@ -881,10 +1158,6 @@ function nextModal(){
   $('modalBody').innerHTML=`<div class="mi">${m.icon}</div><h3>${m.title}</h3>${m.body}<div class="row">${m.buttons.map((b,i)=>`<button class="btn ${b.ghost?'ghost':''}" data-i="${i}">${b.label}</button>`).join('')}</div>`;
   $('modalWrap').classList.remove('hidden');
   $('modalBody').querySelectorAll('button[data-i]').forEach(btn=>btn.onclick=()=>{ ensureAudio(); const b=m.buttons[+btn.dataset.i]; modalOpen=false; $('modalWrap').classList.add('hidden'); if(b.fn) b.fn(); if(!modalOpen) nextModal(); });
-}
-function discoverModal(d){
-  const has=S.rooms.some(r=>r.type===d.room), R=ROOMS[d.room];
-  return {icon:d.icon,title:'新怪病出現！',body:`<h3 style="margin:0 0 6px">${d.name}</h3><p>${d.desc}</p><div class="note">需要：${R.icon} ${R.name}${has?'（你已經有了 👍）':S.rep>=R.rep?'（還沒蓋，快去建造！）':`（聲望 ${R.rep} 解鎖）`}</div>`,buttons:[{label:'收治！'}]};
 }
 function showEvent(){
   const ev=pick(EVENTS); sfx.pop();
@@ -894,9 +1167,9 @@ function applyOutcome(ev,o){
   const lines=[];
   if(o.money){ S.money=Math.max(0,S.money+o.money); lines.push(`<span class="delta ${o.money>0?'pos':'neg'}">💰 ${o.money>0?'+':''}${fmt(o.money)}</span>`); }
   if(o.rep){ addRep(o.rep); lines.push(`<span class="delta ${o.rep>0?'pos':'neg'}">⭐ ${o.rep>0?'+':''}${o.rep}</span>`); }
-  if(o.buff){ S.buffs[o.buff[0]]=Date.now()+o.buff[1]*1000; lines.push(`<span class="delta pos">${BUFFNAME[o.buff[0]]}</span>`); }
+  if(o.buff){ S.buffs[o.buff[0]]=Date.now()+o.buff[1]*1000; lines.push(`<span class="delta ${o.buff[0]==='slow'||o.buff[0]==='closed'?'neg':'pos'}">${BUFFNAME[o.buff[0]]}</span>`); }
   if(o.clean){ litter=[]; lines.push('<span class="delta pos">✨ 走廊全部清乾淨</span>'); }
-  if(o.money>0||o.rep>0||o.buff||o.clean) sfx.coin(); else if(o.money<0||o.rep<0) sfx.bad();
+  if(o.money>0||o.rep>0||o.clean) sfx.coin(); else if(o.money<0||o.rep<0) sfx.bad();
   queueModal({icon:ev.icon,title:'結果',body:`<p>${o.text}</p>${lines.length?`<div class="note" style="text-align:center">${lines.join('　')}</div>`:''}`,buttons:[{label:'好喔'}]});
   saveLocal();
 }
@@ -904,49 +1177,45 @@ function applyOutcome(ev,o){
 // ================= 回歸與每日紅包 =================
 function today(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function welcomeBack(savedT){
-  const away=Math.min(4*3600, Math.max(0,(Date.now()-savedT)/1000));
+  const away=Math.min(4*3600,Math.max(0,(Date.now()-savedT)/1000));
   const curable=pool().filter(d=>S.rooms.some(r=>r.type===d.room));
-  let income=0;
-  if(away>90 && curable.length){ const avg=curable.reduce((s,d)=>s+d.fee,0)/pool().length; income=Math.round(away/spawnInterval()*avg*.12); }
-  let daily=0; const td=today(); if(S.day!==td){ daily=S.day? big(200):0; S.day=td; }
-  if(income<=0 && daily<=0) return;
-  S.money+=income+daily; S.stats.earned+=income+daily;
+  let income=0, rpGain=0;
+  if(away>90&&curable.length){ const avg=curable.reduce((s,d)=>s+d.fee,0)/pool().length; income=Math.round(away/spawnInterval()*avg*.12*(has('luckycat')?2:1)); }
+  if(away>90) rpGain=Math.round(away*labRate()*.3);
+  let daily=0; const td=today(); if(S.day!==td){ daily=S.day?big(200):0; S.day=td; }
+  if(income<=0&&daily<=0&&rpGain<=0) return;
+  S.money+=income+daily; S.stats.earned+=income+daily; S.rp+=rpGain;
   const h=Math.floor(away/3600), m=Math.floor(away%3600/60);
   let body='';
-  if(income>0) body+=`<p>你離開了 ${h?h+' 小時 ':''}${m} 分鐘。<br>${pick(AWAY)}</p><div class="note" style="text-align:center"><span class="delta pos">💰 +${fmt(income)}</span></div>`;
+  if(income>0||rpGain>0) body+=`<p>你離開了 ${h?h+' 小時 ':''}${m} 分鐘。<br>${pick(AWAY)}</p><div class="note" style="text-align:center">${income>0?`<span class="delta pos">💰 +${fmt(income)}</span>`:''}${rpGain>0?`　<span class="delta pos">🔬 +${rpGain}</span>`:''}</div>`;
   if(daily>0) body+=`<p style="margin-top:10px">🧧 今日開診紅包</p><div class="note" style="text-align:center"><span class="delta pos">💰 +${fmt(daily)}</span></div>`;
   sfx.coin(); queueModal({icon:income>0?'🌙':'🧧',title:'院長回來了！',body,buttons:[{label:'開始看診'}]});
 }
-function tutorial(){
-  if(S.tut>0) return;
-  S.tut=1; S.day=today();
-  ticker('🏥 歡迎，院長。病人快來了…');
-}
+function tutorial(){ if(S.tut>0) return; S.tut=1; S.day=today(); ticker('🏥 歡迎，院長。病人快來了…'); }
 
-// ================= 雲端存檔（可選） =================
+// ================= 雲端存檔（Claude 連結限定） =================
 const ON_PAGES=/\.github\.io$/.test(location.hostname);
 const cloud={ref:null,status:'local',busy:false,last:''};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function initCloud(){
-  if(ON_PAGES || location.protocol==='file:') return null;
-  for(let i=0;i<25 && !(window.claude&&window.claude.use);i++) await sleep(200);
+  if(ON_PAGES||location.protocol==='file:'||/^(localhost|127\.)/.test(location.hostname)) return null;
+  for(let i=0;i<25&&!(window.claude&&window.claude.use);i++) await sleep(200);
   if(!(window.claude&&window.claude.use)) return null;
   const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
   if(!db||!user) return null;
   const uid=await user.id(); if(!uid) return null;
   cloud.ref=db.collection('data/users/'+uid).doc('save');
-  const snap=await cloud.ref.get();
-  cloud.status='cloud';
-  if(snap && snap.exists){ const d=snap.data(); if(d && typeof d.json==='string'){ try{ return migrate(JSON.parse(d.json)); }catch(e){} } }
+  const snap=await cloud.ref.get(); cloud.status='cloud';
+  if(snap&&snap.exists){ const d=snap.data(); if(d&&typeof d.json==='string'){ try{ return migrate(JSON.parse(d.json)); }catch(e){} } }
   return null;
 }
 async function cloudSave(force){
-  if(!cloud.ref || cloud.busy) return;
+  if(!cloud.ref||cloud.busy) return;
   S.t=Date.now(); const j=JSON.stringify(S);
-  if(!force && j===cloud.last) return;
+  if(!force&&j===cloud.last) return;
   cloud.busy=true;
   try{ await cloud.ref.set({json:j,t:S.t}); cloud.last=j; cloud.status='cloud'; }
-  catch(e){ if(e && ['invalid_argument','revoked','not_granted','capability_disabled'].includes(e.code)){ cloud.ref=null; cloud.status='local'; } }
+  catch(e){ if(e&&['invalid_argument','revoked','not_granted','capability_disabled'].includes(e.code)){ cloud.ref=null; cloud.status='local'; } }
   finally{ cloud.busy=false; }
 }
 
@@ -965,23 +1234,23 @@ function boot(){
   const savedT=S.t;
   layout(); window.addEventListener('resize',layout);
   requestAnimationFrame(loop);
-  if(!hadLocal && !ON_PAGES && location.protocol!=='file:') ticker('☁️ 讀取存檔中…');
+  if(!hadLocal&&!ON_PAGES&&location.protocol!=='file:') ticker('☁️ 讀取存檔中…');
   let settled=false;
   const apply=s=>{ S=s; resetRuntime(); lastTitle=titleOf(S.rep); ticker('☁️ 已載入雲端存檔。'); };
   const finish=cloudS=>{
-    if(settled){ if(cloudS && cloudS.t>S.t+2000) apply(cloudS); return; }
+    if(settled){ if(cloudS&&cloudS.t>S.t+2000) apply(cloudS); return; }
     settled=true; let t0=savedT;
-    if(cloudS && (!hadLocal || cloudS.t>savedT+2000)){ apply(cloudS); t0=cloudS.t; }
+    if(cloudS&&(!hadLocal||cloudS.t>savedT+2000)){ apply(cloudS); t0=cloudS.t; }
     booted=true;
-    if(S.tut===0) tutorial(); else welcomeBack(t0);
-    checkProgress(); saveLocal();
+    if(S.tut===0) tutorial(); else { ticker(pick(['🏥 開始營業！今天也會很怪。','🏥 院長到！病人們假裝很正常。','🏥 開門了，第一位病人已經在門口奇怪地站著。'])); welcomeBack(t0); }
+    checkProgress(); checkGoals(); updateLabDot(); saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
-  setTimeout(()=>finish(null), hadLocal?1500:6000);
+  setTimeout(()=>finish(null),hadLocal?1500:6000);
   document.addEventListener('visibilitychange',()=>{ if(document.hidden){ saveLocal(); cloudSave(); } });
 }
 boot();
-if(ON_PAGES && 'serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+if(ON_PAGES&&'serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
 </html>
