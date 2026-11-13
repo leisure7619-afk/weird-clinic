@@ -99,6 +99,9 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
 .modal .row{flex-direction:column}
 .delta{font-weight:800}
 .delta.pos{color:var(--good)} .delta.neg{color:var(--bad)}
+.seg{display:flex;gap:6px;margin:4px 0 12px}
+.seg button{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:8px 0;font-weight:800;font-size:14px;color:var(--ink)}
+.seg button.on{background:#3fae7a;border-color:#3fae7a;color:#fff}
 .toggle{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;font-weight:700;font-size:14px}
 </style>
 </head>
@@ -192,6 +195,8 @@ const LOBBY_UP = {
   jan:  {name:'清潔阿姨', icon:'🧹',max:3,cost:[400,900,1800],desc:'自動清理走廊上的怪東西。'}
 };
 const RESEARCH = [
+  {id:'fert',    name:'有機肥料',    icon:'🌾',cost:60, desc:'植物長大速度 x2。味道請自行想像。'},
+  {id:'sprinkler',name:'自動灑水系統',icon:'🚿',cost:180,desc:'花園的植物再也不會口渴。'},
   {id:'fastdesk',name:'自動掛號機',  icon:'🖨️',cost:40, desc:'掛號速度 x2。機器會說「歡迎光臨」，但沒有人教它。'},
   {id:'turbomop',name:'渦輪拖把',    icon:'🌀',cost:60, desc:'清潔阿姨速度 x2，偶爾會飄起來。'},
   {id:'comfy',   name:'按摩長椅',    icon:'💺',cost:120,desc:'病人耐心 +25%。有人坐到不想看病了。'},
@@ -209,7 +214,21 @@ const WINGS = {
   west: {name:'西翼',cost:12000,rep:120,slots:[[0,1],[0,2],[0,3]],desc:'多 3 塊地。地主是一位很愛講話的阿伯。'},
   corner:{name:'西北角',cost:20000,rep:200,slots:[[0,0]],needs:['north','west'],desc:'最後 1 塊地，聽說地下埋著一台古董自動販賣機。'}
 };
+const GARDEN = {
+  flower:   {name:'小花',      icon:'🌷',cost:30,  rep:0,  grow:60,  water:600, green:1,h:.32,desc:'隨機顏色，種一排很療癒。'},
+  sunflower:{name:'向日葵',    icon:'🌻',cost:80,  rep:0,  grow:120, water:600, green:1,h:.65,prod:{every:60,cap:3,val:8,icon:'🌰'},desc:'會跟院長打招呼。長大會結瓜子，點一下收成。'},
+  tree:     {name:'大樹',      icon:'🌳',cost:150, rep:0,  grow:300, water:1200,green:3,h:1,desc:'葉子會隨季節變色，小鳥會來住。'},
+  cactus:   {name:'唱歌仙人掌',icon:'🌵',cost:200, rep:15, grow:150, water:0,   green:2,h:.55,desc:'不用澆水，偶爾會自己哼歌。'},
+  apple:    {name:'蘋果樹',    icon:'🍎',cost:300, rep:25, grow:420, water:900, green:3,h:1,prod:{every:90,cap:3,val:20,icon:'🍎'},desc:'一天一蘋果，醫生們看了有點緊張。'},
+  flytrap:  {name:'吃垃圾草',  icon:'🪴',cost:400, rep:40, grow:180, water:900, green:1,h:.5,desc:'會把附近走廊的垃圾吃掉，吃完會打嗝。'},
+  pond:     {name:'蓮花池',    icon:'🪷',cost:600, rep:60, grow:90,  water:0,   green:3,h:.15,desc:'鴨子很喜歡，會更常來。偶爾有青蛙。'},
+  money:    {name:'招財樹',    icon:'💰',cost:1200,rep:100,grow:600, water:1200,green:2,h:1,prod:{every:120,cap:2,val:50,icon:'🪙'},desc:'會長出金幣。請不要問原理。'},
+  cherry:   {name:'櫻花樹',    icon:'🌸',cost:1500,rep:150,grow:900, water:1200,green:5,h:1.05,desc:'春天開滿粉紅色的花，病人看了心情大好。'}
+};
+const FLOWER_COLS=['#ff6b8a','#ffb84d','#b18cf0','#ff8fd0','#ffe14d','#ffffff','#6ec6ff'];
+const PLANT_SAYS={flower:['（隨風搖擺）','今天的陽光剛剛好。'],sunflower:['院長早安！','我一直看著你喔。','今天也要向著光！'],tree:['小鳥在我頭上開會。','我已經站在這裡很久了。'],cactus:['♪ 刺刺的人生 ♪','不要抱我。'],apple:['醫生，你怕我嗎？','蘋果還沒熟，再等等。'],flytrap:['還有垃圾嗎？','嗝。'],pond:['呱。（青蛙）','今天水很清。'],money:['我不是錢長出來的，是錢從我長出來的。'],cherry:['等春天喔。','花瓣會掉，但很美。']};
 const AWARDS = {
+  green:{icon:'🌳',name:'綠手指獎',txt:'花園綠意達到 {n}，小鳥都來申請入住了。'},
   clean:{icon:'🧽',name:'年度最乾淨診所',txt:'地板亮到評審看到自己的鼻毛。'},
   slips:{icon:'🫠',name:'最多人滑倒獎',txt:'今年有 {n} 人踩到果凍滑倒，創院內新高。'},
   cleans:{icon:'🧹',name:'院長親自打掃獎',txt:'院長今年親手撿了 {n} 次垃圾，清潔阿姨表示壓力很大。'},
@@ -258,6 +277,12 @@ const EVENTS = [
   {icon:'👵',title:'阿嬤來道謝',text:'上週治好的阿嬤提著一大鍋滷肉來，說要謝謝醫生。',choices:[
     {label:'收下滷肉',fn:()=>({text:'全院吃得飽飽的，醫生手腳變超快！速度 1.5 倍 40 秒。',buff:['speed',40],rep:2})},
     {label:'客氣婉拒',fn:()=>({text:'阿嬤說：「不吃就是看不起我。」然後坐在大廳不走。',rep:-1})}]},
+  {icon:'👴',title:'阿伯送樹苗',text:'隔壁阿伯拿來一棵神秘樹苗，說是他阿公以前種的。',choices:[
+    {label:'種在花園',fn:()=>{ const k=pick(['apple','money','cherry','cactus']); const ok=plantRandom(k,.25); return ok?{text:`種下去了！原來是一棵${GARDEN[k].name}。阿伯很滿意地點點頭。`,rep:2}:{text:'花園已經沒地方種了，阿伯決定把樹苗種在自己的帽子上。'}; }},
+    {label:'婉拒',fn:()=>({text:'阿伯說沒關係，下次帶兩棵來。'})}]},
+  {icon:'🐝',title:'蜜蜂來築巢',text:'一群蜜蜂在花園的樹上築了一個大蜂巢。',choices:[
+    {label:'跟牠們好好相處',fn:()=>gardenGreen()>=6?{text:'蜜蜂採了滿園的花蜜，送你一罐蜂蜜！拿去賣了不少錢。',money:big(300)}:{text:'花太少，蜜蜂覺得這裡不夠好，搬走了。'}},
+    {label:'請專業人員移走',fn:()=>({text:'專業人員穿著太空裝來，把蜂巢搬去山上了。',money:-big(50)})}]},
   {icon:'🦠',title:'週一症候群大流行',text:'城裡爆發週一症候群，街上到處都是果凍人。',choices:[
     {label:'發免費果凍冰淇淋',fn:()=>({text:'以果凍治果凍，大家吃得很開心。聲望加倍 60 秒。',money:-big(100),buff:['rep',60]})},
     {label:'宣布今天是週二',fn:()=>({text:'大家半信半疑，但症狀真的減輕了。60 秒內不會有週一症候群患者。',buff:['mondayfree',60],rep:1})}]}
@@ -267,14 +292,22 @@ const EVENTS = [
 const NS = 4, MW = 4*NS+1, QMAX = 4, MAXLV = 5;
 const LOBBY = {i:3,j:3};
 const SPAWN = {x:19.6,y:14.5};
-const RQ_POS = [[14.55,14.05],[14.55,14.75],[14.55,15.45],[15.25,15.6],[15.95,15.6],[16.5,15.0],[16.5,14.4]];
+const RQ_POS = [[14.55,14.15],[14.55,14.75],[14.55,15.35],[14.55,15.9],[15.3,15.9],[16.4,15.6],[16.4,15.0]];
 const BENCHES = [
-  {f:[13.05,13.9,0.35,1.4],back:[13.05,13.9,0.08,1.4],seats:[[13.32,14.15],[13.32,14.62],[13.32,15.1]],face:1},
-  {f:[15.6,13.75,0.35,1.4],back:[15.87,13.75,0.08,1.4],seats:[[15.72,13.98],[15.72,14.45],[15.72,14.92]],face:-1},
-  {f:[13.2,12.12,1.4,0.33],back:[13.2,12.12,1.4,0.07],seats:[[13.45,12.32],[13.95,12.32],[14.45,12.32]],face:1}
+  {x0:13.05,back:'w',seats:[[13.27,14.2],[13.27,14.7],[13.27,15.2]],face:1},
+  {x0:15.62,back:'e',seats:[[15.75,14.25],[15.75,14.75],[15.75,15.25]],face:-1},
+  {x0:16.66,back:'e',seats:[[16.79,12.35],[16.79,12.85],[16.79,13.35]],face:-1}
 ];
+const SOFA = {lobby:['#3fa0d8','#2f86ba','#3793c9'], room:['#e9a23b','#c9852a','#d99432'], comfy:['#c06bd6','#9f52b4','#b05fc6']};
+function drawSofaSeg(x0,sy,back,c){ // 一個座位的沙發（直向），x0 為沙發左緣；c=[座墊,椅背,扶手]
+  const bx=back==='w'?x0:x0+.25;
+  box(bx,sy-.24,.07,.48,.36,c[1]); box(x0,sy-.24,.32,.48,.15,c[0]);
+  box(x0,sy-.24,.32,.06,.24,c[2]); box(x0,sy+.18,.32,.06,.24,c[2]);
+}
 const PLANTS = [[13.18,13.18],[15.8,15.8],[12.35,15.7]];
-const TREES_OUT = [[-1.6,4.5],[-1.4,9],[-1.7,13.4],[3,-1.6],[8.5,-1.5],[13.6,-1.7],[18.6,3.4],[18.9,8.8],[18.5,17.4],[4.2,18.6],[10.4,18.7],[-1.2,18],[20.6,11.2],[21,16.6],[15,18.9]];
+const TREES_OUT = [[-3.4,4.5],[-3.2,9],[-3.5,13.4],[3,-3.4],[8.5,-3.3],[13.6,-3.5],[21.4,2.4],[21.6,16.8],[-3.2,18.4],[16.4,19.8]];
+const TREE_TILES = new Set(TREES_OUT.map(([x,y])=>Math.floor(x)+','+Math.floor(y)));
+const INIT_GARDEN = [['tree',19,6],['tree',19,10],['sunflower',18,11],['flower',18,12],['flower',19,12],['flower',20,12],['tree',6,18],['flower',9,18],['flower',10,18],['flower',11,18],['tree',13,18]];
 const RLAY = {
   gp:{pat:[1.65,2.0],doc:[1.65,0.55],staff:'doctor'},
   lab:{doc:[1.3,1.25],staff:'sci',pace:1},
@@ -299,9 +332,10 @@ let emergT = 150, duckT = 80, ufoT = 60, labBoomT = 30, goalT = 0;
 let placing = null, booted = false, lastTitle = '', sheetFn = null, dirtyWarned = false;
 
 function newYearStats(){ return {cured0:S.stats.cured,earned0:S.stats.earned,lost0:S.stats.lost,slips:0,cleans:0,emerg:0,ducks:0,cleanSum:0,cleanN:0}; }
+function initGarden(){ return INIT_GARDEN.map(([k,x,y],n)=>({k,x,y,g:1,wl:GARDEN[k].water,pt:0,pn:0,c:n%FLOWER_COLS.length})); }
 function newState(){
   return {v:3,money:300,rep:0,rooms:[],lobby:{bench:1,plant:0,vend:0,jan:0},land:{north:0,west:0,corner:0},rp:0,res:{},dex:{},seen:{},
-    stats:{cured:0,earned:0,lost:0,emergWin:0,cleans:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1},time:0,goals:null,ys:null};
+    stats:{cured:0,earned:0,lost:0,emergWin:0,cleans:0,planted:0,harvest:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1},time:0,goals:null,ys:null,garden:initGarden()};
 }
 function migrate(s){
   if(!s) return null;
@@ -315,7 +349,7 @@ function migrate(s){
   if(s.v!==3) return null;
   const d=newState();
   for(const k in d){ if(s[k]===undefined) s[k]=d[k]; }
-  s.lobby=Object.assign({bench:1,plant:0,vend:0,jan:0},s.lobby); s.land=Object.assign({north:0,west:0,corner:0},s.land); s.stats=Object.assign({cured:0,earned:0,lost:0,emergWin:0,cleans:0},s.stats);
+  s.lobby=Object.assign({bench:1,plant:0,vend:0,jan:0},s.lobby); s.land=Object.assign({north:0,west:0,corner:0},s.land); s.stats=Object.assign({cured:0,earned:0,lost:0,emergWin:0,cleans:0,planted:0,harvest:0},s.stats);
   return s;
 }
 function loadLocal(){ try{ const j=localStorage.getItem(SAVE_KEY); if(j) return migrate(JSON.parse(j)); }catch(e){} return null; }
@@ -338,11 +372,15 @@ const treatRooms = () => S.rooms.filter(r=>!ROOMS[r.type].noPatients);
 const maxPatients = () => 8 + treatRooms().length*3;
 const pool = () => DISEASES.filter(d=>d.rep<=S.rep && !(d.id==='monday'&&buffOn('mondayfree')));
 const cleanPct = () => Math.max(0, 100 - litter.length*5);
-const patienceLimit = () => 40*(1+.12*S.lobby.plant)*(has('comfy')?1.25:1)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
+const patienceLimit = () => 40*(1+.12*S.lobby.plant)*(1+Math.min(.4,gardenGreen()*.01))*(has('comfy')?1.25:1)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
 const labRate = () => S.rooms.filter(r=>r.type==='lab').reduce((s,r)=>s+.5*r.lvl,0);
 function seatList(){ const out=[]; for(let b=0;b<S.lobby.bench;b++) BENCHES[b].seats.forEach(s=>out.push(s)); return out; }
 function titleOf(r){ let t=TITLES[0][1]; TITLES.forEach(([n,s])=>{ if(r>=n) t=s; }); return t; }
 function fmt(n){ n=Math.floor(n); const neg=n<0; n=Math.abs(n); let s; if(n>=1e6) s=(n/1e6).toFixed(1)+'M'; else if(n>=1e4) s=(n/1e3).toFixed(1)+'K'; else s=n.toLocaleString('en-US'); return (neg?'-':'')+s; }
+const seasonOf = m => m<=3?'spring':m<=6?'summer':m<=9?'autumn':'winter';
+const SEASON_ICON={spring:'🌸',summer:'☀️',autumn:'🍁',winter:'❄️'};
+const GROUND={spring:'#86c062',summer:'#7fb85e',autumn:'#a3b45c',winter:'#b9c9b2'};
+const CANOPY={spring:['#5bb04a','#86d26c','#6fc25a'],summer:['#3f8a3c','#4f9a4a','#5fb35a'],autumn:['#d9662f','#e39b3a','#efb44a'],winter:['#6f8f76','#7f9f86','#93b39a']};
 const yearNo = () => Math.floor(S.time/YEAR)+1, monthNo = () => Math.floor((S.time%YEAR)/MONTH)+1;
 
 // ================= 土地 =================
@@ -384,11 +422,11 @@ function goTo(p, tx, ty){
   const sx=Math.floor(p.x), sy=Math.floor(p.y), ex=Math.floor(tx), ey=Math.floor(ty);
   const path = walkable(sx,sy) ? bfs(sx,sy,ex,ey) : null;
   p.path=[];
-  if(path){ path.slice(1,-1).forEach(([x,y])=>p.path.push({x:x+.5+(Math.random()-.5)*.25, y:y+.5+(Math.random()-.5)*.25})); }
+  if(path){ path.slice(1,-1).forEach(([x,y])=>p.path.push({x:x+.5+(Math.random()-.5)*.1, y:y+.5+(Math.random()-.5)*.1})); }
   p.path.push({x:tx,y:ty});
 }
 function retarget(p,pos){ const pt={x:pos[0],y:pos[1]}; if(p.path.length) p.path[p.path.length-1]=pt; else p.path=[pt]; }
-const qPos = (r,k) => { const X=4*r.i+4.5, Y=4*r.j+2.5, off=[0,.75,-.75,1.5][k]||1.5; return [X+(k>=3?.25:0), Y+off]; };
+const qPos = (r,k) => k<3 ? [4*r.i+4.79, 4*r.j+1.95+k*.55] : [4*r.i+4.42, 4*r.j+.9];
 function roomSpot(r, which){ const a=RLAY[r.type][which]; return [4*r.i+1+a[0], 4*r.j+1+a[1]]; }
 function randomCorridor(){ for(let k=0;k<30;k++){ const x=Math.floor(Math.random()*MW), y=Math.floor(Math.random()*MW); if(walkable(x,y)&&!roomKeyAt(x,y)) return [x+.5,y+.5]; } return [14.5,14.5]; }
 
@@ -465,8 +503,18 @@ function wallY(Y,x0,x1,h,col,stripe,win){
   poly([P3(x1,Y-t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x1,Y-t,h)],shade(col,-.22));
 }
 function drawPlant(x,y){ box(x-.13,y-.13,.26,.26,.18,'#c8734a'); const c=P3(x,y,.3); circle(c.x,c.y,tw*.13,'#4f9a4a'); circle(c.x-tw*.07,c.y+tw*.03,tw*.09,'#5fb35a'); circle(c.x+tw*.07,c.y-tw*.03,tw*.08,'#3f8a3c'); }
-function drawTree(x,y){ const b=iso(x,y); ellipse(b.x,b.y,tw*.32,tw*.13,'rgba(30,60,20,.25)'); ctx.fillStyle='#8a5a36'; ctx.fillRect(b.x-tw*.04,b.y-tw*.45,tw*.08,tw*.45);
-  circle(b.x,b.y-tw*.62,tw*.3,'#3f8a3c'); circle(b.x-tw*.16,b.y-tw*.5,tw*.2,'#4f9a4a'); circle(b.x+tw*.15,b.y-tw*.55,tw*.2,'#5fb35a'); circle(b.x+tw*.02,b.y-tw*.82,tw*.18,'#5fb35a'); }
+function drawTree(x,y,o={}){
+  const b=iso(x,y), k=o.scale||1, T=tw*k, se=seasonOf(monthNo());
+  let pal=o.pal||CANOPY[se]; if(o.dry) pal=['#9a8f5a','#a99c62','#b5a86e'];
+  const sway=Math.sin(clock*1.5+x+y)*T*.015;
+  ellipse(b.x,b.y,T*.32,T*.13,'rgba(30,60,20,.25)'); ctx.fillStyle='#8a5a36'; ctx.fillRect(b.x-T*.04,b.y-T*.45,T*.08,T*.45);
+  const cx=b.x+sway;
+  circle(cx,b.y-T*.62,T*.3,pal[0]); circle(cx-T*.16,b.y-T*.5,T*.2,pal[1]); circle(cx+T*.15,b.y-T*.55,T*.2,pal[2]); circle(cx+T*.02,b.y-T*.82,T*.18,pal[2]);
+  if(se==='winter'&&!o.pal){ ellipse(cx,b.y-T*.9,T*.17,T*.06,'#fff'); ellipse(cx-T*.17,b.y-T*.66,T*.12,T*.04,'#fff'); ellipse(cx+T*.16,b.y-T*.71,T*.12,T*.04,'#fff'); }
+  if(o.fruits) for(let n=0;n<o.fruits;n++){ const a=n*2.1+.6; circle(cx+Math.cos(a)*T*.18,b.y-T*.6+Math.sin(a)*T*.13,T*.055,'#e2574c'); circle(cx+Math.cos(a)*T*.18-T*.015,b.y-T*.6+Math.sin(a)*T*.13-T*.02,T*.015,'#fff'); }
+  if(o.coins) for(let n=0;n<o.coins;n++){ const a=n*2.6+1, cy=b.y-T*.62+Math.sin(a)*T*.12+Math.sin(clock*3+n)*T*.01; circle(cx+Math.cos(a)*T*.17,cy,T*.06,'#f2c14e'); txt('$',cx+Math.cos(a)*T*.17,cy+1,T*.07,'#a8790f',900); }
+  if(o.bird&&T>20){ const bob=Math.abs(Math.sin(clock*4+x))*T*.02; emoji('🐦',cx+T*.08,b.y-T*1.02-bob,T*.18); }
+}
 
 // ================= 小人 =================
 function drawPerson(x,y,o){
@@ -571,21 +619,22 @@ function roomFurniture(r,list){
   if(t==='reboot'){ F(.25,.2,1.1,.75,.95,'#3b4a6b',0,{post:top=>{ const c=P3(X+.8,Y+.95,.55); circle(c.x,c.y,tw*.16,busy&&Math.floor(clock*4)%2?'#3fae7a':'#2b3550'); txt('⏻',c.x,c.y,tw*.2,'#fff',900); if(busy) txt(['重新啟動中','重新啟動中.','重新啟動中..','重新啟動中...'][Math.floor(clock*3)%4],top.x,top.y-tw*.18,tw*.13,'#fff',800,'#3b4a6b'); }}); F(1.9,.5,.9,.45,.3,'#c98b4f'); F(2.2,.55,.35,.22,.24,'#2b2b2b',.3,{emo:busy?'⌛':'💾',size:.14,lift:.04}); }
   if(t==='freeze'){ F(.45,.35,.95,.95,1.05,'#bfe6ff',0,{alpha:.92,post:()=>{ const c=P3(X+.93,Y+1.3,.55); emoji(busy?'🥶':'❄️',c.x+(busy?Math.sin(clock*30)*2:0),c.y,tw*.3); }}); F(2.0,.25,.6,.4,.45,'#8a93a6',0,{emo:'🌡️',size:.2}); F(.3,2.3,.4,.4,.3,'#e6f6ff'); }
   if(t==='cat'){ F(.25,.25,.6,.6,.25,'#d8b48a'); F(.35,.35,.4,.4,.35,'#c49a6c',.25); F(.3,.3,.5,.5,.06,'#e2574c',.6); F(1.3,.6,.9,.5,.22,'#c98b4f'); add(X+.5+Y+2.3,()=>{ const c=P3(X+.5,Y+2.3,.06); emoji('🧶',c.x,c.y,tw*.2); }); }
+  if(!ROOMS[t].noPatients) for(let k=0;k<3;k++){ const [sx,sy]=qPos(r,k); add(sx+sy-.15,()=>drawSofaSeg(4*r.i+4.66,sy,'e',has('comfy')?SOFA.comfy:SOFA.room)); }
   const L=RLAY[t], d0=roomSpot(r,'doc'); let dx=d0[0], dy=d0[1];
   if(L.pace){ dx+=Math.sin(clock*.7+r.i)*.6; }
   add(dx+dy,()=>{ if(L.staff==='cat') drawPerson(dx,dy,{cat:1,catScale:1.25,z:L.docZ||0,stetho:1,catColor:'#f6d7a7',seed:r.i}); else drawPerson(dx,dy,Object.assign(staffLook(L.staff,r.i*3+r.j),{z:L.docZ||0,walk:busy||L.pace,phase:clock*6,seed:r.i})); });
 }
 function lobbyFurniture(list){
   const add=(d,fn)=>list.push({d,fn});
-  add(13.9+13.25+.4,()=>{ const top=box(13.9,13.25,1.3,.45,.35,'#e9a23b'); emoji(has('fastdesk')?'🖨️':'🛎️',top.x+tw*.2,top.y-tw*.08,tw*.18); box(14.3,13.3,.3,.18,.2,'#4a4f5c',.35); });
-  add(14.55+12.95,()=>drawPerson(14.55,12.95,Object.assign(staffLook('recep'),{walk:RQ.length&&!RQ[0].path.length,phase:clock*4,seed:7})));
-  for(let b=0;b<S.lobby.bench;b++){ const B=BENCHES[b]; add(B.f[0]+B.f[1]-.3,()=>{ box(B.back[0],B.back[1],B.back[2],B.back[3],.36,has('comfy')?'#c06bd6':'#2f86ba'); box(B.f[0],B.f[1],B.f[2],B.f[3],.15,has('comfy')?'#d98be8':'#3fa0d8'); }); }
+  add(13.9+13.45+.4,()=>{ const top=box(13.9,13.45,1.3,.42,.35,'#e9a23b'); emoji(has('fastdesk')?'🖨️':'🛎️',top.x+tw*.2,top.y-tw*.08,tw*.18); box(14.3,13.5,.3,.18,.2,'#4a4f5c',.35); });
+  add(14.55+13.18,()=>drawPerson(14.55,13.18,Object.assign(staffLook('recep'),{walk:RQ.length&&!RQ[0].path.length,phase:clock*4,seed:7})));
+  for(let b=0;b<S.lobby.bench;b++){ const B=BENCHES[b]; B.seats.forEach(([sx,sy])=>add(sx+sy-.15,()=>drawSofaSeg(B.x0,sy,B.back,has('comfy')?SOFA.comfy:SOFA.lobby))); }
   for(let k=0;k<S.lobby.plant;k++){ const [px,py]=PLANTS[k]; add(px+py,()=>drawPlant(px,py)); }
   if(S.lobby.vend) add(15.55+13.05+.4,()=>{ const top=box(15.55,13.05,.4,.32,.75,'#e2574c'); emoji(has('soda')?'🧃':'🥤',top.x,top.y-tw*.1,tw*.2); });
   if(has('luckycat')) add(14.9+13.3,()=>{ const c=P3(15.05,13.4,.35); emoji('🐱',c.x,c.y-tw*.08+Math.sin(clock*6)*1.5,tw*.2); });
 }
 function drawGround(){
-  ctx.fillStyle='#7fb85e'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=GROUND[seasonOf(monthNo())]; ctx.fillRect(0,0,W,H);
   for(let y=-1;y<=MW;y++) for(let x=-1;x<=MW;x++){
     let near=false; for(let a=-1;a<=1&&!near;a++) for(let c=-1;c<=1&&!near;c++) if(inside(x+a,y+c)) near=true;
     if(near && !inside(x,y)) poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],'#e5dccb');
@@ -602,7 +651,7 @@ function drawFloor(){
     const s=slotOf(x,y); let c;
     if(!s) c=(x+y)%2?'#d4cde8':'#c7bfe0';
     else if(isLobby(s)) c=(x+y)%2?'#eef5fd':'#d6e6f6';
-    else { const r=roomAt(s.i,s.j); if(r) c=ROOMS[r.type].floor[(x+y)%2]; else c=placing?`rgba(140,215,150,${.55+.35*pulse})`:((x+y)%2?'#e6dcc8':'#ddd1ba'); }
+    else { const r=roomAt(s.i,s.j); if(r) c=ROOMS[r.type].floor[(x+y)%2]; else c=typeof placing==='string'?`rgba(140,215,150,${.55+.35*pulse})`:((x+y)%2?'#e6dcc8':'#ddd1ba'); }
     poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],c,'rgba(90,70,110,.12)');
   }
   for(const [i,j] of openSlots()){
@@ -655,16 +704,19 @@ function draw(){
   });
   lobbyFurniture(list);
   TREES_OUT.forEach(([x,y])=>list.push({d:x+y,fn:()=>drawTree(x,y)}));
-  for(const k in WINGS){ if(S.land[k]) continue; WINGS[k].slots.forEach(([i,j])=>{ [[1.4,1.6],[3,3.1],[3.2,1.2]].forEach(([a,b])=>{ const x=4*i+a, y=4*j+b; list.push({d:x+y,fn:()=>drawTree(x,y)}); }); }); }
+  S.garden.forEach(p=>list.push({d:p.x+p.y+1,fn:()=>drawGardenItem(p)}));
+  bflies.forEach(f=>list.push({d:f.x+f.y+1.5,fn:()=>{ const c=P3(f.x,f.y,.45+Math.sin(f.t*3)*.08); ctx.save(); ctx.translate(c.x,c.y); ctx.scale(.6+.4*Math.abs(Math.sin(f.t*14)),1); emoji('🦋',0,0,Math.max(10,tw*.2)); ctx.restore(); }}));
   list.push({d:18.3+13.2,fn:()=>{ const b=P3(18.3,13.2,0), t=P3(18.3,13.2,.75); ctx.strokeStyle='#6b4a2f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); rrect(t.x-tw*.55,t.y-tw*.3,tw*1.1,tw*.32,6,'#fffdf8','#e2574c'); txt('🏥 怪病診所',t.x,t.y-tw*.14,tw*.17,'#e2574c',900); }});
   if(bus>0) list.push({d:19+16,fn:drawBus});
   const lim=patienceLimit();
   patients.forEach(p=>{ if(p.hidden) return; list.push({d:p.x+p.y+.02,fn:()=>drawPatient(p,lim)}); });
   jans.forEach(j=>list.push({d:j.x+j.y+.02,fn:()=>drawPerson(j.x,j.y,Object.assign(staffLook('jan'),{walk:j.path.length>0,phase:j.phase,mopAnim:j.state==='clean',seed:j.id,lift:has('turbomop')&&j.path.length?Math.abs(Math.sin(clock*5))*.06:0}))}));
   ducks.forEach(d=>list.push({d:d.x+d.y,fn:()=>{ const c=iso(d.x,d.y); ellipse(c.x,c.y,tw*.1,tw*.04,'rgba(0,0,0,.18)'); emoji('🦆',c.x,c.y-tw*.14-Math.abs(Math.sin(d.phase))*tw*.04,tw*.3); }}));
+  if(placing&&placing.plant) drawPlantable();
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
   if(ufo) drawUfo();
   drawLandLabels();
+  drawWeather();
   S.rooms.forEach(drawSign);
   floats.forEach(f=>{ ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   patients.forEach(p=>{ if(p.sayT>0&&!p.hidden) drawSay(p.x,p.y,p.say); });
@@ -690,7 +742,7 @@ function drawPatient(p,lim){
   const waiting=['recq','queue','bench'].includes(p.state)&&!p.path.length;
   const bubble=p.state==='exit'?(p.mood||'😄'):p.state==='confused'?'❓':d.icon;
   const o=Object.assign({},fx,{skin:p.skin,hair:p.hair,shirt:p.shirt,pants:p.pants,walk:p.path.length>0,phase:p.phase,seed:p.id,bubble,em:p.emerg&&p.state!=='exit',
-    angry:waiting&&p.wait>lim*(p.emerg?1.2:.6),sit:p.state==='bench'&&!p.path.length,face:p.face,slip:p.slip>0,grumpy:1,lift:p.lift||0});
+    angry:waiting&&p.wait>lim*(p.emerg?1.2:.6),sit:(p.state==='bench'||(p.state==='queue'&&RT[p.room]&&RT[p.room].queue.indexOf(p)<3))&&!p.path.length,face:p.face,slip:p.slip>0,grumpy:1,lift:p.lift||0});
   if(p.state==='treat'){ const L=RLAY[roomByKey(p.room)?.type]||{}; if(L.sit) o.sit=1; if(L.lie){ o.lie=1; o.z=L.patZ; } if(L.float) o.float=1; if(L.blink) o.alpha=Math.floor(clock*5)%2?1:.25; }
   if(p.state==='exit'&&p.mood==='😄') Object.keys(fx).forEach(k=>{ if(k!=='cat') o[k]=0; });
   if(p.state==='exit'&&p.mood!=='😄'){ o.angry=false; }
@@ -746,7 +798,7 @@ function lose(p,why){ detach(p); S.stats.lost++; addRep(-1); if(p.emerg&&emerg) 
 function route(p){
   const d=DMAP[p.d], rooms=S.rooms.filter(r=>r.type===d.room);
   p.room=null;
-  if(!rooms.length){ p.state='confused'; p.wait=0; p.path=[{x:15.2+Math.random()*.3,y:14.1+Math.random()*.4}]; if(Math.random()<.6) talk(p,'請問哪裡可以治'+d.name+'？'); return; }
+  if(!rooms.length){ p.state='confused'; p.wait=0; p.path=[{x:15.15+Math.random()*.2,y:14.3+Math.random()*.3}]; if(Math.random()<.6) talk(p,'請問哪裡可以治'+d.name+'？'); return; }
   let best=null, bl=1e9; rooms.forEach(r=>{ const rt=RT[rkey(r)], l=rt.queue.length+(rt.cur?1:0)+seats.filter(q=>q&&q.room===rkey(r)).length; if(l<bl){ bl=l; best=r; } });
   const rt=RT[rkey(best)];
   if(rt.queue.length<QMAX) return joinQueue(p,best);
@@ -754,7 +806,7 @@ function route(p){
   if(free>=0){ seats[free]=p; p.seat=free; p.room=rkey(best); p.state='toBench'; goTo(p,...sl[free]); p.face=BENCHES[Math.floor(free/3)].face; return; }
   lose(p,'看到滿滿的人潮，直接回家了');
 }
-function joinQueue(p,r){ const rt=RT[rkey(r)]; if(p.emerg){ let k=0; while(k<rt.queue.length&&rt.queue[k].emerg) k++; rt.queue.splice(k,0,p); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } else rt.queue.push(p); p.room=rkey(r); p.state='toQ'; p.face=1; goTo(p,...qPos(r,rt.queue.indexOf(p))); }
+function joinQueue(p,r){ p.face=-1; const rt=RT[rkey(r)]; if(p.emerg){ let k=0; while(k<rt.queue.length&&rt.queue[k].emerg) k++; rt.queue.splice(k,0,p); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } else rt.queue.push(p); p.room=rkey(r); p.state='toQ'; goTo(p,...qPos(r,rt.queue.indexOf(p))); }
 function payCure(p,fee,where){
   const d=DMAP[p.d];
   S.money+=fee; S.stats.earned+=fee; S.stats.cured++;
@@ -772,12 +824,13 @@ function cure(p,r){
   RT[rkey(r)].cur=null; RT[rkey(r)].prog=0;
   goExit(p,'😄');
   ticker(`${first?'✨ 首次治癒！':'🩹'} ${d.name}：${d.cure}`);
+  if(d.id==='sprout'&&Math.random()<.35&&plantRandom('flower',.3)) setTimeout(()=>ticker('🌷 病人把頭上的小草送給你，種在花園裡了。'),1500);
 }
 function movePerson(p,dt,speed){
   if(p.slip>0){ p.slip-=dt; return false; }
   if(!p.path.length) return false;
   const wp=p.path[0], dx=wp.x-p.x, dy=wp.y-p.y, dist=Math.hypot(dx,dy), step=speed*dt;
-  p.phase+=dt*11;
+  p.phase+=dt*speed*6;
   if(dist<=step){ p.x=wp.x; p.y=wp.y; p.path.shift(); return !p.path.length; }
   p.x+=dx/dist*step; p.y+=dy/dist*step; return false;
 }
@@ -790,7 +843,7 @@ function update(dt){
   if(!buffOn('closed')){ spawnT-=dt*(buffOn('spawn')?2:1); if(spawnT<=0){ if(patients.length<maxPatients()) spawn(); spawnT=spawnInterval()*(.6+Math.random()*.8); } }
   const sp=(buffOn('speed')?1.5:1)*(buffOn('slow')?.5:1)*(has('stetho')?1.2:1), lim=patienceLimit();
   patients.forEach(p=>{
-    const fx=FX[p.d]||{}, spd=fx.slow?.85:fx.zombie?1.2:fx.back?1.3:1.9;
+    const fx=FX[p.d]||{}, spd=fx.slow?.45:fx.zombie?.65:fx.back?.7:1.0;
     if(p.ufoLift) return;
     const arrived=movePerson(p,dt,spd);
     if(p.path.length&&p.slip<=0&&p.state!=='treat'&&!has('antislip')){ for(const l of litter){ if(l.k==='jelly'&&!p.slipped[l.id]&&Math.hypot(l.x-p.x,l.y-p.y)<.22){ p.slipped[l.id]=1; if(Math.random()<.35){ p.slip=1; S.ys.slips++; sfx.slip(); ticker('🫠 有人踩到果凍滑了一跤！'); } } } }
@@ -823,7 +876,7 @@ function update(dt){
     if(S.lobby.vend&&!p.drank&&(p.state==='bench'||p.state==='recq')&&Math.random()<dt*.025){ p.drank=1; const m=has('soda')?16:8; S.money+=m; S.stats.earned+=m; const c=P3(15.75,13.2,.9); floats.push({text:'+$'+m,x:c.x,y:c.y,life:1,color:'#e2574c'}); if(Math.random()<.5){ p.litterKind=p.litterKind||'can'; p.litterT=1+Math.random()*2; } }
   });
   patients=patients.filter(p=>!p.gone);
-  updateJanitors(dt); updateDucks(dt); updateUfo(dt); updateEmergency(dt); updateLab(dt);
+  updateJanitors(dt); updateDucks(dt); updateGarden(dt); updateWeather(dt); updateUfo(dt); updateEmergency(dt); updateLab(dt);
   if(litter.length>=6&&!dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊好髒，病人開始不耐煩了…'); }
   if(litter.length<3) dirtyWarned=false;
   S.ys.cleanSum+=cleanPct()*dt; S.ys.cleanN+=dt;
@@ -837,8 +890,8 @@ function updateJanitors(dt){
   const sp=has('turbomop')?2:1;
   jans.forEach(j=>{
     if(j.state==='clean'){ j.t-=dt*sp; if(j.t<=0){ const k=litter.indexOf(j.target); if(k>=0) litter.splice(k,1); j.target=null; j.state='idle'; j.t=.5; } return; }
-    if(j.state==='go'){ if(!litter.includes(j.target)){ j.state='idle'; j.path=[]; return; } if(movePerson(j,dt,1.7*sp)||!j.path.length){ j.state='clean'; j.t=1.1; } return; }
-    j.t-=dt; movePerson(j,dt,1.2);
+    if(j.state==='go'){ if(!litter.includes(j.target)){ j.state='idle'; j.path=[]; return; } if(movePerson(j,dt,1.1*sp)||!j.path.length){ j.state='clean'; j.t=1.1; } return; }
+    j.t-=dt; movePerson(j,dt,.8);
     const taken=new Set(jans.map(o=>o.target).filter(Boolean)), cand=litter.filter(l=>!taken.has(l));
     if(cand.length){ cand.sort((a,b)=>Math.hypot(a.x-j.x,a.y-j.y)-Math.hypot(b.x-j.x,b.y-j.y)); j.target=cand[0]; j.state='go'; goTo(j,j.target.x,j.target.y); return; }
     if(j.t<=0&&!j.path.length){ j.t=4+Math.random()*5; const s=randomCorridor(); goTo(j,s[0],s[1]); }
@@ -847,8 +900,8 @@ function updateJanitors(dt){
 // 亂入的鴨子
 function spawnDuck(){ const d={x:SPAWN.x,y:SPAWN.y+(Math.random()-.5)*.3,path:[],phase:0,legs:2+Math.floor(Math.random()*2)}; const s=randomCorridor(); goTo(d,s[0],s[1]); ducks.push(d); }
 function updateDucks(dt){
-  duckT-=dt; if(duckT<=0){ duckT=70+Math.random()*80; if(S.stats.cured>=5){ spawnDuck(); if(Math.random()<.5) ticker(pick(['🦆 一隻鴨子走進來了。沒有人知道為什麼。','🦆 有鴨子在走廊散步，櫃台小姐假裝沒看到。','🦆 鴨子又來了，牠好像在找什麼。'])); } }
-  ducks.forEach(d=>{ if(movePerson(d,dt,1.4)){ if(d.legs>0){ d.legs--; const s=randomCorridor(); goTo(d,s[0],s[1]); } else if(!d.leaving){ d.leaving=1; goTo(d,17.5,14.5); d.path.push({x:SPAWN.x,y:SPAWN.y}); } else d.gone=1; } });
+  duckT-=dt; if(duckT<=0){ duckT=(S.garden.some(p=>p.k==='pond'&&p.g>=1)?35:70)+Math.random()*60; if(S.stats.cured>=5){ spawnDuck(); if(Math.random()<.5) ticker(pick(['🦆 一隻鴨子走進來了。沒有人知道為什麼。','🦆 有鴨子在走廊散步，櫃台小姐假裝沒看到。','🦆 鴨子又來了，牠好像在找什麼。'])); } }
+  ducks.forEach(d=>{ if(movePerson(d,dt,.75)){ if(d.legs>0){ d.legs--; const s=randomCorridor(); goTo(d,s[0],s[1]); } else if(!d.leaving){ d.leaving=1; goTo(d,17.5,14.5); d.path.push({x:SPAWN.x,y:SPAWN.y}); } else d.gone=1; } });
   ducks=ducks.filter(d=>!d.gone);
 }
 // UFO（研發：外星合作計畫）
@@ -911,18 +964,19 @@ function makeGoals(){
     {k:'dex',n:Math.min(DISEASES.length,dexN+2),t:'治好 {n} 種不同的怪病'}
   ];
   if(tr<openSlots().length) C.push({k:'rooms',n:tr+1,t:'擁有 {n} 間看診科別'});
+  C.push({k:'green',n:gardenGreen()+8,t:'花園綠意達到 {n}'},{k:'plant',n:5,t:'種下 {n} 棵植物'},{k:'harvest',n:6,t:'收成 {n} 次'});
   if(tr>=1&&S.stats.cured>=8) C.push({k:'emerg',n:1,t:'完成 {n} 次急診任務'});
-  while(out.length<3&&C.length){ const g=C.splice(Math.floor(Math.random()*C.length),1)[0]; g.base={cure:S.stats.cured,earn:S.stats.earned,clean:S.stats.cleans,emerg:S.stats.emergWin}[g.k]||0; g.done=0; out.push(g); }
+  while(out.length<3&&C.length){ const g=C.splice(Math.floor(Math.random()*C.length),1)[0]; g.base={cure:S.stats.cured,earn:S.stats.earned,clean:S.stats.cleans,emerg:S.stats.emergWin,plant:S.stats.planted,harvest:S.stats.harvest}[g.k]||0; g.done=0; out.push(g); }
   return out;
 }
 function goalProg(g){
   switch(g.k){ case 'cure': return S.stats.cured-g.base; case 'earn': return S.stats.earned-g.base; case 'rep': return S.rep; case 'clean': return S.stats.cleans-g.base;
-    case 'dex': return Object.keys(S.dex).length; case 'rooms': return treatRooms().length; case 'emerg': return S.stats.emergWin-g.base; } return 0;
+    case 'dex': return Object.keys(S.dex).length; case 'rooms': return treatRooms().length; case 'emerg': return S.stats.emergWin-g.base; case 'green': return gardenGreen(); case 'plant': return S.stats.planted-g.base; case 'harvest': return S.stats.harvest-g.base; } return 0;
 }
 const goalText = g => g.t.replace('{n}',g.k==='earn'?fmt(g.n):g.n);
 function checkGoals(){
   (S.goals||[]).forEach(g=>{ if(!g.done&&goalProg(g)>=g.n){ g.done=1; const m=big(250); S.money+=m; addRep(3); sfx.fan(); toast('🎯','目標達成：'+goalText(g),'💰 +'+fmt(m)+'　⭐ +3'); } });
-  const d=(S.goals||[]).filter(g=>g.done).length; $('dateChip').textContent=`📅 第${yearNo()-0}年 ${monthNo()}月　🎯 ${d}/${(S.goals||[]).length}`;
+  const d=(S.goals||[]).filter(g=>g.done).length; $('dateChip').textContent=`${SEASON_ICON[seasonOf(monthNo())]} 第${yearNo()}年 ${monthNo()}月　🎯 ${d}/${(S.goals||[]).length}`;
 }
 function yearEnd(){
   const y=yearNo()-1, ys=S.ys, cured=S.stats.cured-ys.cured0, earned=S.stats.earned-ys.earned0, lost=S.stats.lost-ys.lost0;
@@ -934,6 +988,7 @@ function yearEnd(){
   if(cured>=20&&lost<=cured*.05) aw.push(['happy']);
   if(ys.emerg>=2) aw.push(['emerg',ys.emerg]);
   if(dexN>=10) aw.push(['dex',dexN]);
+  if(gardenGreen()>=20) aw.push(['green',gardenGreen()]);
   if(ys.ducks>=3) aw.push(['ducks',ys.ducks]);
   if(!aw.length) aw.push(['try']);
   const pickA=aw.sort(()=>Math.random()-.5).slice(0,3);
@@ -943,6 +998,146 @@ function yearEnd(){
   const gd=(S.goals||[]).filter(g=>g.done).length;
   sfx.fan();
   queueModal({icon:'🎊',title:`第 ${y} 年 年度評鑑`,body:`<p>治好 ${cured} 人・收入 $${fmt(earned)}・目標達成 ${gd}/${(S.goals||[]).length}</p>${html}<div class="note" style="text-align:center"><span class="delta pos">💰 +${fmt(m)}${rp?'　⭐ +'+rp:''}</span></div>`,buttons:[{label:'迎接新的一年',fn:()=>{ S.ys=newYearStats(); S.goals=makeGoals(); toast('📅',`第 ${yearNo()} 年開始！`,'新的年度目標已更新'); saveLocal(); }}]});
+}
+
+// ================= 花園 =================
+let bflies=[], weather={type:'clear',t:0}, weatherT=150, wx=[], burpT=0;
+function gardenGreen(){ return (S&&S.garden?S.garden:[]).reduce((s,p)=>s+(p.g>=1?GARDEN[p.k].green:0),0); }
+function plantBase(x,y){
+  if(x<-4||y<-4||x>21||y>20) return false;
+  for(let a=-1;a<=1;a++) for(let c=-1;c<=1;c++) if(inside(x+a,y+c)) return false;
+  if(x>=17&&y>=13&&y<=16) return false;
+  if(TREE_TILES.has(x+','+y)) return false;
+  return true;
+}
+const plantable=(x,y)=>plantBase(x,y)&&!S.garden.some(p=>p.x===x&&p.y===y);
+const thirsty=p=>GARDEN[p.k].water>0&&!has('sprinkler')&&p.wl<=0;
+function plantAt(k,x,y,free,g0){
+  const G=GARDEN[k];
+  if(!plantable(x,y)){ if(!free) ticker('🌱 這裡不能種，要種在診所外面的草地上。'); return false; }
+  if(!free&&S.money<G.cost){ ticker('💸 錢不夠買種子了。'); sfx.bad(); return false; }
+  if(!free){ S.money-=G.cost; bump('money'); }
+  S.garden.push({k,x,y,g:g0||0,wl:G.water,pt:0,pn:0,c:Math.floor(Math.random()*FLOWER_COLS.length)});
+  S.stats.planted++; sfx.pop(); const c=iso(x+.5,y+.5); floats.push({text:G.icon,x:c.x,y:c.y-tw*.3,life:.9,color:'#3fae7a'});
+  return true;
+}
+function plantRandom(k,g0){
+  const cand=[]; for(let y=-3;y<=19;y++) for(let x=-3;x<=20;x++) if(plantable(x,y)) cand.push([x,y,Math.hypot(x-12,y-12)]);
+  if(!cand.length) return false; cand.sort((a,b)=>a[2]-b[2]); const [x,y]=pick(cand.slice(0,25));
+  return plantAt(k,x,y,true,g0);
+}
+function hitPlant(sx,sy){
+  let hit=null, hd=-1e9;
+  S.garden.forEach(p=>{ const b=iso(p.x+.5,p.y+.5), G=GARDEN[p.k], h=G.h*(.4+.6*Math.min(1,p.g))*tw;
+    if(Math.abs(sx-b.x)<tw*.32&&sy<b.y+tw*.15&&sy>b.y-h-tw*.2&&p.x+p.y>hd){ hd=p.x+p.y; hit=p; } });
+  return hit;
+}
+let plantSel=null;
+function tapPlant(p){
+  const G=GARDEN[p.k], b=iso(p.x+.5,p.y+.5);
+  if(thirsty(p)){ p.wl=G.water; sfx.pop(); floats.push({text:'💧',x:b.x,y:b.y-tw*.5,life:.9,color:'#4d7cc7'}); return; }
+  if(p.pn>0){ const m=big(G.prod.val)*p.pn; S.money+=m; S.stats.earned+=m; S.stats.harvest++; floats.push({text:G.prod.icon+' +$'+fmt(m),x:b.x,y:b.y-tw*.6,life:1.2,color:'#e09a12'}); p.pn=0; sfx.coin(); bump('money');
+    if(p.k==='apple'&&Math.random()<.3) ticker('🍎 收成蘋果！醫生們很緊張地往後退了一步。'); return; }
+  if(Math.random()<.5&&p.g>=1){ const c=b; floats.push({text:pick(PLANT_SAYS[p.k]),x:c.x,y:c.y-tw*(G.h+.3),life:1.6,color:'#3b2f2a'}); sfx.pop(); return; }
+  plantSel=p; openSheet(plantHTML);
+}
+function plantHTML(){
+  const p=plantSel; if(!p||!S.garden.includes(p)) return '<div class="sub">植物不見了。</div>';
+  const G=GARDEN[p.k], st=thirsty(p)?'💧 口渴了，點一下澆水':p.g<1?`🌱 成長中 ${Math.floor(p.g*100)}%`:'🌿 已長大';
+  return `<h2>${G.icon} ${G.name}</h2><div class="sub">${G.desc}</div><div class="kv"><div>狀態<b style="font-size:14px">${st}</b></div><div>綠意<b>🌿 ${G.green}</b></div></div>
+    <div class="row"><button class="btn ghost" data-act="digPlant">挖起來（退 $${fmt(G.cost*.5)}）</button></div>`;
+}
+function digPlant(){ const p=plantSel; if(!p) return; S.garden=S.garden.filter(q=>q!==p); S.money+=Math.round(GARDEN[p.k].cost*.5); sfx.pop(); closeSheet(); saveLocal(); }
+function pickPlant(k){ closeSheet(); setPlacing({plant:k}); }
+function gardenListHTML(){
+  const items=Object.entries(GARDEN).map(([k,G])=>{ const locked=S.rep<G.rep;
+    return `<div class="item ${locked?'locked':''}"><div class="ic" style="background:#eaf5e2">${G.icon}</div><div class="txt"><div class="nm">${G.name}　<span style="font-size:12px;color:var(--soft)">🌿 ${G.green}</span></div><div class="ds">${G.desc}</div></div>
+      ${locked?`<div class="ds" style="text-align:right">🔒<br>聲望 ${G.rep}</div>`:`<button class="btn" ${S.money<G.cost?'disabled':''} data-act="pickPlant" data-arg="${k}">$${fmt(G.cost)}</button>`}</div>`; }).join('');
+  const gr=gardenGreen();
+  return `<div class="sub">花園綠意 🌿 ${gr}（病人耐心 +${Math.min(40,gr)}%）・💰 ${fmt(S.money)}</div>${items}`;
+}
+function simPlant(p,dt){
+  const G=GARDEN[p.k];
+  let eff=dt; if(G.water>0&&!has('sprinkler')){ eff=Math.min(dt,Math.max(0,p.wl)); p.wl-=dt; }
+  if(eff<=0) return;
+  if(p.g<1){ const need=(1-p.g)*G.grow/(has('fert')?2:1); if(eff<need){ p.g+=eff*(has('fert')?2:1)/G.grow; return; } p.g=1; eff-=need; }
+  if(G.prod&&p.pn<G.prod.cap){ p.pt+=eff; while(p.pt>=G.prod.every&&p.pn<G.prod.cap){ p.pt-=G.prod.every; p.pn++; } }
+}
+function gardenOffline(away){ S.garden.forEach(p=>simPlant(p,away)); }
+function updateGarden(dt){
+  S.garden.forEach(p=>{ simPlant(p,dt); if(p.chomp>0) p.chomp-=dt; });
+  burpT-=dt;
+  if(burpT<=0){ burpT=6;
+    S.garden.forEach(p=>{ if(p.k!=='flytrap'||p.g<1||thirsty(p)) return; const l=litter.find(l=>Math.hypot(l.x-(p.x+.5),l.y-(p.y+.5))<4.5); if(l){ litter.splice(litter.indexOf(l),1); p.chomp=.8; sfx.pop(); const c=iso(p.x+.5,p.y+.5); floats.push({text:'嗝！',x:c.x,y:c.y-tw*.7,life:1,color:'#3f8a3c'}); } }); }
+  // 蝴蝶
+  const se=seasonOf(monthNo()), want=se==='winter'?0:Math.min(8,Math.floor(gardenGreen()/6)), homes=S.garden.filter(p=>p.g>=1&&['flower','sunflower','cherry','pond'].includes(p.k));
+  while(bflies.length<want&&homes.length){ const h=pick(homes); bflies.push({hx:h.x+.5,hy:h.y+.5,x:h.x,y:h.y,t:Math.random()*10,a:.6+Math.random()*.6,b:.5+Math.random()*.5}); }
+  if(bflies.length>want) bflies.length=want;
+  bflies.forEach(f=>{ f.t+=dt; f.x=f.hx+Math.cos(f.t*f.a)*1.2; f.y=f.hy+Math.sin(f.t*f.b)*1; if(Math.random()<dt*.05&&homes.length){ const h=pick(homes); f.hx=h.x+.5; f.hy=h.y+.5; } });
+}
+function updateWeather(dt){
+  const se=seasonOf(monthNo());
+  if(weather.type!=='clear'){ weather.t-=dt; if(weather.t<=0){ weather.type='clear'; } }
+  else { weatherT-=dt; if(weatherT<=0){ weatherT=150+Math.random()*120; if(se==='winter'){ weather={type:'snow',t:40}; ticker(pick(['❄️ 下雪了！病人們在門口堆了一個雪人醫生。','❄️ 下雪了，鴨子們穿上了小圍巾（想像的）。'])); } else { weather={type:'rain',t:25}; S.garden.forEach(p=>{ if(GARDEN[p.k].water>0) p.wl=GARDEN[p.k].water; }); ticker(pick(['🌧️ 下雨了，花園的植物們很開心，全部喝飽了。','🌧️ 一陣雨，向日葵抱怨牠的髮型亂了。','🌧️ 下雨了。有病人說他的病是被雨淋出來的。'])); } } }
+}
+function drawWeather(){
+  const se=seasonOf(monthNo()), cherryOn=se==='spring'&&S.garden.some(p=>p.k==='cherry'&&p.g>=1);
+  const n=weather.type==='rain'?70:weather.type==='snow'?50:se==='winter'?14:cherryOn?18:0;
+  while(wx.length<n) wx.push({x:Math.random()*W,y:Math.random()*H,v:.5+Math.random()*.5,s:Math.random()*6});
+  if(wx.length>n) wx.length=n;
+  wx.forEach(q=>{
+    if(weather.type==='rain'){ q.y+=14*q.v; q.x-=3*q.v; ctx.strokeStyle='rgba(180,210,255,.55)'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(q.x-3,q.y+10); ctx.stroke(); }
+    else if(weather.type==='snow'||se==='winter'){ q.y+=1.2*q.v; q.x+=Math.sin(clock+q.s)*.5; circle(q.x,q.y,1.5+q.v*1.5,'rgba(255,255,255,.9)'); }
+    else { q.y+=1*q.v; q.x+=Math.sin(clock*1.5+q.s)*.8; ctx.save(); ctx.translate(q.x,q.y); ctx.rotate(clock+q.s); ellipse(0,0,3.5,2,'rgba(248,170,200,.9)'); ctx.restore(); }
+    if(q.y>H+10){ q.y=-10; q.x=Math.random()*W*1.1; } if(q.x<-10) q.x=W+5;
+  });
+  if(weather.type==='rain'){ ctx.fillStyle='rgba(60,80,120,.08)'; ctx.fillRect(0,0,W,H); }
+}
+function drawPlantable(){
+  const pulse=.25+.15*Math.sin(clock*5);
+  for(let y=-4;y<=20;y++) for(let x=-4;x<=21;x++){ if(!plantable(x,y)) continue; const c=iso(x+.5,y+.5); if(c.x<-tw||c.x>W+tw||c.y<-tw||c.y>H+tw) continue; ellipse(c.x,c.y,tw*.2,tw*.1,`rgba(255,255,255,${pulse})`); }
+}
+function drawGardenItem(p){
+  const G=GARDEN[p.k], b=iso(p.x+.5,p.y+.5), g=Math.min(1,p.g), dry=thirsty(p), sc=.4+.6*g, se=seasonOf(monthNo());
+  if(g<.25&&p.k!=='pond'){ // 幼苗
+    ellipse(b.x,b.y,tw*.14,tw*.06,'#8a6a45'); ctx.strokeStyle='#3f8a3c'; ctx.lineWidth=Math.max(1.5,tw*.025); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x,b.y-tw*.12); ctx.stroke();
+    ellipse(b.x-tw*.04,b.y-tw*.13,tw*.045,tw*.022,dry?'#a99c62':'#5fb35a'); ellipse(b.x+tw*.04,b.y-tw*.14,tw*.045,tw*.022,dry?'#9a8f5a':'#4f9a4a');
+  } else if(p.k==='flower'){
+    const col=dry?'#c9b48a':FLOWER_COLS[p.c%FLOWER_COLS.length], sw=Math.sin(clock*2+p.x)*tw*.02, hy=b.y-tw*.28*sc;
+    ctx.strokeStyle='#3f8a3c'; ctx.lineWidth=Math.max(1.5,tw*.025); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x+sw,hy); ctx.stroke();
+    ellipse(b.x-tw*.05,b.y-tw*.1*sc,tw*.05,tw*.02,'#4f9a4a');
+    for(let k=0;k<5;k++){ const a=k*1.2566; circle(b.x+sw+Math.cos(a)*tw*.055*sc,hy+Math.sin(a)*tw*.055*sc,tw*.045*sc,col); } circle(b.x+sw,hy,tw*.035*sc,'#ffd23d');
+  } else if(p.k==='sunflower'){
+    const sw=Math.sin(clock*1.2+p.x)*tw*.03, hy=b.y-tw*.6*sc, r=tw*.1*sc;
+    ctx.strokeStyle='#4f9a4a'; ctx.lineWidth=Math.max(2,tw*.035); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x+sw,hy); ctx.stroke();
+    ellipse(b.x+tw*.06,b.y-tw*.25*sc,tw*.07,tw*.03,'#5fb35a');
+    for(let k=0;k<12;k++){ const a=k*.5236; circle(b.x+sw+Math.cos(a)*r*1.25,hy+Math.sin(a)*r*1.25,r*.45,dry?'#c9b48a':'#ffd23d'); }
+    circle(b.x+sw,hy,r,'#8a5a36'); if(sc>.8){ circle(b.x+sw-r*.35,hy-r*.15,r*.13,'#2b1d12'); circle(b.x+sw+r*.35,hy-r*.15,r*.13,'#2b1d12'); ctx.strokeStyle='#2b1d12'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.arc(b.x+sw,hy+r*.1,r*.4,.2,Math.PI-.2); ctx.stroke(); }
+  } else if(p.k==='tree') drawTree(p.x+.5,p.y+.5,{scale:sc,dry,bird:g>=1&&(p.x*7+p.y*3)%4===0&&se!=='winter'});
+  else if(p.k==='apple') drawTree(p.x+.5,p.y+.5,{scale:sc,dry,fruits:p.pn||0});
+  else if(p.k==='money') drawTree(p.x+.5,p.y+.5,{scale:sc,dry,coins:p.pn||0,pal:dry?null:['#3f9a6a','#4fae7a','#62c08c']});
+  else if(p.k==='cherry') drawTree(p.x+.5,p.y+.5,{scale:sc*1.05,dry,pal:se==='spring'&&g>=1&&!dry?['#f48fb8','#f7a8c8','#f9c1d9']:null});
+  else if(p.k==='cactus'){
+    box(p.x+.35,p.y+.35,.3,.3,.14,'#c8734a'); const c=P3(p.x+.5,p.y+.5,.14), h=tw*.38*sc, w=tw*.1*sc;
+    rrect(c.x-w/2,c.y-h,w,h,w/2,'#4f9a4a'); rrect(c.x-w*1.6,c.y-h*.7,w*.7,h*.35,w*.35,'#4f9a4a'); rrect(c.x+w*.9,c.y-h*.8,w*.7,h*.4,w*.35,'#4f9a4a');
+    if(g>=1){ circle(c.x,c.y-h,w*.35,'#ff6b8a'); if(Math.floor(clock/3+p.x)%3===0) txt('♪',c.x+w*1.5+Math.sin(clock*3)*3,c.y-h-tw*.1-(clock%3)*4,tw*.16,'#9b6dd6',900); }
+  } else if(p.k==='flytrap'){
+    box(p.x+.33,p.y+.33,.34,.34,.16,'#7a6a9a'); const c=P3(p.x+.5,p.y+.5,.16), r=tw*.11*sc, open=p.chomp>0?.1:.55+Math.sin(clock*2+p.x)*.1;
+    ctx.strokeStyle='#3f8a3c'; ctx.lineWidth=Math.max(1.5,tw*.025); ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(c.x,c.y-tw*.18*sc); ctx.stroke();
+    const hy=c.y-tw*.2*sc; ctx.save(); ctx.translate(c.x,hy);
+    ctx.rotate(-open); ctx.beginPath(); ctx.arc(0,0,r,Math.PI,0); ctx.fillStyle=dry?'#a99c62':'#5fb35a'; ctx.fill(); ctx.beginPath(); ctx.arc(0,0,r*.75,Math.PI,0); ctx.fillStyle='#e2574c'; ctx.fill(); ctx.rotate(open);
+    ctx.rotate(open); ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI); ctx.fillStyle=dry?'#a99c62':'#4f9a4a'; ctx.fill(); ctx.beginPath(); ctx.arc(0,0,r*.75,0,Math.PI); ctx.fillStyle='#c94c42'; ctx.fill();
+    ctx.restore();
+  } else if(p.k==='pond'){
+    const c=iso(p.x+.5,p.y+.5); ellipse(c.x,c.y,tw*.42*sc,tw*.19*sc,'#6f9fd0'); ellipse(c.x,c.y,tw*.36*sc,tw*.15*sc,'#8fc3ec');
+    ellipse(c.x-tw*.12,c.y+tw*.02,tw*.07,tw*.03,'#4f9a4a'); ellipse(c.x+tw*.1,c.y-tw*.04,tw*.06,tw*.025,'#5fb35a');
+    if(g>=1){ emoji('🪷',c.x+tw*.02,c.y-tw*.06,tw*.2); if(Math.floor(clock/4+p.x)%3===0) emoji('🐸',c.x-tw*.14,c.y-tw*.04,tw*.14); }
+  }
+  // 狀態氣泡
+  const top=b.y-tw*(G.h*sc+.22);
+  if(dry&&Math.floor(clock*2)%2===0){ circle(b.x,top,tw*.1,'rgba(255,255,255,.95)'); emoji('💧',b.x,top+1,tw*.13); }
+  else if(p.pn>0&&!['apple','money'].includes(p.k)){ circle(b.x,top,tw*.1,'rgba(255,255,255,.95)'); emoji(G.prod.icon,b.x,top+1,tw*.13); }
+  else if(p.pn>0&&tw>=24){ const t2=b.y-tw*(G.h*sc+.3)-Math.abs(Math.sin(clock*3))*3; emoji('✨',b.x+tw*.2,t2,tw*.14); }
 }
 
 // ================= 建造與擴建 =================
@@ -965,11 +1160,16 @@ function demolish(r){
 function buyWing(k){
   const w=WINGS[k]; if(S.land[k]||S.money<w.cost||S.rep<w.rep||(w.needs&&!w.needs.every(n=>S.land[n]))) return;
   S.money-=w.cost; S.land[k]=1; sfx.fan(); bump('money');
+  const moved=S.garden.filter(p=>!plantBase(p.x,p.y)); if(moved.length){ moved.forEach(p=>S.money+=GARDEN[p.k].cost); S.garden=S.garden.filter(p=>plantBase(p.x,p.y)); setTimeout(()=>toast('🌱',`${moved.length} 棵植物移去苗圃了`,'已全額退費'),1200); }
   toast('🏗️',w.name+'擴建完成！','多了 '+w.slots.length+' 塊空地');
   ticker(pick(['🚧 工人們挖出一個古董馬桶，決定把它留作紀念。','🚧 擴建完成。隔壁阿伯說他會想念這塊地。','🚧 新的土地！鴨子們已經先進去探勘了。']));
   saveLocal(); refreshSheet();
 }
-function setPlacing(type){ placing=type; const b=$('banner'); if(type){ $('bannerTxt').textContent=`點一塊發光的空地，放置 ${ROOMS[type].icon} ${ROOMS[type].name}`; b.classList.add('show'); } else b.classList.remove('show'); }
+function setPlacing(type){ placing=type; const b=$('banner');
+  if(!type){ b.classList.remove('show'); return; }
+  if(type.plant){ const G=GARDEN[type.plant]; $('bannerTxt').textContent=`點草地種下 ${G.icon} ${G.name}（$${fmt(G.cost)}，可連續種）`; $('bannerX').textContent='完成'; }
+  else { $('bannerTxt').textContent=`點一塊發光的空地，放置 ${ROOMS[type].icon} ${ROOMS[type].name}`; $('bannerX').textContent='取消'; }
+  b.classList.add('show'); }
 
 // ================= 觸控 =================
 const ptrs=new Map(); let gest=null, sayStaff=null;
@@ -1008,7 +1208,10 @@ function tap(sx,sy){
     const l=litter.find(l=>Math.hypot(l.x-w.x,l.y-w.y)<.4);
     if(l){ litter.splice(litter.indexOf(l),1); S.stats.cleans++; S.ys.cleans++; sfx.pop(); if(S.tut===2) S.tut=3; const c=iso(l.x,l.y); floats.push({text:'✨',x:c.x,y:c.y-tw*.2,life:.8,color:'#3fae7a'}); if(Math.random()<.3) ticker(pick(['🧹 院長親自打掃，大家都看到了。','🧹 院長默默把地上的東西撿起來，好有風範。','🧹 打掃完，地板亮到可以照出你的黑眼圈。'])); return; }
   }
-  const tx=Math.floor(w.x), ty=Math.floor(w.y), s=slotOf(tx,ty);
+  const tx=Math.floor(w.x), ty=Math.floor(w.y);
+  if(placing&&placing.plant){ plantAt(placing.plant,tx,ty); return; }
+  if(!placing){ const gp=hitPlant(sx,sy); if(gp){ tapPlant(gp); return; } }
+  const s=slotOf(tx,ty);
   if(!s) return;
   if(!slotOpen(s.i,s.j)){ if(!placing) openLand(); return; }
   if(isLobby(s)){ if(!placing) openLobby(); return; }
@@ -1053,12 +1256,18 @@ $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
 (function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs&&!isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
 $('zHome').onclick=()=>{ zoom=1; applyZoom(); camX=HOME.x; camY=HOME.y; };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 function treatsChips(type){ return DISEASES.filter(d=>d.room===type).map(d=>`<span class="chip">${S.dex[d.id]||S.seen[d.id]?d.icon+' '+d.name:'❔ ???'}</span>`).join(''); }
-let buildTarget=null;
-function openBuild(slot){ buildTarget=slot; openSheet(buildHTML); }
+let buildTarget=null, buildTab='rooms';
+function openBuild(slot){ buildTarget=slot; if(slot) buildTab='rooms'; openSheet(buildHTML); }
+function setTab(t){ buildTab=t; refreshSheet(); }
 function buildHTML(){
+  const seg=buildTarget?'':`<div class="seg"><button class="${buildTab==='rooms'?'on':''}" data-act="setTab" data-arg="rooms">🏥 科別</button><button class="${buildTab==='garden'?'on':''}" data-act="setTab" data-arg="garden">🌱 花園</button></div>`;
+  if(buildTab==='garden'&&!buildTarget) return `<h2>🏗️ 建造</h2>${seg}`+gardenListHTML();
+  return roomsBuildHTML(seg);
+}
+function roomsBuildHTML(seg){
   const free=openSlots().filter(([i,j])=>!roomAt(i,j)).length;
   const items=Object.entries(ROOMS).map(([k,R])=>{
     const lockRep=S.rep<R.rep, lockRes=R.needs&&!has(R.needs), locked=lockRep||lockRes, cant=S.money<R.cost||(!buildTarget&&!free);
@@ -1067,7 +1276,7 @@ function buildHTML(){
       <div class="txt"><div class="nm">${R.name}</div><div class="ds">${R.desc}</div>${R.noPatients?'':`<div class="chips">${treatsChips(k)}</div>`}</div>
       ${locked?`<div class="ds" style="text-align:right">${lockTxt}</div>`:`<button class="btn" ${cant?'disabled':''} data-act="pickBuild" data-arg="${k}">$${fmt(R.cost)}</button>`}</div>`;
   }).join('');
-  return `<h2>🏗️ 建造</h2><div class="sub">💰 ${fmt(S.money)}・空地 ${free} 塊</div>${items}<button class="btn ghost" style="width:100%;margin-top:6px" data-act="openLand">🚧 擴建土地</button>`;
+  return `<h2>🏗️ 建造</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・空地 ${free} 塊</div>${items}<button class="btn ghost" style="width:100%;margin-top:6px" data-act="openLand">🚧 擴建土地</button>`;
 }
 function pickBuild(k){ if(buildTarget){ if(build(k,buildTarget.i,buildTarget.j)) closeSheet(); else refreshSheet(); } else { closeSheet(); setPlacing(k); } }
 let roomSel=null, confirmDel=false;
@@ -1140,12 +1349,12 @@ function openOffice(){ confirmReset=false; openSheet(officeHTML); }
 function officeHTML(){
   return `<h2>🏥 院長室</h2><div class="sub">${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>累計治好<b>${fmt(S.stats.cured)} 人</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div>
-    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>急診成功<b>${S.stats.emergWin} 次</b></div></div>
+    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>急診成功<b>${S.stats.emergWin} 次</b></div><div>花園綠意<b>🌿 ${gardenGreen()}</b></div><div>植物數<b>${S.garden.length} 株</b></div></div>
     <button class="btn ghost" style="width:100%;margin-bottom:8px" data-act="openGoals">🎯 今年的目標</button>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    <div class="sub" style="margin-top:14px">怪病診所 v0.5</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v0.6</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
@@ -1182,6 +1391,7 @@ function welcomeBack(savedT){
   let income=0, rpGain=0;
   if(away>90&&curable.length){ const avg=curable.reduce((s,d)=>s+d.fee,0)/pool().length; income=Math.round(away/spawnInterval()*avg*.12*(has('luckycat')?2:1)); }
   if(away>90) rpGain=Math.round(away*labRate()*.3);
+  if(away>60) gardenOffline(away);
   let daily=0; const td=today(); if(S.day!==td){ daily=S.day?big(200):0; S.day=td; }
   if(income<=0&&daily<=0&&rpGain<=0) return;
   S.money+=income+daily; S.stats.earned+=income+daily; S.rp+=rpGain;
@@ -1243,7 +1453,7 @@ function boot(){
     if(cloudS&&(!hadLocal||cloudS.t>savedT+2000)){ apply(cloudS); t0=cloudS.t; }
     booted=true;
     if(S.tut===0) tutorial(); else { ticker(pick(['🏥 開始營業！今天也會很怪。','🏥 院長到！病人們假裝很正常。','🏥 開門了，第一位病人已經在門口奇怪地站著。'])); welcomeBack(t0); }
-    checkProgress(); checkGoals(); updateLabDot(); saveLocal();
+    checkProgress(); checkGoals(); updateLabDot(); if(S.tut>0&&!S.unl.garden){ S.unl.garden=1; setTimeout(()=>toast('🌱','新功能：花園','建造 → 🌱 花園，種花種樹'),2500); } saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
   setTimeout(()=>finish(null),hadLocal?1500:6000);
