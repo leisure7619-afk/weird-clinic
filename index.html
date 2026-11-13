@@ -20,10 +20,10 @@ html,body{margin:0;height:100%;color:var(--ink);font-family:-apple-system,BlinkM
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:640px;margin:0 auto;position:relative}
 header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
-.brand{background:rgba(255,253,248,.92);border:2px solid var(--line);border-radius:14px;padding:4px 10px;font-weight:900;font-size:16px;line-height:1.15}
+.brand{background:rgba(255,253,248,.92);border:2px solid var(--line);border-radius:14px;padding:4px 9px;font-weight:900;font-size:15px;line-height:1.15;white-space:nowrap;flex:none}
 .brand small{display:block;font-size:10px;font-weight:700;color:var(--soft)}
-.stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.pill{background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:3px 9px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .15s}
+.stats{display:flex;gap:4px;flex-wrap:nowrap;justify-content:flex-end;min-width:0}
+.pill{background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:3px 7px;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .15s}
 .pill.bump{transform:scale(1.12)}
 .pill.warn{background:#ffe3dc;border-color:#f3a593}
 .buffs{display:flex;gap:4px;flex-wrap:wrap}
@@ -33,6 +33,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #banner{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:7px 8px 7px 14px;border-radius:999px;font-size:13px;font-weight:700;display:none;gap:8px;align-items:center;white-space:nowrap;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 #banner.show{display:flex}
 #banner button{background:#fff;color:var(--ink);border:0;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800}
+#toast{position:absolute;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:4;pointer-events:none;display:flex;flex-direction:column;gap:6px;align-items:center}
+.tst{background:rgba(255,253,248,.97);border:2px solid var(--line);border-radius:16px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.15);animation:tin .3s cubic-bezier(.2,1.4,.4,1);white-space:nowrap}
+.tst .ti{font-size:26px}.tst small{display:block;font-size:11px;color:var(--soft);font-weight:700}
+.tst.out{opacity:0;transform:translateY(-8px);transition:all .3s}
+@keyframes tin{from{transform:scale(.7);opacity:0}}
 #zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px;z-index:2}
 #zoom button{width:38px;height:38px;border-radius:12px;border:2px solid var(--line);background:rgba(255,253,248,.95);font-size:18px;font-weight:900;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 #ticker{margin:6px 10px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:7px 12px;font-size:13px;min-height:36px;line-height:1.45;transition:background .3s}
@@ -102,6 +107,7 @@ nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
       <div class="buffs" id="buffs"></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
+    <div id="toast"></div>
     <div id="banner"><span id="bannerTxt"></span><button id="bannerX">取消</button></div>
   </div>
   <div id="bottom">
@@ -534,6 +540,16 @@ function draw(){
   S.rooms.forEach(drawSign);
   floats.forEach(f=>{ ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); ctx.font=`900 ${Math.round(Math.max(13,tw*.3))}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='#fff'; ctx.strokeText(f.text,f.x,f.y); ctx.fillStyle=f.color; ctx.fillText(f.text,f.x,f.y); ctx.globalAlpha=1; });
   patients.forEach(p=>{ if(p.sayT>0 && !p.hidden) drawSay(p); });
+  drawHint();
+}
+function drawHint(){
+  let pt=null;
+  if(S.tut===1 && !S.rooms.length){ const sl=[[1,2],[0,2],[1,1]].find(([i,j])=>!roomAt(i,j)); if(sl) pt=iso(4*sl[0]+2.5,4*sl[1]+2.5); }
+  else if(S.tut===2 && litter.length){ pt=iso(litter[0].x,litter[0].y); }
+  if(!pt) return;
+  const b=Math.abs(Math.sin(clock*4))*tw*.18;
+  ctx.globalAlpha=.35+.25*Math.sin(clock*4); circle(pt.x,pt.y,tw*.28,'#fff'); ctx.globalAlpha=1;
+  emoji('👆',pt.x+tw*.05,pt.y+tw*.32+b,Math.max(26,tw*.5));
 }
 function drawPatient(p,lim){
   const d=DMAP[p.d], fx=FX[p.d]||{};
@@ -571,7 +587,7 @@ function spawn(){
   const p={id:nextId++, d:d.id, x:SPAWN.x, y:SPAWN.y+(Math.random()-.5)*.4, path:[], state:'recq', wait:0, phase:Math.random()*6,
     skin:pick(SKINS), hair:pick(HAIRS), shirt:pick(SHIRTS), pants:pick(PANTS), face:1, say:'', sayT:0, slip:0, slipped:{}, mood:'', room:null, seat:-1, litterKind:null, litterT:0};
   patients.push(p); RQ.push(p); goTo(p, ...RQ_POS[RQ.length-1]);
-  if(!S.seen[d.id]){ S.seen[d.id]=1; queueModal(discoverModal(d)); }
+  if(!S.seen[d.id]){ S.seen[d.id]=1; const R=ROOMS[d.room]; toast(d.icon,'新怪病！'+d.name, S.rooms.some(r=>r.type===d.room)?'':'要蓋 '+R.icon+' '+R.name); }
   if(Math.random()<.1) talk(p);
 }
 function talk(p, txt){ p.say = txt || pick(SAYS); p.sayT = 3; }
@@ -653,7 +669,7 @@ function update(dt){
   });
   patients=patients.filter(p=>!p.gone);
   updateJanitors(dt);
-  if(litter.length>=6 && !dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊越來越髒，病人開始不耐煩了。點地上的髒東西可以親自打掃，或去「大廳」請清潔阿姨。'); }
+  if(litter.length>=6 && !dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊好髒，病人開始不耐煩了…'); }
   if(litter.length<3) dirtyWarned=false;
   eventT-=dt; if(eventT<=0){ eventT=70+Math.random()*50; if(S.stats.cured>=3) showEvent(); }
   flavorT-=dt; if(flavorT<=0){ flavorT=22+Math.random()*20; ticker(pick(FLAVOR)); }
@@ -689,7 +705,7 @@ function build(type,i,j){
   // 空地上若有人（極少見）先請他們離開
   S.money-=R.cost; const r={i,j,type,lvl:1,n:0}; S.rooms.push(r); RT[rkey(r)]={queue:[],cur:null,prog:0};
   litter=litter.filter(l=>{ const s=slotOf(Math.floor(l.x),Math.floor(l.y)); return !(s&&s.i===i&&s.j===j); });
-  sfx.build(); bump('money'); ticker(`🏗️ ${R.icon} ${R.name}開張了！醫生已經就位。`);
+  sfx.build(); bump('money'); ticker(`🏗️ ${R.icon} ${R.name}開張了！`); if(S.tut<2) S.tut=2;
   saveLocal(); return true;
 }
 function demolish(r){
@@ -742,7 +758,7 @@ function tap(sx,sy){
     if(hit){ talk(hit, Math.random()<.4 ? DMAP[hit.d].desc : null); sfx.pop(); return; }
     const w=toWorld(sx,sy);
     const l=litter.find(l=>Math.hypot(l.x-w.x,l.y-w.y)<.4);
-    if(l){ litter.splice(litter.indexOf(l),1); sfx.pop(); const c=iso(l.x,l.y); floats.push({text:'✨',x:c.x,y:c.y-tw*.2,life:.8,color:'#3fae7a'}); if(Math.random()<.3) ticker(pick(['🧹 院長親自打掃，大家都看到了。','🧹 院長默默把地上的東西撿起來，好有風範。','🧹 打掃完，地板亮到可以照出你的黑眼圈。'])); return; }
+    if(l){ litter.splice(litter.indexOf(l),1); sfx.pop(); if(S.tut===2) S.tut=3; const c=iso(l.x,l.y); floats.push({text:'✨',x:c.x,y:c.y-tw*.2,life:.8,color:'#3fae7a'}); if(Math.random()<.3) ticker(pick(['🧹 院長親自打掃，大家都看到了。','🧹 院長默默把地上的東西撿起來，好有風範。','🧹 打掃完，地板亮到可以照出你的黑眼圈。'])); return; }
   }
   const w=toWorld(sx,sy), tx=Math.floor(w.x), ty=Math.floor(w.y), s=slotOf(tx,ty);
   if(!s) return;
@@ -818,7 +834,7 @@ function lobbyHTML(){
     return `<div class="item"><div class="ic" style="background:#eef5fd">${U.icon}</div><div class="txt"><div class="nm">${U.name}　<span style="font-size:12px;color:var(--soft)">${lvTxt}</span></div><div class="ds">${U.desc}</div></div>
       <button class="btn" ${max||S.money<cost?'disabled':''} data-act="buyLobby" data-arg="${k}">${max?'已滿':'$'+fmt(cost)}</button></div>`;
   }).join('');
-  return `<h2>🛋️ 大廳與走廊</h2><div class="sub">整潔度 ${cleanPct()}%・地上有 ${litter.length} 個髒東西。也可以直接點地上的髒東西，院長親自打掃。</div>${items}`;
+  return `<h2>🛋️ 大廳與走廊</h2><div class="sub">整潔度 ${cleanPct()}%</div>${items}`;
 }
 function buyLobby(k){
   const U=LOBBY_UP[k], lv=S.lobby[k]; if(lv>=U.max) return; const cost=U.cost[lv]; if(S.money<cost) return;
@@ -847,12 +863,17 @@ function officeHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：用 Safari 開 → 下方「分享」→「加入主畫面」<br>Android：用 Chrome 開 → 右上「⋮」→「加到主畫面」或「安裝應用程式」</div>`:''}
-    <div class="sub" style="margin-top:14px">怪病診所 v0.3・單指拖曳移動、雙指縮放。點病人會聽到他們的心聲。</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v0.4</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
-function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.tut=1; S.day=today(); resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！先在空地蓋一間一般診間吧。'); }
+function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); S.tut=1; }
 
 // ================= 對話框 =================
+function toast(icon,title,sub){
+  const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icon}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
+  $('toast').appendChild(el); sfx.pop();
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
+}
 function queueModal(m){ modalQ.push(m); if(!modalOpen) nextModal(); }
 function nextModal(){
   const m=modalQ.shift(); if(!m){ modalOpen=false; $('modalWrap').classList.add('hidden'); return; }
@@ -899,7 +920,7 @@ function welcomeBack(savedT){
 function tutorial(){
   if(S.tut>0) return;
   S.tut=1; S.day=today();
-  queueModal({icon:'🏥',title:'歡迎，院長！',body:`<p>這裡是「怪病診所」。<br>城裡的人會帶著奇怪的病來找你。</p><div class="note">1. 點地圖上有「＋」的空地，蓋一間 🩺 一般診間<br>2. 病人會自己掛號、排隊、看病、付錢<br>3. 地上的髒東西點一下就能清掉<br>4. 單指拖曳移動、雙指縮放畫面</div>`,buttons:[{label:'開始營業',fn:()=>ticker('👉 點一塊有「＋」的空地，蓋第一間一般診間。')}]});
+  ticker('🏥 歡迎，院長。病人快來了…');
 }
 
 // ================= 雲端存檔（可選） =================
