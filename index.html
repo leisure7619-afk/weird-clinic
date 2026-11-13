@@ -944,7 +944,7 @@ function boot(){
   const savedT=S.t;
   layout(); window.addEventListener('resize',layout);
   requestAnimationFrame(loop);
-  if(!hadLocal) ticker('☁️ 讀取存檔中…');
+  if(!hadLocal && !ON_PAGES && location.protocol!=='file:') ticker('☁️ 讀取存檔中…');
   let settled=false;
   const apply=s=>{ S=s; resetRuntime(); lastTitle=titleOf(S.rep); ticker('☁️ 已載入雲端存檔。'); };
   const finish=cloudS=>{
