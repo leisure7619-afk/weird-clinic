@@ -111,7 +111,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
     <canvas id="cv"></canvas>
     <header>
       <div class="top">
-        <div class="brand">怪病診所 <small id="title">巷口小診所</small></div>
+        <div class="brand"><span id="brandName">怪病診所</span> <small id="title">默默無名</small></div>
         <div class="stats">
           <div class="pill" id="money">💰 0</div>
           <div class="pill" id="rep">⭐ 0</div>
@@ -150,8 +150,38 @@ const ROOMS = {
   spa:    {name:'心靈SPA',     icon:'🧖',color:'#5fd0aa',floor:['#e6faf2','#d0f2e5'],cost:3500, time:6.5,rep:90, desc:'海浪聲、精油，還有一句「今天不用回訊息」。'},
   reboot: {name:'重開機室',    icon:'🔌',color:'#8a9ad6',floor:['#eef0fb','#dde2f6'],cost:6000, time:6.0,rep:140,desc:'「請問你有試過關機再開機嗎？」',needs:'reboot'},
   freeze: {name:'冷凍艙',      icon:'🧊',color:'#62b3f0',floor:['#eef8ff','#dcefff'],cost:8000, time:7.0,rep:160,desc:'凡是過熱的東西都能冷靜下來，包括衝動。'},
-  cat:    {name:'貓醫師診間',  icon:'🐈',color:'#ffb86b',floor:['#fff3e3','#fbe5c8'],cost:18000,time:6.0,rep:260,desc:'主治醫師是一隻貓。看診時間取決於牠的心情。'}
+  cat:    {name:'貓醫師診間',  icon:'🐈',color:'#ffb86b',floor:['#fff3e3','#fbe5c8'],cost:18000,time:6.0,rep:260,desc:'主治醫師是一隻貓。看診時間取決於牠的心情。'},
+  pharm:  {name:'藥局',        icon:'💊',color:'#f2a6c4',floor:['#fff0f6','#fbe1ec'],cost:800,  time:1.6,rep:0,  desc:'看完病來這裡領藥，會多收藥費。藥師會順便送一顆安慰劑糖果。',service:1},
+  er:     {name:'急診室',      icon:'🚑',color:'#ff6b5b',floor:['#fff0ee','#fde0dc'],cost:4000, time:2.5,rep:0,  desc:'急診團病人優先送來這裡，什麼怪病都先處理，速度超快。',service:1,tier:1},
+  ward:   {name:'病房',        icon:'🛏️',color:'#8cc8ea',floor:['#eef8ff','#dcefff'],cost:3000, time:22, rep:0,  desc:'部分病人治好後要住院觀察一下，會多付住院費。三張床。',service:1,tier:1},
+  kids:   {name:'兒童遊戲室',  icon:'🧸',color:'#ffd23d',floor:['#fff8dc','#fff0b8'],cost:2500, time:0,  rep:0,  desc:'小朋友等看病時的樂園。病人耐心 +8%，裝潢分 +8。',noPatients:true,deco:8},
+  wc:     {name:'夢幻廁所',    icon:'🚻',color:'#7fd3c0',floor:['#effcf8','#dcf5ee'],cost:1800, time:0,  rep:0,  desc:'全台最乾淨的廁所，有人專程來上。來客 +5%，裝潢分 +6。',noPatients:true,deco:6},
+  canteen:{name:'員工餐廳',    icon:'🍱',color:'#ffb86b',floor:['#fff4e6','#fde6cc'],cost:1500, time:0,  rep:0,  desc:'醫生吃飽有力氣，治療速度 +8%，裝潢分 +5。',noPatients:true,deco:5,tier:1}
 };
+const DIS_ROOMS = new Set(['gp','magnet','joke','spa','reboot','freeze','cat']);
+// ---- 院所等級（參考台灣：基層診所 → 地區醫院 → 區域醫院 → 醫學中心） ----
+const TIERS = [
+  {name:'怪病診所',short:'診所',fee:1,spawn:1,wall:'#e3d5bd',stripe:null},
+  {name:'怪病地區醫院',short:'地區醫院',fee:1.15,spawn:1.15,cost:5000,wall:'#e8e4da',stripe:'#7cc6fe',req:{rep:50,cured:120,treat:4,types:3,need:['pharm'],deco:15},
+    perks:['收費 +15%、來客 +15%','可以蓋 🚑 急診室、🛏️ 病房、🍱 員工餐廳','門口加裝雨遮，招牌換新','大廳可以裝走廊壁畫']},
+  {name:'怪病區域醫院',short:'區域醫院',fee:1.3,spawn:1.3,cost:20000,wall:'#eef0f2',stripe:'#4d7cc7',req:{rep:140,cured:500,treat:7,types:5,need:['er','ward'],deco:45,land:['north']},
+    perks:['收費 +30%、來客 +30%','門口停一台救護車','大廳可以裝 💎 水晶吊燈、🪨 大理石地板、🦆 鴨子銅像']},
+  {name:'怪病醫學中心',short:'醫學中心',fee:1.5,spawn:1.5,cost:60000,wall:'#f7f8fb',stripe:'#e2574c',req:{rep:260,cured:1500,treat:8,types:7,need:['lab','pharm','er','ward'],deco:90,land:['north','west','corner'],green:25},
+    perks:['收費 +50%、來客 +50%','可以蓋 🚁 直升機停機坪，會有 VIP 病人搭直升機來','全國最怪的醫院，正式成立']}
+];
+const LOBBY_DECO = {
+  painting:{name:'名畫（複製品）',icon:'🖼️',pts:3,cost:500,tier:0,desc:'掛在走廊的大幅名畫。真跡在阿伯家。'},
+  aquarium:{name:'大魚缸',icon:'🐠',pts:4,cost:1200,tier:0,desc:'病人盯著魚看，就忘了自己在排隊。'},
+  tv:{name:'大廳電視',icon:'📺',pts:3,cost:800,tier:0,desc:'24 小時播放「怪病新聞台」。'},
+  mural:{name:'走廊壁畫',icon:'🎨',pts:5,cost:2000,tier:1,desc:'整條走廊掛滿小畫，走起來像美術館。'},
+  chandelier:{name:'水晶吊燈',icon:'💎',pts:7,cost:5000,tier:2,desc:'閃到病人忘記自己哪裡不舒服。'},
+  marble:{name:'大理石地板',icon:'🪨',pts:8,cost:7000,tier:2,desc:'亮到可以照出你的黑眼圈。'},
+  statue:{name:'鴨子銅像',icon:'🦆',pts:6,cost:5000,tier:2,desc:'紀念那隻常來的鴨子。牠本人（鴨）很滿意。'},
+  helipad:{name:'直升機停機坪',icon:'🚁',pts:10,cost:15000,tier:3,desc:'VIP 病人會搭直升機來，付三倍費用。'}
+};
+const DECO_NAME=['基本','溫馨','豪華'];
+const PHARM_LINES=['💊 藥師把藥包成禮物的樣子，病人感動到想拆。','💊 「這個藥飯後吃，飯前想一下。」','💊 藥局今天的安慰劑糖果是草莓口味。','💊 藥師說：「多喝水，少滑手機。」病人假裝沒聽到。'];
+const WARD_LINES=['🛏️ 病房裡有人說夢話：「我不要加班…」','🛏️ 住院病人在比賽誰的點滴滴得比較快。','🛏️ 病房窗外有一隻鴨子在偷看。','🛏️ 護理師幫病人蓋好被子，順便念了他一頓。'];
 const DISEASES = [
   {id:'monday',  name:'週一症候群',  icon:'🫠',room:'gp',    fee:45, rep:0,  litter:'jelly',desc:'一到週一，身體就自動變成果凍。',cure:'醫生把他放進冰箱定型，成功變回人形。'},
   {id:'unread',  name:'已讀不回焦慮',icon:'📱',room:'gp',    fee:50, rep:0,  litter:null,  desc:'每 3 秒確認一次對方有沒有回訊息。',cure:'醫生沒收手機 10 分鐘，病人哭著痊癒了。'},
@@ -180,7 +210,7 @@ const DISEASES = [
 ];
 const DMAP = Object.fromEntries(DISEASES.map(d=>[d.id,d]));
 const FX = {monday:{jelly:1},unread:{phone:1},buffet:{belly:1},phonehand:{phone:1},selfie:{tilt:1,phone:1},keyboard:{keys:1},antenna:{antenna:1},lowjoke:{shake:1},bgm:{notes:1},boss:{spots:1},sprout:{sprout:1},procrast:{slow:1},zombie:{zombie:1},invisible:{invisible:1},backward:{back:1},burnin:{glow:1},echo:{echo:1},cart:{cart:1},tiny:{scale:.55},catneed:{holdcat:1},catears:{catears:1},catgrump:{cat:1}};
-const TITLES = [[0,'巷口小診所'],[40,'社區人氣診所'],[110,'區域怪病中心'],[200,'國際怪病醫學中心'],[320,'宇宙級怪病研究院']];
+const TITLES = [[0,'默默無名'],[40,'小有名氣'],[110,'地方名店'],[200,'網路爆紅'],[320,'國際知名']];
 const SAYS = ['醫生，我覺得我的病很有個性。','請問這裡可以集點嗎？','我上網查過了，應該是絕症。','可以開一張不用上班的證明嗎？','我是陪朋友來的，朋友就是我。','這裡的 Wi-Fi 密碼是多少？','排隊也算一種療程吧？','其實我只是想吹冷氣。','我掛號是為了抽號碼牌的快感。','聽說這裡的醫生是一隻貓？'];
 const STAFF_SAYS = ['我昨天才看影片學的，放心。','這個病我在夢裡看過。','請不要在診間吃滷味。','你這個，嗯…很有創意。','下一位～','我的白袍是租的。'];
 const ECHO = ['你好好好…','醫生生生…','我在排隊隊隊…','請問廁所所所…','輪到我了嗎嗎嗎…'];
@@ -228,6 +258,7 @@ const GARDEN = {
 const FLOWER_COLS=['#ff6b8a','#ffb84d','#b18cf0','#ff8fd0','#ffe14d','#ffffff','#6ec6ff'];
 const PLANT_SAYS={flower:['（隨風搖擺）','今天的陽光剛剛好。'],sunflower:['院長早安！','我一直看著你喔。','今天也要向著光！'],tree:['小鳥在我頭上開會。','我已經站在這裡很久了。'],cactus:['♪ 刺刺的人生 ♪','不要抱我。'],apple:['醫生，你怕我嗎？','蘋果還沒熟，再等等。'],flytrap:['還有垃圾嗎？','嗝。'],pond:['呱。（青蛙）','今天水很清。'],money:['我不是錢長出來的，是錢從我長出來的。'],cherry:['等春天喔。','花瓣會掉，但很美。']};
 const AWARDS = {
+  deco:{icon:'🛋️',name:'最佳裝潢獎',txt:'裝潢分 {n}，設計雜誌想來拍照。'},
   green:{icon:'🌳',name:'綠手指獎',txt:'花園綠意達到 {n}，小鳥都來申請入住了。'},
   clean:{icon:'🧽',name:'年度最乾淨診所',txt:'地板亮到評審看到自己的鼻毛。'},
   slips:{icon:'🫠',name:'最多人滑倒獎',txt:'今年有 {n} 人踩到果凍滑倒，創院內新高。'},
@@ -309,6 +340,10 @@ const TREES_OUT = [[-3.4,4.5],[-3.2,9],[-3.5,13.4],[3,-3.4],[8.5,-3.3],[13.6,-3.
 const TREE_TILES = new Set(TREES_OUT.map(([x,y])=>Math.floor(x)+','+Math.floor(y)));
 const INIT_GARDEN = [['tree',19,6],['tree',19,10],['sunflower',18,11],['flower',18,12],['flower',19,12],['flower',20,12],['tree',6,18],['flower',9,18],['flower',10,18],['flower',11,18],['tree',13,18]];
 const RLAY = {
+  pharm:{pat:[1.6,2.05],doc:[1.6,0.55],staff:'pharm'},
+  er:{pat:[1.05,1.55],doc:[2.05,1.0],staff:'doctor',lie:1,patZ:.3},
+  ward:{doc:[2.2,1.4],staff:'nurse',pace:1,lie:1,patZ:.27,beds:[[0.62,0.75],[0.62,1.6],[0.62,2.45]]},
+  kids:{doc:[2.0,1.8],staff:'kidplay'}, wc:{doc:[2.2,2.0],staff:'none'}, canteen:{doc:[1.5,1.7],staff:'eater'},
   gp:{pat:[1.65,2.0],doc:[1.65,0.55],staff:'doctor'},
   lab:{doc:[1.3,1.25],staff:'sci',pace:1},
   magnet:{pat:[0.9,1.9],doc:[2.3,0.85],staff:'doctor',float:1},
@@ -335,7 +370,7 @@ function newYearStats(){ return {cured0:S.stats.cured,earned0:S.stats.earned,los
 function initGarden(){ return INIT_GARDEN.map(([k,x,y],n)=>({k,x,y,g:1,wl:GARDEN[k].water,pt:0,pn:0,c:n%FLOWER_COLS.length})); }
 function newState(){
   return {v:3,money:300,rep:0,rooms:[],lobby:{bench:1,plant:0,vend:0,jan:0},land:{north:0,west:0,corner:0},rp:0,res:{},dex:{},seen:{},
-    stats:{cured:0,earned:0,lost:0,emergWin:0,cleans:0,planted:0,harvest:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1},time:0,goals:null,ys:null,garden:initGarden()};
+    stats:{cured:0,earned:0,lost:0,emergWin:0,cleans:0,planted:0,harvest:0},buffs:{},t:Date.now(),day:'',tut:0,muted:false,unl:{gp:1},time:0,goals:null,ys:null,garden:initGarden(),tier:0,deco:{}};
 }
 function migrate(s){
   if(!s) return null;
@@ -367,12 +402,13 @@ const buffOn = k => (S.buffs[k]||0) > Date.now();
 const feeMult = l => 1 + 0.35*(l-1);
 const timeOf = r => ROOMS[r.type].time * Math.pow(0.85, r.lvl-1);
 const upCost = r => Math.round(ROOMS[r.type].cost * 0.8 * Math.pow(1.7, r.lvl-1));
-const spawnInterval = () => Math.max(1.3, 6 - S.rep*0.015) / (has('tvad')?1.25:1);
+const hasRoom = t => S.rooms.some(r=>r.type===t);
+const spawnInterval = () => Math.max(1.3, 6 - S.rep*0.015) / (has('tvad')?1.25:1) / TIERS[S.tier].spawn / (hasRoom('wc')?1.05:1);
 const treatRooms = () => S.rooms.filter(r=>!ROOMS[r.type].noPatients);
 const maxPatients = () => 8 + treatRooms().length*3;
 const pool = () => DISEASES.filter(d=>d.rep<=S.rep && !(d.id==='monday'&&buffOn('mondayfree')));
 const cleanPct = () => Math.max(0, 100 - litter.length*5);
-const patienceLimit = () => 40*(1+.12*S.lobby.plant)*(1+Math.min(.4,gardenGreen()*.01))*(has('comfy')?1.25:1)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
+const patienceLimit = () => 40*(1+.08*Math.min(2,S.rooms.filter(r=>r.type==='kids').length))*(1+Math.min(.15,S.rooms.reduce((a,r)=>a+(r.deco||0),0)*.01))*(1+.12*S.lobby.plant)*(1+Math.min(.4,gardenGreen()*.01))*(has('comfy')?1.25:1)*(buffOn('patience')?1.6:1)*(litter.length>=6?.7:1);
 const labRate = () => S.rooms.filter(r=>r.type==='lab').reduce((s,r)=>s+.5*r.lvl,0);
 function seatList(){ const out=[]; for(let b=0;b<S.lobby.bench;b++) BENCHES[b].seats.forEach(s=>out.push(s)); return out; }
 function titleOf(r){ let t=TITLES[0][1]; TITLES.forEach(([n,s])=>{ if(r>=n) t=s; }); return t; }
@@ -521,7 +557,9 @@ function drawTree(x,y,o={}){
 const HAIR_DYE=['#7a3b2a','#c25b3a','#3b4a8a','#e46aa0','#5b8e7d'];
 const GREY=['#d9d9d9','#bdbdbd','#f0f0f0','#9a9a9a'];
 const DARKS=['#2f3a6b','#3b3b46','#4a3b2f','#5a3b4a','#2f4a3b'];
+let KID_LOOKS=[];
 function wpick(list){ let t=0; list.forEach(x=>t+=x[1]); let r=Math.random()*t; for(const [v,w] of list){ if((r-=w)<=0) return v; } return list[0][0]; }
+function makeKidLooks(){ KID_LOOKS=[]; for(let n=0;n<6;n++){ let L; do{ L=genLook(); }while(L.age!=='kid'); KID_LOOKS.push(L); } }
 function genLook(){
   const age=wpick([['kid',12],['adult',70],['senior',18]]);
   const L={age,skin:pick(SKINS),build:wpick([['thin',25],['normal',50],['big',25]]),h:age==='kid'?.72:age==='senior'?.95:.94+Math.random()*.14};
@@ -716,6 +754,8 @@ function staffLook(kind,seed){
   if(kind==='spa') return {skin:SKINS[(seed+2)%5],hair:'#3b2a20',shirt:'#5fd0aa',pants:'#3f9c80'};
   if(kind==='sci') return {skin:SKINS[(seed+1)%5],hair:'#e9e9e9',shirt:'#9be3c7',coat:'#ffffff',pants:'#4a4f5c',goggles:1,flask:1};
   if(kind==='it') return {skin:SKINS[(seed+3)%5],hair:'#1e1e1e',shirt:'#5a6b7a',pants:'#2f2f3a',glasses:1};
+  if(kind==='pharm') return {skin:SKINS[(seed+4)%5],hair:'#3b2a20',shirt:'#9be3c7',coat:'#ffffff',pants:'#4a4f5c',glasses:1};
+  if(kind==='nurse') return {skin:SKINS[(seed+1)%5],hair:'#3b2a20',shirt:'#f6a6c1',pants:'#f6a6c1',cap:'#ffffff'};
   if(kind==='recep') return {skin:'#f5d0b5',hair:'#3b2a20',shirt:'#f6a6c1',pants:'#5a3b4a'};
   if(kind==='jan') return {skin:'#e8b48f',hair:'#8a8a8a',shirt:'#4d7cc7',pants:'#3b5a9a',cap:'#e2574c',mop:1};
   return {};
@@ -732,6 +772,14 @@ function roomFurniture(r,list){
   if(t==='reboot'){ F(.25,.2,1.1,.75,.95,'#3b4a6b',0,{post:top=>{ const c=P3(X+.8,Y+.95,.55); circle(c.x,c.y,tw*.16,busy&&Math.floor(clock*4)%2?'#3fae7a':'#2b3550'); txt('⏻',c.x,c.y,tw*.2,'#fff',900); if(busy) txt(['重新啟動中','重新啟動中.','重新啟動中..','重新啟動中...'][Math.floor(clock*3)%4],top.x,top.y-tw*.18,tw*.13,'#fff',800,'#3b4a6b'); }}); F(1.9,.5,.9,.45,.3,'#c98b4f'); F(2.2,.55,.35,.22,.24,'#2b2b2b',.3,{emo:busy?'⌛':'💾',size:.14,lift:.04}); }
   if(t==='freeze'){ F(.45,.35,.95,.95,1.05,'#bfe6ff',0,{alpha:.92,post:()=>{ const c=P3(X+.93,Y+1.3,.55); emoji(busy?'🥶':'❄️',c.x+(busy?Math.sin(clock*30)*2:0),c.y,tw*.3); }}); F(2.0,.25,.6,.4,.45,'#8a93a6',0,{emo:'🌡️',size:.2}); F(.3,2.3,.4,.4,.3,'#e6f6ff'); }
   if(t==='cat'){ F(.25,.25,.6,.6,.25,'#d8b48a'); F(.35,.35,.4,.4,.35,'#c49a6c',.25); F(.3,.3,.5,.5,.06,'#e2574c',.6); F(1.3,.6,.9,.5,.22,'#c98b4f'); add(X+.5+Y+2.3,()=>{ const c=P3(X+.5,Y+2.3,.06); emoji('🧶',c.x,c.y,tw*.2); }); }
+  if(t==='pharm'){ F(.1,.1,2.7,.3,.75,'#f4f4f4',0,{post:top=>{ ['💊','🧴','💉','🩹','💊'].forEach((e,k)=>emoji(e,top.x+(k-2)*tw*.22,top.y-tw*.02+(k-2)*tw*.11,tw*.15)); }}); F(.9,.85,1.5,.42,.35,'#f2a6c4',0,{emo:'💊',size:.18}); }
+  if(t==='er'){ F(.55,1.2,1.0,.7,.28,'#ffffff'); F(.58,1.24,.3,.62,.08,'#ff8fa3',.28); F(1.75,.2,.45,.3,.6,'#4a4f5c',0,{emo:'📈',size:.2}); F(.2,.2,.5,.4,.45,'#e2574c',0,{emo:busy&&Math.floor(clock*4)%2?'🚨':'🩺',size:.2}); }
+  if(t==='ward'){ RLAY.ward.beds.forEach(([bx,by])=>{ F(.2,by-.32,.95,.64,.26,'#ffffff'); F(.22,by-.28,.26,.56,.07,'#8cc8ea',.26); }); F(1.4,.15,.3,.3,.4,'#c98b4f',0,{emo:'💐',size:.2}); add(X+1.6+Y+2.6,()=>{ const b=P3(X+1.35,Y+2.6,0), tp=P3(X+1.35,Y+2.6,.8); ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(tp.x,tp.y); ctx.stroke(); rrect(tp.x-tw*.05,tp.y,tw*.1,tw*.14,3,'rgba(190,230,255,.9)','#9aa3b5'); }); }
+  if(t==='kids'){ if(!KID_LOOKS.length) makeKidLooks(); F(.2,.2,.45,.45,.6,'#ff6b8a'); add(X+1.2+Y+.6,()=>{ poly([P3(X+.65,Y+.25,.6),P3(X+.65,Y+.6,.6),P3(X+1.7,Y+.6,.02),P3(X+1.7,Y+.25,.02)],'#ffd23d','#e0a800'); }); F(.25,1.6,1.2,1.1,.18,'#7cc6fe',0,{post:()=>{ for(let k=0;k<12;k++){ const c=P3(X+.35+((k*37)%10)/10,Y+1.7+((k*53)%9)/10,.2); circle(c.x,c.y,tw*.035,['#e2574c','#ffd23d','#3fae7a','#9b6dd6'][k%4]); } }}); add(X+2.4+Y+.5,()=>{ const c=P3(X+2.4,Y+.5,0); emoji('🧸',c.x,c.y-tw*.12,tw*.25); });
+    [[2.0,1.7],[1.0,2.2]].forEach(([kx,ky],n)=>add(X+kx+Y+ky,()=>drawPerson(X+kx+Math.sin(clock*1.3+n)*.2,Y+ky,{look:KID_LOOKS[(r.i+r.j+n)%KID_LOOKS.length],skin:KID_LOOKS[(r.i+r.j+n)%KID_LOOKS.length].skin,hair:KID_LOOKS[(r.i+r.j+n)%KID_LOOKS.length].hairCol,shirt:KID_LOOKS[(r.i+r.j+n)%KID_LOOKS.length].topCol,pants:KID_LOOKS[(r.i+r.j+n)%KID_LOOKS.length].bottomCol,walk:1,phase:clock*7+n,seed:n})));
+    return; }
+  if(t==='wc'){ [.3,1.2].forEach(x0=>{ F(x0,.15,.45,.3,.45,'#f4f4f4'); F(x0+.05,.45,.35,.45,.22,'#ffffff'); }); F(2.0,.15,.7,.3,.32,'#dfe7ee',0,{emo:'🚰',size:.18}); add(X+1.5+Y+1.8,()=>{ const c=P3(X+1.5,Y+1.8,.4); emoji('✨',c.x+Math.sin(clock*2)*4,c.y,tw*.2); emoji('🧻',c.x+tw*.4,c.y+tw*.2,tw*.16); }); return; }
+  if(t==='canteen'){ [[.4,.5],[.4,1.8],[1.8,1.1]].forEach(([tx,ty])=>{ F(tx,ty,.7,.5,.28,'#c98b4f',0,{emo:'🍱',size:.16,lift:.02}); }); add(X+1.5+Y+1.7,()=>drawPerson(X+1.5,Y+1.7,Object.assign(staffLook('doctor',r.i+r.j),{sit:1,face:1,seed:3}))); add(X+.7+Y+.3,()=>drawPerson(X+.7,Y+.3,Object.assign(staffLook('nurse',r.j),{sit:1,face:1,seed:5}))); return; }
   if(!ROOMS[t].noPatients) for(let k=0;k<3;k++){ const [sx,sy]=qPos(r,k); add(sx+sy-.15,()=>drawSofaSeg(4*r.i+4.66,sy,'e',has('comfy')?SOFA.comfy:SOFA.room)); }
   const L=RLAY[t], d0=roomSpot(r,'doc'); let dx=d0[0], dy=d0[1];
   if(L.pace){ dx+=Math.sin(clock*.7+r.i)*.6; }
@@ -744,6 +792,9 @@ function lobbyFurniture(list){
   for(let b=0;b<S.lobby.bench;b++){ const B=BENCHES[b]; B.seats.forEach(([sx,sy])=>add(sx+sy-.15,()=>drawSofaSeg(B.x0,sy,B.back,has('comfy')?SOFA.comfy:SOFA.lobby))); }
   for(let k=0;k<S.lobby.plant;k++){ const [px,py]=PLANTS[k]; add(px+py,()=>drawPlant(px,py)); }
   if(S.lobby.vend) add(15.55+13.05+.4,()=>{ const top=box(15.55,13.05,.4,.32,.75,'#e2574c'); emoji(has('soda')?'🧃':'🥤',top.x,top.y-tw*.1,tw*.2); });
+  if(S.deco.aquarium) add(13.05+15.55+.2,()=>{ box(13.05,15.55,.85,.36,.12,'#6b4a2f'); const top=box(13.07,15.57,.81,.32,.4,'#8fd3ff',.12,.75); for(let k=0;k<3;k++){ const c=P3(13.2+((clock*.15+k*.3)%1)*.6,15.72,.25+k*.08); emoji('🐟',c.x,c.y,tw*.12); } });
+  if(S.deco.tv) add(14.15+13.02-.05,()=>{ const a=P3(14.15,13.0,.82), b2=P3(14.95,13.0,.82), c2=P3(14.95,13.0,1.2), d2=P3(14.15,13.0,1.2); poly([a,b2,c2,d2],'#2b2b2b'); const cx=(a.x+c2.x)/2, cy=(a.y+c2.y)/2; poly([a,b2,c2,d2].map(p=>({x:cx+(p.x-cx)*.85,y:cy+(p.y-cy)*.8})),'#7cc6fe'); emoji(['🫠','🦆','📰','🐈','🛸'][Math.floor(clock/3)%5],cx,cy,tw*.17); });
+  if(S.deco.chandelier) add(14.5+14.5+2,()=>{ const c=P3(14.5,14.5,1.45); ctx.strokeStyle='#c9973b'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(c.x,c.y-tw*.5); ctx.lineTo(c.x,c.y); ctx.stroke(); ellipse(c.x,c.y,tw*.3,tw*.08,'#f2c14e'); for(let k=0;k<7;k++){ const ax=c.x+(k-3)*tw*.08; circle(ax,c.y+tw*.08+Math.abs(k-3)*-tw*.015+tw*.05,tw*.035,'rgba(220,240,255,.95)'); } if(Math.floor(clock*2)%3===0) emoji('✨',c.x+tw*.2,c.y+tw*.05,tw*.14); });
   if(has('luckycat')) add(14.9+13.3,()=>{ const c=P3(15.05,13.4,.35); emoji('🐱',c.x,c.y-tw*.08+Math.sin(clock*6)*1.5,tw*.2); });
 }
 function drawGround(){
@@ -763,15 +814,18 @@ function drawFloor(){
     if(!inside(x,y)) continue;
     const s=slotOf(x,y); let c;
     if(!s) c=(x+y)%2?'#d4cde8':'#c7bfe0';
-    else if(isLobby(s)) c=(x+y)%2?'#eef5fd':'#d6e6f6';
+    else if(isLobby(s)) c=S.deco.marble?((x+y)%2?'#f6f3ec':'#e6dfd2'):(x+y)%2?'#eef5fd':'#d6e6f6';
     else { const r=roomAt(s.i,s.j); if(r) c=ROOMS[r.type].floor[(x+y)%2]; else c=typeof placing==='string'?`rgba(140,215,150,${.55+.35*pulse})`:((x+y)%2?'#e6dcc8':'#ddd1ba'); }
     poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],c,'rgba(90,70,110,.12)');
   }
+  if(S.deco.marble) for(let y=13;y<16;y++) for(let x=13;x<16;x++){ const a=iso(x+.2,y+.3), b2=iso(x+.8,y+.6); ctx.strokeStyle='rgba(160,150,140,.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo((a.x+b2.x)/2+5,(a.y+b2.y)/2-4,b2.x,b2.y); ctx.stroke(); }
   for(const [i,j] of openSlots()){
     const r=roomAt(i,j), c=iso(4*i+2.5,4*j+2.5);
     if(!r){ ctx.setLineDash([5,4]); poly([iso(4*i+1.1,4*j+1.1),iso(4*i+3.9,4*j+1.1),iso(4*i+3.9,4*j+3.9),iso(4*i+1.1,4*j+3.9)],null,'rgba(120,90,60,.45)',1.5); ctx.setLineDash([]);
       txt('+',c.x,c.y-tw*.05,tw*.32,'rgba(120,90,60,.55)'); if(tw>=30) txt('空地',c.x,c.y+tw*.22,tw*.17,'rgba(120,90,60,.55)',700); }
-    else poly([iso(4*i+4,4*j+2.15),iso(4*i+4.5,4*j+2.15),iso(4*i+4.5,4*j+2.85),iso(4*i+4,4*j+2.85)],shade(ROOMS[r.type].color,.35));
+    else { poly([iso(4*i+4,4*j+2.15),iso(4*i+4.5,4*j+2.15),iso(4*i+4.5,4*j+2.85),iso(4*i+4,4*j+2.85)],shade(ROOMS[r.type].color,.35));
+      if(r.deco>=1) poly([iso(4*i+1.6,4*j+1.6),iso(4*i+3.4,4*j+1.6),iso(4*i+3.4,4*j+3.4),iso(4*i+1.6,4*j+3.4)],r.deco>=2?'rgba(214,160,60,.35)':'rgba(226,87,76,.18)',r.deco>=2?'rgba(214,160,60,.8)':null,2);
+      if(r.deco>=2) poly([iso(4*i+1.05,4*j+1.05),iso(4*i+3.95,4*j+1.05),iso(4*i+3.95,4*j+3.95),iso(4*i+1.05,4*j+3.95)],null,'rgba(214,160,60,.7)',2); }
   }
   // 未開放土地
   for(const k in WINGS){ if(S.land[k]) continue; const W2=WINGS[k];
@@ -801,15 +855,19 @@ function draw(){
   // 外牆：依開放範圍自動生成（後方高牆、前方矮牆）
   for(let y=0;y<MW;y++) for(let x=0;x<MW;x++){
     if(!inside(x,y)) continue;
-    if(!inside(x,y-1)) list.push({d:x+.5+y-.01,fn:()=>wallY(y,x,x+1,.7,'#e3d5bd',null,x%2===1)});
-    if(!inside(x-1,y)) list.push({d:x+y+.5-.01,fn:()=>wallX(x,y,y+1,.7,'#e3d5bd',null,y%2===1)});
-    if(!inside(x,y+1)) list.push({d:x+.5+y+1,fn:()=>wallY(y+1,x,x+1,.1,'#e3d5bd')});
-    if(!inside(x+1,y) && !(x===16&&y===14)) list.push({d:x+1+y+.5,fn:()=>wallX(x+1,y,y+1,.1,'#e3d5bd')});
+    const WC=TIERS[S.tier].wall, ST=TIERS[S.tier].stripe;
+    if(!inside(x,y-1)){ list.push({d:x+.5+y-.01,fn:()=>wallY(y,x,x+1,.7,WC,ST,x%2===1)}); const art=(S.deco.painting&&x===10&&!inside(10,y-1))?'big':(S.deco.mural&&x%2===0&&x!==10)?'small':null; if(art) list.push({d:x+.5+y-.005,fn:()=>drawFrame('y',y,x,art)}); }
+    if(!inside(x-1,y)){ list.push({d:x+y+.5-.01,fn:()=>wallX(x,y,y+1,.7,WC,ST,y%2===1)}); if(S.deco.mural&&y%2===0) list.push({d:x+y+.5-.005,fn:()=>drawFrame('x',x,y,'small')}); }
+    if(!inside(x,y+1)) list.push({d:x+.5+y+1,fn:()=>wallY(y+1,x,x+1,.1,WC)});
+    if(!inside(x+1,y) && !(x===16&&y===14)) list.push({d:x+1+y+.5,fn:()=>wallX(x+1,y,y+1,.1,WC)});
   }
   S.rooms.forEach(r=>{ const X=4*r.i+1, Y=4*r.j+1, col=ROOMS[r.type].color;
     for(let k=0;k<3;k++){
-      list.push({d:X+k+.5+Y-.01,fn:()=>wallY(Y,X+k,X+k+1,.5,'#f3e6cf',col)});
-      list.push({d:X+Y+k+.5-.01,fn:()=>wallX(X,Y+k,Y+k+1,.5,'#f3e6cf',col)});
+      const RWC=r.deco>=2?'#fff6e6':r.deco>=1?'#f8ecd8':'#f3e6cf';
+      list.push({d:X+k+.5+Y-.01,fn:()=>wallY(Y,X+k,X+k+1,.5,RWC,col)});
+      list.push({d:X+Y+k+.5-.01,fn:()=>wallX(X,Y+k,Y+k+1,.5,RWC,col)});
+      if(k===1&&r.deco>=1) list.push({d:X+k+.5+Y-.005,fn:()=>drawFrame('y',Y,X+k,'room',r)});
+      if(k===1&&r.deco>=2) list.push({d:X+Y+k+.5-.005,fn:()=>drawFrame('x',X,Y+k,'room',r)});
       list.push({d:X+k+.5+Y+3+.01,fn:()=>wallY(Y+3,X+k,X+k+1,.1,'#f3e6cf',col)});
       if(k!==1) list.push({d:X+3+Y+k+.5+.01,fn:()=>wallX(X+3,Y+k,Y+k+1,.1,'#f3e6cf',col)});
     }
@@ -819,7 +877,12 @@ function draw(){
   TREES_OUT.forEach(([x,y])=>list.push({d:x+y,fn:()=>drawTree(x,y)}));
   S.garden.forEach(p=>list.push({d:p.x+p.y+1,fn:()=>drawGardenItem(p)}));
   bflies.forEach(f=>list.push({d:f.x+f.y+1.5,fn:()=>{ const c=P3(f.x,f.y,.45+Math.sin(f.t*3)*.08); ctx.save(); ctx.translate(c.x,c.y); ctx.scale(.6+.4*Math.abs(Math.sin(f.t*14)),1); emoji('🦋',0,0,Math.max(10,tw*.2)); ctx.restore(); }}));
-  list.push({d:18.3+13.2,fn:()=>{ const b=P3(18.3,13.2,0), t=P3(18.3,13.2,.75); ctx.strokeStyle='#6b4a2f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); rrect(t.x-tw*.55,t.y-tw*.3,tw*1.1,tw*.32,6,'#fffdf8','#e2574c'); txt('🏥 怪病診所',t.x,t.y-tw*.14,tw*.17,'#e2574c',900); }});
+  list.push({d:18.3+13.2,fn:()=>{ const T=TIERS[S.tier], b=P3(18.3,13.2,0), t=P3(18.3,13.2,.75+S.tier*.08); ctx.strokeStyle=S.tier>=2?'#9aa3b5':'#6b4a2f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); ctx.font=`900 ${Math.round(tw*.17)}px sans-serif`; const w=ctx.measureText('🏥 '+T.name).width+tw*.3; rrect(t.x-w/2,t.y-tw*.3,w,tw*.32,6,S.tier>=3?'#fff8e1':'#fffdf8',S.tier>=3?'#c9973b':'#e2574c'); txt('🏥 '+T.name,t.x,t.y-tw*.14,tw*.17,S.tier>=3?'#a8790f':'#e2574c',900); }});
+  if(S.tier>=1) list.push({d:17.7+15.2,fn:()=>{ [[17.75,13.9],[17.75,15.1]].forEach(([px,py])=>{ const b=P3(px,py,0), t=P3(px,py,.78); ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(t.x,t.y); ctx.stroke(); }); const top=box(16.95,13.8,.9,1.4,.07,S.tier>=2?'#4d7cc7':'#e2574c',.78); if(tw>=26) txt(S.tier>=2?'門診・急診':'門診',top.x,top.y-tw*.05,tw*.13,'#fff',900); }});
+  if(S.tier>=2&&bus<=0) list.push({d:19.8+15.8,fn:()=>{ const x=19.3,y=15.35; box(x,y,1.6,.8,.55,'#ffffff',.08); poly([P3(x,y+.8,.25),P3(x+1.6,y+.8,.25),P3(x+1.6,y+.8,.32),P3(x,y+.8,.32)],'#e2574c'); const c1=iso(x+.35,y+.8), c2=iso(x+1.25,y+.8); circle(c1.x,c1.y,tw*.08,'#333'); circle(c2.x,c2.y,tw*.08,'#333'); const top=P3(x+.8,y+.4,.65); emoji(Math.floor(clock*2)%4===0?'🚨':'➕',top.x,top.y,tw*.18); }});
+  if(S.deco.statue) list.push({d:18.6+17.6,fn:()=>{ const top=box(18.25,17.25,.7,.7,.35,'#b9bec8'); emoji('🦆',top.x,top.y-tw*.2,tw*.45); if(Math.floor(clock*1.5)%4===0) emoji('✨',top.x+tw*.2,top.y-tw*.35,tw*.15); }});
+  if(S.deco.helipad) list.push({d:20.2+18.2-1,fn:drawHelipad});
+  if(heli) list.push({d:40,fn:drawHeli});
   if(bus>0) list.push({d:19+16,fn:drawBus});
   const lim=patienceLimit();
   patients.forEach(p=>{ if(p.hidden) return; list.push({d:p.x+p.y+.02,fn:()=>drawPatient(p,lim)}); });
@@ -836,6 +899,27 @@ function draw(){
   patients.forEach(p=>{ if(p.thinkT>0&&!p.hidden) drawThink(p); });
   if(sayStaff && sayStaff.t>0) drawSay(sayStaff.x,sayStaff.y,sayStaff.say);
   drawHint();
+}
+const ART=['🌻','🌊','🗻','🐈','🦆','🍎','🌸','🐟'];
+function drawFrame(axis,W0,a,size,r){ // 畫在牆面上的畫框
+  const big=size==='big', h0=big?.18:.26, h1=big?.62:.5, m=big?.08:.22, t=.06;
+  const pts=axis==='y'?[P3(a+m,W0+t,h0),P3(a+1-m,W0+t,h0),P3(a+1-m,W0+t,h1),P3(a+m,W0+t,h1)]:[P3(W0+t,a+m,h0),P3(W0+t,a+1-m,h0),P3(W0+t,a+1-m,h1),P3(W0+t,a+m,h1)];
+  if(size==='room'&&r){ const hh=r.deco>=2?.42:.4; }
+  poly(pts,'#c9973b'); const c={x:(pts[0].x+pts[2].x)/2,y:(pts[0].y+pts[2].y)/2};
+  const inner=pts.map(p=>({x:c.x+(p.x-c.x)*.82,y:c.y+(p.y-c.y)*.8})); poly(inner,'#fffaf0');
+  emoji(ART[(Math.floor(a*7+W0*3))%ART.length],c.x,c.y,tw*(big?.32:.18));
+}
+let heli=null, heliT=120;
+function drawHelipad(){ const pts=[iso(19.4,17.4),iso(21.1,17.4),iso(21.1,19.1),iso(19.4,19.1)]; poly(pts,'#6b7280'); const c=iso(20.25,18.25); ctx.save(); ctx.translate(c.x,c.y); ctx.scale(1,.5); ctx.beginPath(); ctx.arc(0,0,tw*.62,0,Math.PI*2); ctx.strokeStyle='#ffd23d'; ctx.lineWidth=3; ctx.stroke(); ctx.restore(); txt('H',c.x,c.y,tw*.4,'#fff',900); }
+function drawHeli(){ const c=iso(20.25,18.25), y=c.y-tw*2.6*Math.max(0,heli.alt); ctx.save(); ctx.globalAlpha=.25; ellipse(c.x,c.y,tw*.5,tw*.15,'#000'); ctx.restore();
+  ellipse(c.x,y-tw*.25,tw*.38,tw*.22,'#e2574c'); ellipse(c.x+tw*.12,y-tw*.3,tw*.14,tw*.1,'#bfe6ff'); ctx.strokeStyle='#e2574c'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(c.x-tw*.3,y-tw*.25); ctx.lineTo(c.x-tw*.75,y-tw*.35); ctx.stroke();
+  const a=clock*30; ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(c.x-Math.cos(a)*tw*.6,y-tw*.5-Math.sin(a)*tw*.1); ctx.lineTo(c.x+Math.cos(a)*tw*.6,y-tw*.5+Math.sin(a)*tw*.1); ctx.stroke(); }
+function updateHeli(dt){
+  if(!S.deco.helipad) return;
+  if(!heli){ heliT-=dt; if(heliT<=0){ heliT=150+Math.random()*90; const pl=pool().filter(d=>hasRoom(d.room)); if(pl.length){ heli={alt:1,t:0,d:pick(pl)}; sfx.ufo(); toast('🚁','VIP 搭直升機來了！','費用三倍'); } } return; }
+  heli.t+=dt;
+  if(heli.t<3) heli.alt=1-heli.t/3; else if(heli.t<4){ heli.alt=0; if(!heli.sent){ heli.sent=1; const p=newPatient(heli.d,19.6,14.5); p.vip=1; patients.push(p); RQ.length<RQ_POS.length?(RQ.unshift(p),RQ.forEach((q,k)=>retarget(q,RQ_POS[k]))):route(p); discover(heli.d); } }
+  else if(heli.t<7) heli.alt=(heli.t-4)/3; else heli=null;
 }
 function drawBus(){
   const x=18.2, y=15.35, off=Math.max(0,bus-5.5)*3;
@@ -854,14 +938,16 @@ function drawUfo(){
 function drawPatient(p,lim){
   const d=DMAP[p.d], fx=FX[p.d]||{};
   const waiting=['recq','queue','bench'].includes(p.state)&&!p.path.length;
-  const bubble=p.state==='exit'?(p.mood||'😄'):p.state==='confused'?'❓':d.icon;
+  const bubble=p.state==='exit'?(p.mood||'😄'):p.state==='confused'?'❓':p.cured?(p.stage==='ward'?(p.state==='treat'?'💤':'🛏️'):'💊'):d.icon;
   const o=Object.assign({},fx,{look:p.look,skin:p.skin,hair:p.hair,shirt:p.shirt,pants:p.pants,walk:p.path.length>0,phase:p.phase,seed:p.id,bubble,em:p.emerg&&p.state!=='exit',
     angry:waiting&&p.wait>lim*(p.emerg?1.2:.6),sit:(p.state==='bench'||(p.state==='queue'&&RT[p.room]&&RT[p.room].queue.indexOf(p)<3))&&!p.path.length,face:p.face,slip:p.slip>0,grumpy:1,lift:p.lift||0});
   if(p.state==='treat'){ const L=RLAY[roomByKey(p.room)?.type]||{}; if(L.sit) o.sit=1; if(L.lie){ o.lie=1; o.z=L.patZ; } if(L.float) o.float=1; if(L.blink) o.alpha=Math.floor(clock*5)%2?1:.25; }
-  if(p.state==='exit'&&p.mood==='😄') Object.keys(fx).forEach(k=>{ if(k!=='cat') o[k]=0; });
+  if(p.vip) o.em=0;
+  if((p.state==='exit'&&p.mood==='😄')||p.cured) Object.keys(fx).forEach(k=>{ if(k!=='cat') o[k]=0; });
   if(p.state==='exit'&&p.mood!=='😄'){ o.angry=false; }
   drawPerson(p.x,p.y,o);
-  if(p.state==='treat'){ const rt=RT[p.room]; if(rt){ const c=iso(p.x,p.y), bw=tw*.5, by=c.y-tw*((o.lie?.25:.95)+(o.z||0))-tw*.32; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)','rgba(80,60,40,.4)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,rt.prog)),4,2,'#3fae7a'); } }
+  if(p.vip&&p.state!=='exit'){ const c=iso(p.x,p.y); emoji('👑',c.x,c.y-tw*1.25,tw*.2); }
+  if(p.state==='treat'){ const rt=RT[p.room], rr=roomByKey(p.room); if(rt&&rr){ const prog=rr.type==='ward'?(p.bedT||0)/timeOf(rr):rt.prog; const c=iso(p.x,p.y), bw=tw*.5, by=c.y-tw*((o.lie?.25:.95)+(o.z||0))-tw*.32; rrect(c.x-bw/2,by,bw,6,3,'rgba(255,255,255,.95)','rgba(80,60,40,.4)'); rrect(c.x-bw/2+1,by+1,Math.max(2,(bw-2)*Math.min(1,prog)),4,2,'#3fae7a'); if(rr.type==='ward'&&tw>20) txt(['Z','Zz','Zzz'][Math.floor(clock*1.5)%3],c.x+tw*.25,c.y-tw*.55,tw*.16,'#4d7cc7',900); } }
 }
 function drawSign(r){
   const R=ROOMS[r.type], c=P3(4*r.i+2.5,4*r.j+1,.5), rt=RT[rkey(r)];
@@ -905,19 +991,23 @@ function addRep(n){ S.rep=Math.max(0,S.rep+n); }
 function goExit(p,mood){ p.state='exit'; p.mood=mood; p.hidden=false; p.room=null; goTo(p,17.5,14.5); p.path.push({x:SPAWN.x,y:SPAWN.y+(Math.random()-.5)*.5}); }
 function detach(p){
   const i=RQ.indexOf(p); if(i>=0){ RQ.splice(i,1); RQ.forEach((q,k)=>retarget(q,RQ_POS[k])); }
-  if(p.room&&RT[p.room]){ const rt=RT[p.room], r=roomByKey(p.room); const k=rt.queue.indexOf(p); if(k>=0){ rt.queue.splice(k,1); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } if(rt.cur===p){ rt.cur=null; rt.prog=0; } }
+  if(p.room&&RT[p.room]){ const rt=RT[p.room], r=roomByKey(p.room); const k=rt.queue.indexOf(p); if(k>=0){ rt.queue.splice(k,1); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } if(rt.cur===p){ rt.cur=null; rt.prog=0; } if(rt.beds){ const b=rt.beds.indexOf(p); if(b>=0) rt.beds[b]=null; } }
   if(p.seat>=0){ seats[p.seat]=null; p.seat=-1; }
 }
 function lose(p,why){ detach(p); S.stats.lost++; addRep(-1); if(p.emerg&&emerg) emerg.lost++; goExit(p,'😤'); sfx.bad(); ticker(`😤 ${DMAP[p.d].name}患者${why}（聲望 -1）`); }
 function route(p){
-  const d=DMAP[p.d], rooms=S.rooms.filter(r=>r.type===d.room);
+  const d=DMAP[p.d]; let type=d.room;
+  if(p.stage==='pharm') type='pharm'; else if(p.stage==='ward') type='ward'; else if(p.emerg&&hasRoom('er')) type='er';
+  const rooms=S.rooms.filter(r=>r.type===type);
   p.room=null;
+  if(!rooms.length&&p.cured){ goExit(p,'😄'); return; }
   if(!rooms.length){ p.state='confused'; p.wait=0; p.path=[{x:15.15+Math.random()*.2,y:14.3+Math.random()*.3}]; if(Math.random()<.6) talk(p,'請問哪裡可以治'+d.name+'？'); return; }
-  let best=null, bl=1e9; rooms.forEach(r=>{ const rt=RT[rkey(r)], l=rt.queue.length+(rt.cur?1:0)+seats.filter(q=>q&&q.room===rkey(r)).length; if(l<bl){ bl=l; best=r; } });
+  let best=null, bl=1e9; rooms.forEach(r=>{ const rt=RT[rkey(r)], l=rt.queue.length+(rt.cur?1:0)+(rt.beds?rt.beds.filter(Boolean).length-2:0)+seats.filter(q=>q&&q.room===rkey(r)).length; if(l<bl){ bl=l; best=r; } });
   const rt=RT[rkey(best)];
   if(rt.queue.length<QMAX) return joinQueue(p,best);
   const sl=seatList(), free=sl.findIndex((s,k)=>!seats[k]);
   if(free>=0){ seats[free]=p; p.seat=free; p.room=rkey(best); p.state='toBench'; goTo(p,...sl[free]); p.face=BENCHES[Math.floor(free/3)].face; return; }
+  if(p.cured){ goExit(p,'😄'); return; }
   lose(p,'看到滿滿的人潮，直接回家了');
 }
 function joinQueue(p,r){ p.face=-1; const rt=RT[rkey(r)]; if(p.emerg){ let k=0; while(k<rt.queue.length&&rt.queue[k].emerg) k++; rt.queue.splice(k,0,p); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } else rt.queue.push(p); p.room=rkey(r); p.state='toQ'; goTo(p,...qPos(r,rt.queue.indexOf(p))); }
@@ -931,15 +1021,32 @@ function payCure(p,fee,where){
   return first;
 }
 function cure(p,r){
-  const d=DMAP[p.d], fee=Math.round(d.fee*feeMult(r.lvl)*(buffOn('fee')?1.2:1)*(has('coat')?1.15:1)*(p.emerg?1.5:1));
+  const d=DMAP[p.d], fee=Math.round(d.fee*feeMult(r.lvl)*TIERS[S.tier].fee*(1+.05*(r.deco||0))*(buffOn('fee')?1.2:1)*(has('coat')?1.15:1)*(p.emerg?1.5:1)*(p.vip?3:1));
   r.n=(r.n||0)+1;
   const first=payCure(p,fee,P3(4*r.i+2.5,4*r.j+2,.9));
   if(d.litter&&Math.random()<.45){ p.litterKind=d.litter; p.litterT=.6+Math.random()*2.5; }
   RT[rkey(r)].cur=null; RT[rkey(r)].prog=0;
-  goExit(p,'😄');
+  nextStage(p);
   ticker(`${first?'✨ 首次治癒！':'🩹'} ${d.name}：${d.cure}`);
   if(d.id==='sprout'&&Math.random()<.35&&plantRandom('flower',.3)) setTimeout(()=>ticker('🌷 病人把頭上的小草送給你，種在花園裡了。'),1500);
 }
+function nextStage(p){
+  p.cured=true; p.mood='😄'; p.wait=0;
+  const st=p.stage||'treat';
+  if(st==='treat'&&!p.emerg&&hasRoom('ward')&&Math.random()<.22){ p.stage='ward'; route(p); return; }
+  if((st==='treat'||st==='ward')&&hasRoom('pharm')){ p.stage='pharm'; route(p); return; }
+  goExit(p,'😄');
+}
+function finishService(p,r){
+  r.n=(r.n||0)+1;
+  const t=r.type, c=P3(4*r.i+2.5,4*r.j+2,.9);
+  const fee=Math.round((t==='pharm'?15:45)*(1+S.rep/40)*TIERS[S.tier].fee*(1+.05*(r.deco||0))*(p.vip?3:1));
+  S.money+=fee; S.stats.earned+=fee; floats.push({text:(t==='pharm'?'💊':'🛏️')+' +$'+fmt(fee),x:c.x,y:c.y,life:1.2,color:'#e09a12'}); sfx.coin(); bump('money');
+  if(Math.random()<.2) ticker(pick(t==='pharm'?PHARM_LINES:WARD_LINES));
+  p.x=4*r.i+3.5; p.y=4*r.j+2.5; p.hidden=false;
+  nextStage(p);
+}
+const wardBed=(r,b)=>{ const a=RLAY.ward.beds[b]; return [4*r.i+1+a[0],4*r.j+1+a[1]]; };
 function movePerson(p,dt,speed){
   if(p.slip>0){ p.slip-=dt; return false; }
   if(!p.path.length) return false;
@@ -955,7 +1062,7 @@ function update(dt){
   if(modalOpen||!booted) return;
   S.time+=dt; if(Math.floor((S.time-dt)/YEAR)<Math.floor(S.time/YEAR)) yearEnd();
   if(!buffOn('closed')){ spawnT-=dt*(buffOn('spawn')?2:1); if(spawnT<=0){ if(patients.length<maxPatients()) spawn(); spawnT=spawnInterval()*(.6+Math.random()*.8); } }
-  const sp=(buffOn('speed')?1.5:1)*(buffOn('slow')?.5:1)*(has('stetho')?1.2:1), lim=patienceLimit();
+  const sp=(buffOn('speed')?1.5:1)*(buffOn('slow')?.5:1)*(has('stetho')?1.2:1)*(hasRoom('canteen')?1.08:1), lim=patienceLimit();
   patients.forEach(p=>{
     const fx=FX[p.d]||{}, spd=fx.slow?.45:fx.zombie?.65:fx.back?.7:1.0;
     if(p.ufoLift) return;
@@ -974,8 +1081,12 @@ function update(dt){
   if(RQ.length&&!RQ[0].path.length){ recT+=dt*sp*(has('fastdesk')?2:1); if(recT>=.9){ recT=0; const p=RQ.shift(); RQ.forEach((q,k)=>retarget(q,RQ_POS[k])); p.wait=0; route(p); } } else recT=0;
   // 診間
   S.rooms.forEach(r=>{ const k=rkey(r), rt=RT[k]; if(!rt||ROOMS[r.type].noPatients) return;
+    if(r.type==='ward'){ rt.beds=rt.beds||[null,null,null];
+      for(let b=0;b<3;b++){ if(rt.beds[b]||!rt.queue.length) continue; const p=rt.queue[0]; if(p.state!=='queue'||p.path.length) break; rt.queue.shift(); rt.beds[b]=p; p.state='enter'; p.bedT=0; goTo(p,...wardBed(r,b)); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); }
+      rt.beds.forEach((p,b)=>{ if(p&&p.state==='treat'){ p.bedT+=dt*sp; if(p.bedT>=timeOf(r)){ rt.beds[b]=null; finishService(p,r); } } });
+      return; }
     if(!rt.cur&&rt.queue.length){ const p=rt.queue[0]; if(p.state==='queue'&&!p.path.length){ rt.queue.shift(); rt.cur=p; p.state='enter'; p.wait=0; goTo(p,...roomSpot(r,'pat')); rt.queue.forEach((q,n)=>retarget(q,qPos(r,n))); } }
-    if(rt.cur&&rt.cur.state==='treat'){ rt.prog+=dt*sp/timeOf(r); if(rt.prog>=1){ const p=rt.cur; p.x=4*r.i+3.5; p.y=4*r.j+2.5; p.hidden=false; cure(p,r); } }
+    if(rt.cur&&rt.cur.state==='treat'){ rt.prog+=dt*sp/timeOf(r); if(rt.prog>=1){ const p=rt.cur; if(r.type==='pharm'){ rt.cur=null; rt.prog=0; finishService(p,r); } else { p.x=4*r.i+3.5; p.y=4*r.j+2.5; p.hidden=false; cure(p,r); } } }
   });
   // 長椅 → 診間
   patients.filter(p=>p.state==='bench'||p.state==='toBench').sort((a,b)=>(b.emerg?1e4:0)+b.wait-(a.emerg?1e4:0)-a.wait).forEach(p=>{
@@ -985,18 +1096,18 @@ function update(dt){
   // 耐心、飲料
   patients.forEach(p=>{
     const L=lim*(p.emerg?2:1);
-    if(p.state==='recq'||p.state==='queue'||p.state==='bench'){ if(!p.path.length) p.wait+=dt; if(p.wait>L) lose(p,'等太久，氣噗噗地走了'); }
+    if(p.state==='recq'||p.state==='queue'||p.state==='bench'){ if(!p.path.length) p.wait+=dt; if(p.wait>L){ if(p.cured){ detach(p); goExit(p,'😄'); } else lose(p,'等太久，氣噗噗地走了'); } }
     else if(p.state==='confused'){ p.wait+=dt; if(p.wait>3.5) lose(p,'找不到能治的科別，默默離開了'); }
     if(S.lobby.vend&&!p.drank&&(p.state==='bench'||p.state==='recq')&&Math.random()<dt*.025){ p.drank=1; const m=has('soda')?16:8; S.money+=m; S.stats.earned+=m; const c=P3(15.75,13.2,.9); floats.push({text:'+$'+m,x:c.x,y:c.y,life:1,color:'#e2574c'}); if(Math.random()<.5){ p.litterKind=p.litterKind||'can'; p.litterT=1+Math.random()*2; } }
   });
   patients=patients.filter(p=>!p.gone);
-  updateJanitors(dt); updateDucks(dt); updateGarden(dt); updateWeather(dt); updateUfo(dt); updateEmergency(dt); updateLab(dt);
+  updateJanitors(dt); updateDucks(dt); updateGarden(dt); updateWeather(dt); updateUfo(dt); updateEmergency(dt); updateLab(dt); updateHeli(dt);
   if(litter.length>=6&&!dirtyWarned){ dirtyWarned=true; ticker('🤢 走廊好髒，病人開始不耐煩了…'); }
   if(litter.length<3) dirtyWarned=false;
   S.ys.cleanSum+=cleanPct()*dt; S.ys.cleanN+=dt;
   eventT-=dt; if(eventT<=0){ eventT=70+Math.random()*50; if(S.stats.cured>=3) showEvent(); }
   flavorT-=dt; if(flavorT<=0){ flavorT=22+Math.random()*20; ticker(pick(FLAVOR)); }
-  goalT-=dt; if(goalT<=0){ goalT=1; checkGoals(); }
+  goalT-=dt; if(goalT<=0){ goalT=1; checkGoals(); checkTier(); }
   checkProgress();
 }
 function syncJanitors(reset){ if(reset) jans=[]; while(jans.length<S.lobby.jan) jans.push({id:jans.length+1,x:14.5+Math.random()*.6,y:15.4,path:[],state:'idle',t:Math.random()*3,phase:0,target:null}); }
@@ -1061,9 +1172,9 @@ function endEmergency(){
 }
 function checkProgress(){
   const tt=titleOf(S.rep), ni=TITLES.findIndex(x=>x[1]===tt), oi=TITLES.findIndex(x=>x[1]===lastTitle);
-  if(lastTitle&&ni>oi){ sfx.fan(); queueModal({icon:'🎉',title:'診所升格！',body:`<p>恭喜院長，診所升格為</p><h3 style="margin:2px 0 8px">${tt}</h3>`,buttons:[{label:'太好了'}]}); }
+  if(lastTitle&&ni>oi){ sfx.fan(); toast('🎉','人氣上升！','大家開始說你們「'+tt+'」'); }
   lastTitle=tt;
-  Object.entries(ROOMS).forEach(([k,R])=>{ if(!S.unl[k]&&S.rep>=R.rep&&(!R.needs||has(R.needs))){ S.unl[k]=1; toast(R.icon,'新科別：'+R.name,'可以建造了'); } });
+  Object.entries(ROOMS).forEach(([k,R])=>{ if(!S.unl[k]&&S.rep>=R.rep&&(R.tier||0)<=S.tier&&(!R.needs||has(R.needs))){ S.unl[k]=1; toast(R.icon,'新科別：'+R.name,'可以建造了'); } });
   for(const k in WINGS){ const w=WINGS[k], key='land_'+k; if(!S.land[k]&&!S.unl[key]&&S.rep>=w.rep&&(!w.needs||w.needs.every(n=>S.land[n]))){ S.unl[key]=1; toast('🔓',w.name+'可以擴建了','點地圖上的 🔒 牌子'); } }
 }
 
@@ -1103,6 +1214,7 @@ function yearEnd(){
   if(ys.emerg>=2) aw.push(['emerg',ys.emerg]);
   if(dexN>=10) aw.push(['dex',dexN]);
   if(gardenGreen()>=20) aw.push(['green',gardenGreen()]);
+  if(decoScore()>=40) aw.push(['deco',decoScore()]);
   if(ys.ducks>=3) aw.push(['ducks',ys.ducks]);
   if(!aw.length) aw.push(['try']);
   const pickA=aw.sort(()=>Math.random()-.5).slice(0,3);
@@ -1122,6 +1234,8 @@ function plantBase(x,y){
   for(let a=-1;a<=1;a++) for(let c=-1;c<=1;c++) if(inside(x+a,y+c)) return false;
   if(x>=17&&y>=13&&y<=16) return false;
   if(TREE_TILES.has(x+','+y)) return false;
+  if(x===18&&y===17) return false;
+  if(x>=19&&x<=21&&y>=17&&y<=19) return false;
   return true;
 }
 const plantable=(x,y)=>plantBase(x,y)&&!S.garden.some(p=>p.x===x&&p.y===y);
@@ -1254,6 +1368,47 @@ function drawGardenItem(p){
   else if(p.pn>0&&tw>=24){ const t2=b.y-tw*(G.h*sc+.3)-Math.abs(Math.sin(clock*3))*3; emoji('✨',b.x+tw*.2,t2,tw*.14); }
 }
 
+// ================= 院所升格與裝潢 =================
+function decoScore(){
+  let s=0; for(const k in LOBBY_DECO) if(S.deco[k]) s+=LOBBY_DECO[k].pts;
+  S.rooms.forEach(r=>{ s+=[0,2,5][r.deco||0]; if(ROOMS[r.type].deco) s+=ROOMS[r.type].deco; });
+  return s+S.lobby.plant+Math.floor(gardenGreen()/5);
+}
+function tierChecks(ti){
+  const q=TIERS[ti].req, tr=S.rooms.filter(r=>DIS_ROOMS.has(r.type)), types=new Set(tr.map(r=>r.type)).size, ds=decoScore(), out=[];
+  out.push({t:'聲望',ok:S.rep>=q.rep,v:`${S.rep} / ${q.rep}`});
+  out.push({t:'累計治好',ok:S.stats.cured>=q.cured,v:`${fmt(S.stats.cured)} / ${fmt(q.cured)} 人`});
+  out.push({t:'看診科別',ok:tr.length>=q.treat,v:`${tr.length} / ${q.treat} 間`});
+  out.push({t:'不同種類的科別',ok:types>=q.types,v:`${types} / ${q.types} 種`});
+  q.need.forEach(k=>out.push({t:`設有 ${ROOMS[k].icon} ${ROOMS[k].name}`,ok:hasRoom(k),v:hasRoom(k)?'有':'還沒有'}));
+  out.push({t:'裝潢分',ok:ds>=q.deco,v:`${ds} / ${q.deco}`});
+  (q.land||[]).forEach(k=>out.push({t:`擴建 ${WINGS[k].name}`,ok:!!S.land[k],v:S.land[k]?'完成':'還沒'}));
+  if(q.green) out.push({t:'花園綠意',ok:gardenGreen()>=q.green,v:`${gardenGreen()} / ${q.green}`});
+  return out;
+}
+const tierReady = () => S.tier<TIERS.length-1 && tierChecks(S.tier+1).every(c=>c.ok);
+let tierNotified=-1;
+function checkTier(){ if(tierReady()&&tierNotified!==S.tier){ tierNotified=S.tier; toast('📋','可以申請升格評鑑了！','到 🏥 院長室 看看'); } }
+function applyTier(){
+  const ti=S.tier+1, T=TIERS[ti]; if(!T||!tierReady()||S.money<T.cost) return;
+  S.money-=T.cost; S.tier=ti; sfx.fan(); bump('money'); closeSheet();
+  const insp=pick(['評鑑委員檢查了廁所、量了走廊寬度，還偷偷試吃了阿嬤的滷肉。','評鑑委員跟鴨子合照了一張，說這是本院特色。','評鑑委員被冷笑話治療室冷到發抖，但還是給了高分。','評鑑委員在花園坐了二十分鐘，說「這裡比我家還舒服」。']);
+  queueModal({icon:'🏆',title:`升格為「${T.name}」！`,body:`<p>${insp}</p><div class="note">${T.perks.map(x=>'✅ '+x).join('<br>')}</div>`,buttons:[{label:'太棒了'}]});
+  $('brandName').textContent=T.name; saveLocal();
+}
+function buyDeco(k){ const D=LOBBY_DECO[k]; if(S.deco[k]||S.money<D.cost||S.tier<D.tier) return; S.money-=D.cost; S.deco[k]=1; sfx.build(); bump('money'); toast(D.icon,D.name+' 裝好了','裝潢分 +'+D.pts); if(k==='helipad') heliT=20; saveLocal(); refreshSheet(); }
+const decoCost = r => Math.max(300,Math.round(ROOMS[r.type].cost*[.5,1.2][r.deco||0]));
+function upDeco(){ const r=roomSel; if(!r||(r.deco||0)>=2) return; const c=decoCost(r); if(S.money<c) return; S.money-=c; r.deco=(r.deco||0)+1; sfx.build(); bump('money'); ticker(`🛋️ ${ROOMS[r.type].name}裝潢升級成「${DECO_NAME[r.deco]}」，醫生說他終於有地方掛他的畢業照了。`); saveLocal(); refreshSheet(); }
+function tierHTML(){
+  const cur=TIERS[S.tier];
+  if(S.tier>=TIERS.length-1) return `<div class="item done"><div class="ic" style="background:#fff7e6">🏆</div><div class="txt"><div class="nm">${cur.name}</div><div class="ds">已經是最高等級的醫學中心了！裝潢分 ${decoScore()}</div></div></div>`;
+  const nx=TIERS[S.tier+1], cs=tierChecks(S.tier+1), ready=cs.every(c=>c.ok);
+  return `<div class="item" style="display:block"><div class="nm" style="font-weight:900;font-size:15px">🏥 ${cur.name} → ${nx.name}</div>
+    <div class="ds" style="margin:4px 0 8px">升格後：${nx.perks.join('、')}</div>
+    ${cs.map(c=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px dashed #efe3d2"><span>${c.ok?'✅':'⬜'} ${c.t}</span><b style="color:${c.ok?'var(--good)':'var(--soft)'}">${c.v}</b></div>`).join('')}
+    <div class="row"><button class="btn" ${ready&&S.money>=nx.cost?'':'disabled'} data-act="applyTier">申請評鑑 $${fmt(nx.cost)}</button></div></div>`;
+}
+
 // ================= 建造與擴建 =================
 function build(type,i,j){
   const R=ROOMS[type];
@@ -1336,12 +1491,13 @@ function tap(sx,sy){
 
 // ================= UI =================
 function $(id){ return document.getElementById(id); }
-let lastMoney=-1,lastRep=-1,lastClean=-1;
+let lastMoney=-1,lastRep=-1,lastClean=-1,lastTier=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   const m=Math.floor(S.money), rp=S.rep, cl=cleanPct();
   if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
   if(rp!==lastRep){ $('rep').textContent='⭐ '+rp; $('title').textContent=titleOf(rp); lastRep=rp; }
+  if(lastTier!==S.tier){ $('brandName').textContent=TIERS[S.tier].name; lastTier=S.tier; }
   if(cl!==lastClean){ $('clean').textContent='✨ '+cl+'%'; $('clean').classList.toggle('warn',cl<70); lastClean=cl; }
   const now=Date.now(); let bs=Object.entries(S.buffs).filter(([k,v])=>v>now&&BUFFNAME[k]).map(([k,v])=>`<span class="buff">${BUFFNAME[k]} ${Math.ceil((v-now)/1000)}s</span>`).join('');
   if(emerg) bs=`<span class="buff em">🚨 ${DMAP[emerg.d].icon} ${emerg.cured}/${emerg.n}　${Math.ceil(emerg.t)}s</span>`+bs;
@@ -1370,7 +1526,7 @@ $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
 (function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs&&!isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
 $('zHome').onclick=()=>{ zoom=1; applyZoom(); camX=HOME.x; camY=HOME.y; };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={applyTier,buyDeco,upDeco,pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 function treatsChips(type){ return DISEASES.filter(d=>d.room===type).map(d=>`<span class="chip">${S.dex[d.id]||S.seen[d.id]?d.icon+' '+d.name:'❔ ???'}</span>`).join(''); }
 let buildTarget=null, buildTab='rooms';
@@ -1384,10 +1540,10 @@ function buildHTML(){
 function roomsBuildHTML(seg){
   const free=openSlots().filter(([i,j])=>!roomAt(i,j)).length;
   const items=Object.entries(ROOMS).map(([k,R])=>{
-    const lockRep=S.rep<R.rep, lockRes=R.needs&&!has(R.needs), locked=lockRep||lockRes, cant=S.money<R.cost||(!buildTarget&&!free);
-    const lockTxt=lockRep?`🔒<br>聲望 ${R.rep}`:`🔒<br>需研發`;
+    const lockTier=(R.tier||0)>S.tier, lockRep=S.rep<R.rep, lockRes=R.needs&&!has(R.needs), locked=lockTier||lockRep||lockRes, cant=S.money<R.cost||(!buildTarget&&!free);
+    const lockTxt=lockTier?`🔒<br>${TIERS[R.tier].short}`:lockRep?`🔒<br>聲望 ${R.rep}`:`🔒<br>需研發`;
     return `<div class="item ${locked?'locked':''}"><div class="ic" style="background:${shade(R.color,.6)}">${R.icon}</div>
-      <div class="txt"><div class="nm">${R.name}</div><div class="ds">${R.desc}</div>${R.noPatients?'':`<div class="chips">${treatsChips(k)}</div>`}</div>
+      <div class="txt"><div class="nm">${R.name}</div><div class="ds">${R.desc}</div>${R.noPatients||R.service?'':`<div class="chips">${treatsChips(k)}</div>`}</div>
       ${locked?`<div class="ds" style="text-align:right">${lockTxt}</div>`:`<button class="btn" ${cant?'disabled':''} data-act="pickBuild" data-arg="${k}">$${fmt(R.cost)}</button>`}</div>`;
   }).join('');
   return `<h2>🏗️ 建造</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・空地 ${free} 塊</div>${items}<button class="btn ghost" style="width:100%;margin-top:6px" data-act="openLand">🚧 擴建土地</button>`;
@@ -1398,11 +1554,12 @@ function openRoom(r){ roomSel=r; confirmDel=false; openSheet(roomHTML); }
 function roomHTML(){
   const r=roomSel; if(!r||!S.rooms.includes(r)) return '<div class="sub">房間不見了。</div>';
   const R=ROOMS[r.type], max=r.lvl>=MAXLV, cost=upCost(r), rt=RT[rkey(r)];
-  const kv=R.noPatients?`<div>研發點產量<b>${(.5*r.lvl).toFixed(1)} / 秒</b></div><div>目前研發點<b>${Math.floor(S.rp)}</b></div>`
+  const kv=R.deco&&R.noPatients?`<div>裝潢分<b>+${R.deco}</b></div><div>效果<b style="font-size:13px">${R.desc.split('。')[1]||''}</b></div>`:r.type==='ward'?`<div>住院時間<b>${timeOf(r).toFixed(0)} 秒</b></div><div>病床<b>3 床</b></div>`:R.noPatients?`<div>研發點產量<b>${(.5*r.lvl).toFixed(1)} / 秒</b></div><div>目前研發點<b>${Math.floor(S.rp)}</b></div>`
     :`<div>每位診療時間<b>${timeOf(r).toFixed(1)} 秒</b></div><div>收費倍率<b>x${feeMult(r.lvl).toFixed(2)}</b></div><div>累計治好<b>${r.n||0} 人</b></div><div>門口排隊<b>${rt?rt.queue.length:0} 人</b></div>`;
   return `<h2>${R.icon} ${R.name} <span style="font-size:14px;color:var(--soft)">Lv${r.lvl}</span></h2><div class="sub">${R.desc}</div><div class="kv">${kv}</div>
-    ${R.noPatients?'':`<div class="chips">${treatsChips(r.type)}</div>`}
+    ${R.noPatients||R.service?'':`<div class="chips">${treatsChips(r.type)}</div>`}
     <div class="row"><button class="btn" ${max||S.money<cost?'disabled':''} data-act="upgrade">${max?'已達最高等級':`升級 $${fmt(cost)}`}</button></div>
+    ${(r.deco||0)<2?`<div class="row"><button class="btn ghost" ${S.money<decoCost(r)?'disabled':''} data-act="upDeco">🛋️ 裝潢：${DECO_NAME[r.deco||0]} → ${DECO_NAME[(r.deco||0)+1]}　$${fmt(decoCost(r))}</button></div>`:'<div class="sub" style="margin-top:10px">🛋️ 裝潢：豪華（最高級）</div>'}
     <div class="row"><button class="btn ${confirmDel?'danger':'ghost'}" data-act="askDel">${confirmDel?`確定拆除？回收 $${fmt(R.cost*.5)}`:'拆除這間'}</button></div>`;
 }
 function upgrade(){ const r=roomSel, c=upCost(r); if(r.lvl>=MAXLV||S.money<c) return; S.money-=c; r.lvl++; sfx.build(); bump('money'); ticker(`⬆️ ${ROOMS[r.type].name}升到 Lv${r.lvl}。`); saveLocal(); refreshSheet(); }
@@ -1415,7 +1572,10 @@ function lobbyHTML(){
     return `<div class="item"><div class="ic" style="background:#eef5fd">${U.icon}</div><div class="txt"><div class="nm">${U.name}　<span style="font-size:12px;color:var(--soft)">${lvTxt}</span></div><div class="ds">${U.desc}</div></div>
       <button class="btn" ${max||S.money<cost?'disabled':''} data-act="buyLobby" data-arg="${k}">${max?'已滿':'$'+fmt(cost)}</button></div>`;
   }).join('');
-  return `<h2>🛋️ 大廳</h2><div class="sub">整潔度 ${cleanPct()}%</div>${items}`;
+  const deco=Object.entries(LOBBY_DECO).map(([k,D])=>{ const own=S.deco[k], lock=S.tier<D.tier;
+    return `<div class="item ${own?'done':lock?'locked':''}"><div class="ic" style="background:#fff7e6">${D.icon}</div><div class="txt"><div class="nm">${D.name}　<span style="font-size:12px;color:var(--soft)">裝潢 +${D.pts}</span></div><div class="ds">${D.desc}</div></div>
+      ${own?'<div class="ds">✅ 已裝</div>':lock?`<div class="ds" style="text-align:right">🔒<br>${TIERS[D.tier].short}</div>`:`<button class="btn" ${S.money<D.cost?'disabled':''} data-act="buyDeco" data-arg="${k}">$${fmt(D.cost)}</button>`}</div>`; }).join('');
+  return `<h2>🛋️ 大廳</h2><div class="sub">整潔度 ${cleanPct()}%・裝潢分 🛋️ ${decoScore()}</div>${items}<h4>✨ 裝潢</h4>${deco}`;
 }
 function buyLobby(k){
   const U=LOBBY_UP[k], lv=S.lobby[k]; if(lv>=U.max) return; const cost=U.cost[lv]; if(S.money<cost) return;
@@ -1461,14 +1621,14 @@ function dexHTML(){
 let confirmReset=false;
 function openOffice(){ confirmReset=false; openSheet(officeHTML); }
 function officeHTML(){
-  return `<h2>🏥 院長室</h2><div class="sub">${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
+  return `<h2>🏥 院長室</h2><div class="sub">${TIERS[S.tier].name}・人氣：${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>${tierHTML()}
     <div class="kv"><div>累計治好<b>${fmt(S.stats.cured)} 人</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div>
-    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>急診成功<b>${S.stats.emergWin} 次</b></div><div>花園綠意<b>🌿 ${gardenGreen()}</b></div><div>植物數<b>${S.garden.length} 株</b></div></div>
+    <div>氣跑的病人<b>${fmt(S.stats.lost)} 人</b></div><div>急診成功<b>${S.stats.emergWin} 次</b></div><div>花園綠意<b>🌿 ${gardenGreen()}</b></div><div>裝潢分<b>🛋️ ${decoScore()}</b></div></div>
     <button class="btn ghost" style="width:100%;margin-bottom:8px" data-act="openGoals">🎯 今年的目標</button>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    <div class="sub" style="margin-top:14px">怪病診所 v0.7</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v0.8</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
@@ -1567,7 +1727,7 @@ function boot(){
     if(cloudS&&(!hadLocal||cloudS.t>savedT+2000)){ apply(cloudS); t0=cloudS.t; }
     booted=true;
     if(S.tut===0) tutorial(); else { ticker(pick(['🏥 開始營業！今天也會很怪。','🏥 院長到！病人們假裝很正常。','🏥 開門了，第一位病人已經在門口奇怪地站著。'])); welcomeBack(t0); }
-    checkProgress(); checkGoals(); updateLabDot(); if(S.tut>0&&!S.unl.garden){ S.unl.garden=1; setTimeout(()=>toast('🌱','新功能：花園','建造 → 🌱 花園，種花種樹'),2500); } saveLocal();
+    $('brandName').textContent=TIERS[S.tier].name; makeKidLooks(); checkProgress(); checkGoals(); updateLabDot(); if(S.tut>0&&!S.unl.garden){ S.unl.garden=1; setTimeout(()=>toast('🌱','新功能：花園','建造 → 🌱 花園，種花種樹'),2500); } saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
   setTimeout(()=>finish(null),hadLocal?1500:6000);
