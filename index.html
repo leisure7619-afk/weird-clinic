@@ -61,7 +61,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #zoom button{width:38px;height:38px;border-radius:12px;border:2px solid var(--line);background:rgba(255,253,248,.95);font-size:18px;font-weight:900;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 #ticker{margin:6px 10px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:7px 12px;font-size:13px;min-height:36px;line-height:1.45;transition:background .3s}
 #ticker.flash{background:#fff4d6}
-nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}
+nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}body.gapfix nav{padding-bottom:4px}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
@@ -225,10 +225,11 @@ const sfx = {
 // ================= 鏡頭 =================
 const cv=document.getElementById('cv'), stage=document.getElementById('stage'); let ctx=cv.getContext('2d');
 let W=0,H=0,tw=40,th=20,zoom=1,camX=7,camY=7,baseTw=40;
-// iPhone 主畫面（standalone＋black-translucent）時，fixed 的 bottom:0 會少算狀態列那一截，直接用螢幕高度撐滿
-function fitApp(){ const a=document.getElementById('app'); if(!a) return; const sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
-  if(!sa){ a.style.height=''; a.style.bottom=''; return; } const por=window.matchMedia?matchMedia('(orientation: portrait)').matches:innerHeight>innerWidth, sh=por?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width);
-  const h=Math.max(innerHeight,document.documentElement.clientHeight,sh); a.style.bottom='auto'; a.style.height=h+'px'; }
+// iPhone 主畫面（standalone）在部分 iOS 版本，最底下一條不畫網頁內容、只塗背景色（WebKit 問題）。
+// 不去撐高畫面（會把按鈕推出去），改成：背景用底部面板的米色，偵測到這條縫時把按鈕下方留白縮到最小，讓縫看起來就是面板的底邊。
+function fitApp(){ const a=document.getElementById('app'); if(!a) return; a.style.height=''; a.style.bottom='';
+  const sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches), por=innerHeight>innerWidth, sh=por?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width);
+  document.body.classList.toggle('gapfix',sa&&sh-innerHeight>=20); }
 function layout(){ fitApp();
   const r=stage.getBoundingClientRect(); W=r.width; H=r.height;
   const dpr=Math.min(2,window.devicePixelRatio||1);
@@ -2466,7 +2467,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.11.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.11.2</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
