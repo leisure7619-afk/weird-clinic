@@ -16,7 +16,7 @@
 <style>
 :root{--bg:#fdf6e9;--ink:#3b2f2a;--card:#fffdf8;--accent:#ff7a59;--line:#ead9c3;--soft:#8a7768;--good:#3fae7a;--bad:#e2574c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;background:#7fb85e}
+html,body{margin:0;height:100%;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;background:#fdf6e9}
 #app{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;right:0;max-width:640px;margin:0 auto}
 header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .top{display:flex;align-items:center;justify-content:space-between;gap:6px}
@@ -225,7 +225,11 @@ const sfx = {
 // ================= 鏡頭 =================
 const cv=document.getElementById('cv'), stage=document.getElementById('stage'); let ctx=cv.getContext('2d');
 let W=0,H=0,tw=40,th=20,zoom=1,camX=7,camY=7,baseTw=40;
-function layout(){
+// iPhone 主畫面（standalone＋black-translucent）時，fixed 的 bottom:0 會少算狀態列那一截，直接用螢幕高度撐滿
+function fitApp(){ const a=document.getElementById('app'); if(!a) return; const sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+  if(!sa){ a.style.height=''; a.style.bottom=''; return; } const por=window.matchMedia?matchMedia('(orientation: portrait)').matches:innerHeight>innerWidth, sh=por?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width);
+  const h=Math.max(innerHeight,document.documentElement.clientHeight,sh); a.style.bottom='auto'; a.style.height=h+'px'; }
+function layout(){ fitApp();
   const r=stage.getBoundingClientRect(); W=r.width; H=r.height;
   const dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -2082,6 +2086,11 @@ function placeCheck(k,x,y,noMoney){ const D=CB[k];
   if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘';
   if(!footFree(x,y,D.w)){ for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++) if(blocked(x+a,y+d)) return '🌊 有水或山坡，蓋不了'; if(D.coast){ let r=0,bb=0; for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++){ if(isRoad(x+a,y+d)) r=1; if(bAt(x+a,y+d)) bb=1; } return `⚓ 沙灘往內 ${D.w} 排要空著（${r&&bb?'有道路和建築':r?'有道路':'有建築'}擋住）`; } return '這裡空間不夠'; }
   if(!nearRoad(x,y,D.w)&&!expandBase(k,x,y)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路'; if(noMoney) return ''; if(S.money<costOf(k)+(k==='mrt'?trackAdd(x,y)*TRACK_COST:0)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠（含軌道）'; return ''; }
+// 單指按著拖移要蓋的建築（紅框／綠框跟著手指走）
+function ghostDragTo(sx,sy){ const k=placing&&placing.city, D=CB[k]; if(!D||!gest||!gest.gd) return; const w=toWorld(sx,sy), G=gest.gd; let ax,ay;
+  if(G.ox!=null){ ax=Math.round(G.ox+w.x-G.wx); ay=Math.round(G.oy+w.y-G.wy); } else { ax=Math.round(w.x-D.w/2); ay=Math.round(w.y-D.w/2); }
+  if(ghost&&!ghost.bull&&ghost.k===k&&ghost.ax===ax&&ghost.ay===ay) return;
+  const g=D.coast?bestAnchor(k,ax+D.w/2,ay+D.w/2):{k,x:ax,y:ay,msg:placeCheck(k,ax,ay)}; g.ax=ax; g.ay=ay; const ch=!ghost||ghost.x!==g.x||ghost.y!==g.y||!!ghost.msg!==!!g.msg; ghost=g; if(ch){ ghostBanner(); if(!g.msg) sfx.pop&&sfx.pop(); } }
 function bestAnchor(k,wx,wy){ const w=CB[k].w, tx=Math.floor(wx), ty=Math.floor(wy), cx=Math.round(wx-w/2), cy=Math.round(wy-w/2); let best=null;
   if(CB[k].coast){ // 港口：點到海裡或沙灘附近，都自動貼齊海邊那一排
     const M=MCX(), C=[]; if(M.top&&ty<=w) for(let ax=cx-2;ax<=cx+2;ax++) C.push([ax,0]); if(M.left&&tx<=w) for(let ay=cy-2;ay<=cy+2;ay++) C.push([0,ay]);
@@ -2378,7 +2387,8 @@ const ptrs=new Map(); let gest=null, sayStaff=null, panHintT=0;
 cv.addEventListener('pointerdown',e=>{
   ensureAudio(); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(ptrs.size===1){ gest={sx:e.clientX,sy:e.clientY,moved:false,lx:e.clientX,ly:e.clientY,mouse:e.pointerType==='mouse'}; lastDragTile=''; }
+  if(ptrs.size===1){ gest={sx:e.clientX,sy:e.clientY,moved:false,lx:e.clientX,ly:e.clientY,mouse:e.pointerType==='mouse'}; lastDragTile='';
+    if(mode==='city'&&placing&&placing.city&&CB[placing.city]&&placing.city!=='road'){ const r=cv.getBoundingClientRect(), w=toWorld(e.clientX-r.left,e.clientY-r.top), g=ghost&&!ghost.bull&&ghost.k===placing.city?ghost:null; gest.gd={wx:w.x,wy:w.y,ox:g?g.x:null,oy:g?g.y:null}; } }
   else if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; gest={pinch:Math.hypot(a.x-b.x,a.y-b.y),ang:Math.atan2(b.y-a.y,b.x-a.x),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,moved:true}; }
 });
 cv.addEventListener('pointermove',e=>{
@@ -2386,7 +2396,8 @@ cv.addEventListener('pointermove',e=>{
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===1&&!gest.pinch){
     if(Math.hypot(e.clientX-gest.sx,e.clientY-gest.sy)>8) gest.moved=true;
-    if(gest.moved){ const rr=cv.getBoundingClientRect(); if(!(mode==='city'&&cityDrag(e.clientX-rr.left,e.clientY-rr.top))){ if(gest.mouse||!placing){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly, a=dx/(tw/2), b=dy/(th/2); panView(-(a+b)/2,-(b-a)/2); } else if(!gest.hinted){ gest.hinted=1; const now=Date.now(); if(now-panHintT>15000){ panHintT=now; ticker('✌️ 用兩隻手指按著滑，就能移動地圖。'); } } } }
+    if(gest.moved&&gest.gd){ const rr=cv.getBoundingClientRect(); ghostDragTo(e.clientX-rr.left,e.clientY-rr.top); }
+    else if(gest.moved){ const rr=cv.getBoundingClientRect(); if(!(mode==='city'&&cityDrag(e.clientX-rr.left,e.clientY-rr.top))){ if(gest.mouse||!placing){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly, a=dx/(tw/2), b=dy/(th/2); panView(-(a+b)/2,-(b-a)/2); } else if(!gest.hinted){ gest.hinted=1; const now=Date.now(); if(now-panHintT>15000){ panHintT=now; ticker('✌️ 用兩隻手指按著滑，就能移動地圖。'); } } } }
     gest.lx=e.clientX; gest.ly=e.clientY;
   } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()], d=Math.hypot(a.x-b.x,a.y-b.y), r=cv.getBoundingClientRect(), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
     if(gest.mx!==undefined){ const ddx=mx-gest.mx, ddy=my-gest.my, pa=ddx/(tw/2), pb=ddy/(th/2); panView(-(pa+pb)/2,-(pb-pa)/2); } gest.mx=mx; gest.my=my;
@@ -2455,7 +2466,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.11</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.11.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
@@ -2533,7 +2544,7 @@ function boot(){
   S=local||newState(); resetRuntime();
   camX=citySize()/2; camY=citySize()/2; zoom=1.15;
   const savedT=S.t;
-  layout(); window.addEventListener('resize',layout);
+  layout(); window.addEventListener('resize',layout); window.addEventListener('orientationchange',()=>setTimeout(layout,300));
   requestAnimationFrame(loop);
   if(!hadLocal&&!ON_PAGES&&location.protocol!=='file:') ticker('☁️ 讀取存檔中…');
   let settled=false;
