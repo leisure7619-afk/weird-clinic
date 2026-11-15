@@ -564,19 +564,19 @@ let mode='city', ROADS=new Set(), cars=[], peds=[], cityAliens=0, cityEvT=100, c
 function initCity(type){
   const r=[]; for(let x=1;x<=10;x++) r.push(x+','+4); for(let y=5;y<=10;y++) r.push(7+','+y);
   const mt=MAPS[type]?type:'coast';
-  return {stage:0,r,b:[{t:'cityhall',x:5,y:5},{t:'house',x:8,y:5,occ:4},{t:'house',x:8,y:6,occ:3},{t:'conv',x:3,y:5},{t:'park',x:8,y:3},{t:'house',x:2,y:3,occ:4}],intro:0,tv:1,tc:[],map:{type:mt,rx:13+Math.floor(Math.random()*3),rp:Math.random()*6.28,fo:Math.random()*6.28},trait:pick(Object.keys(TRAITS)),pv:1,unl:{},fx:[]};
+  return {stage:0,r,b:[{t:'cityhall',x:5,y:5},{t:'house',x:8,y:5,occ:4},{t:'house',x:8,y:6,occ:3},{t:'conv',x:3,y:5},{t:'park',x:8,y:3},{t:'house',x:2,y:3,occ:4}],intro:0,tv:1,tc:[],map:Object.assign({type:mt},genLand(mt,((S&&S.meta&&S.meta.hist||[]).slice(-1)[0]||{}).land)),trait:pick(Object.keys(TRAITS)),pv:1,unl:{},fx:[]};
 }
 // ---- 地形（v1.2）：上方海岸沙灘、河流、湖、山丘、樹林 ----
 let TCLR=new Set();
-const riverX=y=>{ const M=MCX(); return M.rx+Math.round(1.6*Math.sin(y*.45+M.rp)); };
+const riverX=y=>{ const M=MCX(); return M.rx+Math.round((M.ra??1.6)*Math.sin(y*.45+M.rp)); };
 function terr(x,y){
   const M=MCX();
   if((M.top&&y<0)||(M.left&&x<0)) return 'sea';
   const edge=(M.top&&y===0)||(M.left&&x===0);
   if(TCLR.has(x+','+y)) return edge?'s':'g';
-  { const a=riverX(y), b=riverX(y-1); if(x>=Math.min(a,b)&&x<=Math.max(a,b)) return 'w'; }
+  if(M.rx>-50){ const a=riverX(y), b=riverX(y-1); if(x>=Math.min(a,b)&&x<=Math.max(a,b)+(M.rw||1)-1) return 'w'; }
   if(edge) return 's';
-  const L=M.lake, lx=(x-L[0])/L[2], ly=(y-L[1])/L[3]; if(lx*lx+ly*ly<1) return 'w';
+  for(const L of (M.lakes||[M.lake])){ const lx=(x-L[0])/L[2], ly=(y-L[1])/L[3]; if(lx*lx+ly*ly<1) return 'w'; }
   for(const h of M.hills){ const hx=x-h[0], hy=y-h[1]; if(hx*hx+hy*hy<h[2]+3*Math.sin(x*1.3+y)) return 'h'; }
   if(x+y>13&&Math.sin(x*.7+1.3+M.fo)+Math.cos(y*.6+M.fo*.7)+Math.sin((x+y)*.9)*.4>M.ft&&((x*7+y*13)%3)) return 'f';
   return 'g';
@@ -652,10 +652,10 @@ function cityCalc(){
   const grace=(S.city.pgrace||0)>S.time, pr=grace||puse<1||puse<=pcap?1:pcap/puse, bf=.35+.65*pr;
   jobs+=fxSum('jobs');
   const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
-  const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*fxMul('tour'));
+  const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*({plain:.9,river:1.1}[S.city.map&&S.city.map.land]||1)*fxMul('tour'));
   const MS=mrtOk(), line=MS.length>=2, mrtMul=line?Math.min(1.6,.6+.2*MS.length):.3, tiles=line&&transit.mrt?transit.mrt.tiles:0;
   const gsup={}; const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=(b.t==='mrt'?mrtMul:1)*D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:NK>.35?3*NK:0):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; b.grp=grpOf(b.t); b.nov=b.bt!==undefined&&(FREQ[b.t]==='rare'||FREQ[b.t]==='weekly'||FREQ[b.t]==='event')?Math.max(0,1-(S.time-b.bt)/150):0; gsup[b.grp]=(gsup[b.grp]||0)+b.cap; sup[D.svc]+=b.cap; });
-  const gdem={'shop:daily':emp*.9+un*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+tourists*.5,move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:(pop+tourists*.3)*(T==='food'?1.2:1),water:pop};
+  const gdem={'shop:daily':emp*.9+un*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+tourists*.5,move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:(pop+tourists*.3)*(T==='food'?1.2:1),water:pop*((S.city.map||{}).land==='dry'?1.2:1)};
   { const rt={}; let rsum=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(b.ok&&FREQ[b.t]==='rare'){ rt[b.t]=(rt[b.t]||0)+(D.tour||1)*(rt[b.t]?.3:1); } }); Object.values(rt).forEach(v=>rsum+=v); Object.keys(rt).forEach(k=>{ gdem['fun:rare:'+k]=emp*.04+un*.02+tourists*1.1*rt[k]/rsum; }); }
   S.city.b.forEach(b=>{ if(b.ok&&b.nov>0) gdem[b.grp]=(gdem[b.grp]||0)+CB[b.t].cap*.9*b.nov; });
   Object.keys(gdem).forEach(g=>{ gdem[g]*=fxMul('dem',g.split(':')[0]); });
@@ -674,7 +674,7 @@ function cityCalc(){
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b))*m; b.rev+=r; inc.exp+=r; }
     if(D.pwr&&!D.fixed&&praw>0){ const r=(Math.min(puse,pcap)*.2+sur*.12)*pwrOf(b)/praw; b.rev+=r; inc.power+=r; } });
   const pk=pop>40?1:0;
-  let h=40+Math.min(20,hb)+Math.min(8,green)+S.city.stage*2+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0)+comboHappy()+fxSum('happy')-(pr<1?(1-pr)*20+3:0)-(T==='tech'?3:0)+(T==='slow'?5:0);
+  let h=40+Math.min(20,hb)+Math.min(8,green)+S.city.stage*2+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0)+comboHappy()+fxSum('happy')-(pr<1?(1-pr)*20+3:0)-(T==='tech'?3:0)+(T==='slow'?5:0)+((S.city.map||{}).land==='forest'?3:0);
   CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,covS,covF,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc,gdem,gsup,gsat,pw:{cap:pcap,use:puse,ratio:pr,grace}};
 }
 function cityNeeds(){
@@ -818,7 +818,31 @@ const MAPS={
   mountain:{name:'山城',icon:'⛰️',cost:4,desc:'沒有海、山多樹多，溫泉配山景特別賺，但蓋不了港口和海水浴場。',top:0,left:0,hills:[[24.5,24.5,30],[4.5,25.5,16],[26,4.5,14]],lake:[9.5,17.5,2.6,1.8],ft:.95}
 };
 let MC=null;
-function mapCfg(){ const m=(S&&S.city&&S.city.map)||{}, t=MAPS[m.type]?m.type:'coast'; return Object.assign({type:t},MAPS[t],{rx:m.rx??12,rp:m.rp??0,fo:m.fo??0}); }
+function mapCfg(){ const m=(S&&S.city&&S.city.map)||{}, t=MAPS[m.type]?m.type:'coast', o=Object.assign({type:t},MAPS[t],{rx:m.rx??12,rp:m.rp??0,fo:m.fo??0});
+  if(m.land){ o.land=m.land; o.hills=MAPS[t].hills.concat(m.hills||[]); o.lakes=m.lakes||[MAPS[t].lake]; if(m.rw) o.rw=m.rw; if(m.ra!=null) o.ra=m.ra; if(m.ft!=null) o.ft=m.ft; } return o; }
+// 每個新城市隨機一種地形，卸任換城市時不會跟上一個一樣
+const LANDS={
+  plain:{icon:'🌾',name:'大平原',desc:'地很平、好蓋房子，但風景普通：觀光客 -10%'},
+  river:{icon:'🏞️',name:'大河城市',desc:'河又寬又彎，要多蓋幾座橋；河景讓觀光客 +10%'},
+  hills:{icon:'⛰️',name:'丘陵地',desc:'到處是小山，平地被切碎；山景溫泉、風力發電特別好'},
+  lakes:{icon:'💧',name:'千湖之鄉',desc:'湖泊很多，要繞著湖規劃；湖景住宅讓市民更開心'},
+  forest:{icon:'🌲',name:'森林城市',desc:'樹林很多：空氣好，幸福度 +3'},
+  valley:{icon:'🏔️',name:'山谷',desc:'兩邊是山、中間是河谷，城市越大越難往外長'},
+  dry:{icon:'🏜️',name:'沒有河的城市',desc:'不用蓋橋，但污水只能靠污水處理廠，需求 +20%'}
+};
+function genLand(type,prev){ const R=Math.random, ks=Object.keys(LANDS).filter(k=>k!==prev), land=ks[Math.floor(R()*ks.length)], m={land,hills:[],lakes:[]};
+  const far=(x,y,r)=>Math.max(x,y)-r>13.5; // 不要擋到一開始的市區（0～13）
+  const spot=r=>{ for(let i=0;i<40;i++){ const x=4+R()*25, y=4+R()*25; if(far(x,y,r)) return [x,y]; } return [24,24]; };
+  m.rx=13+Math.floor(R()*3); m.rp=R()*6.28; m.fo=R()*6.28;
+  const lake=(a,b)=>{ const rx=a+R()*(b-a), ry=rx*(.6+R()*.5), p=spot(rx); m.lakes.push([p[0],p[1],rx,ry]); };
+  if(land==='plain'){ m.ft=1.6; lake(1.4,2); }
+  else if(land==='river'){ m.rw=2; m.ra=2.6; lake(1.5,2.2); }
+  else if(land==='hills'){ for(let i=0,n=4+Math.floor(R()*3);i<n;i++){ const r2=6+R()*12, p=spot(Math.sqrt(r2)); m.hills.push([p[0],p[1],r2]); } lake(1.4,2); }
+  else if(land==='lakes'){ for(let i=0,n=4+Math.floor(R()*3);i<n;i++) lake(2,3.6); }
+  else if(land==='forest'){ m.ft=.45; lake(1.5,2.4); }
+  else if(land==='valley'){ m.hills.push([26.5+R()*1.5,6+R()*14,36],[6+R()*14,26.5+R()*1.5,36],[27,27,30]); m.ra=2; lake(1.4,2); }
+  else if(land==='dry'){ m.rx=-99; lake(1.6,2.6); }
+  return m; }
 const MCX=()=>MC||mapCfg();
 const hasSea=()=>{ const M=MCX(); return !!(M.top||M.left); };
 const coastOK=(x,y)=>{ const M=MCX(); return !!((M.top&&y===0)||(M.left&&x===0)); };
@@ -1166,9 +1190,9 @@ function drawStadiumEv(b,c,RX,RY,H,top){ const A=concertOn(), e=S.city.ev;
 // ---- 任期、勳章、新城市 ----
 function settleCalc(kind){ const st=S.city.stage, pb=Math.floor(Math.log2(1+CS.pop/150)), tb=kind==='full'?3:0, md=st+pb+tb;
   return {md,lines:`🏛️ 城市等級「${CITY_STAGES[st].name}」 🏅+${st}<br>👥 人口 ${fmt(CS.pop)} 🏅+${pb}${tb?`<br>🎖️ ${TERM} 年任期圓滿 🏅+${tb}`:''}`}; }
-function settle(kind){ if(S.city.settled) return 0; const s=settleCalc(kind); S.city.settled=1; S.meta.md+=s.md; S.meta.hist.push({name:S.city.name,map:(S.city.map||{}).type||'coast',trait:S.city.trait||'',years:yearNo(),pop:CS.pop,stage:S.city.stage,md:s.md,end:kind}); saveLocal(); return s.md; }
+function settle(kind){ if(S.city.settled) return 0; const s=settleCalc(kind); S.city.settled=1; S.meta.md+=s.md; S.meta.hist.push({name:S.city.name,land:(S.city.map||{}).land,map:(S.city.map||{}).type||'coast',trait:S.city.trait||'',years:yearNo(),pop:CS.pop,stage:S.city.stage,md:s.md,end:kind}); saveLocal(); return s.md; }
 function chooseMap(){ const m=S.meta;
-  queueModal({icon:'🗺️',title:'選一塊新土地',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。<br>新城市會隨機抽一個城市特色。</p><div class="note">💰 起始資金 $${fmt(3000+2000*upL('cash'))}<br>🏅 勳章可以在「名人堂」換永久升級和新地圖</div>`,
+  queueModal({icon:'🗺️',title:'選一塊新土地',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。<br>新城市的<b>地形</b>和<b>城市特色</b>都會隨機抽，地形不會跟上一個城市一樣。</p><div class="note">💰 起始資金 $${fmt(3000+2000*upL('cash'))}<br>🏅 勳章可以在「名人堂」換永久升級和新地圖</div>`,
     buttons:Object.entries(MAPS).map(([k,M])=>({label:`${M.icon} ${M.name}`,sub:m.maps[k]?M.desc:`🔒 名人堂用 🏅${M.cost} 解鎖`,dis:!m.maps[k],fn:()=>startNewCity(k)})).concat([{label:'🏅 先去名人堂',ghost:1,fn:()=>openSheet(fameHTML)}])}); }
 function startNewCity(type){ const meta=S.meta, muted=S.muted, earned=S.stats.earned, nn=S.noNight;
   S=newState(); S.meta=meta; S.muted=muted; S.noNight=nn; S.stats.earned=earned; S.tut=1; S.day=today();
@@ -2177,7 +2201,7 @@ function cityHud(){
 }
 function cityIntro(){
   if(!S.city.intro){ S.city.intro=1; S.city.noHosp=1; S.city.v25=1; const T=TRAITS[S.city.trait], M=MCX();
-    queueModal({icon:M.icon,title:'恭喜當選村長！',body:`<p>這次的土地是「<b>${M.name}</b>」。把這個小村發展成全世界最怪、最賺錢的城市吧！</p>${T?`<div class="note" style="text-align:center"><b>本市特色：${T.icon} ${T.name}</b><br>${T.desc}</div>`:''}<div class="note">💰 免稅，所有設施使用者付費<br>⚡ 建築要用電，記得蓋發電廠<br>🔗 某些建築蓋在一起有隱藏組合<br>🗓️ ${TERM} 年一任，每年年底選舉<br>🧑‍💼 不知道做什麼，看上面的副市長</div>`,buttons:[{label:'上任！'}]}); return; }
+    queueModal({icon:M.icon,title:'恭喜當選村長！',body:`<p>這次的土地是「<b>${M.name}</b>」。把這個小村發展成全世界最怪、最賺錢的城市吧！</p>${LANDS[M.land]?`<div class="note" style="text-align:center"><b>地形：${LANDS[M.land].icon} ${LANDS[M.land].name}</b><br>${LANDS[M.land].desc}</div>`:''}${T?`<div class="note" style="text-align:center"><b>本市特色：${T.icon} ${T.name}</b><br>${T.desc}</div>`:''}<div class="note">💰 免稅，所有設施使用者付費<br>⚡ 建築要用電，記得蓋發電廠<br>🔗 某些建築蓋在一起有隱藏組合<br>🗓️ ${TERM} 年一任，每年年底選舉<br>🧑‍💼 不知道做什麼，看上面的副市長</div>`,buttons:[{label:'上任！'}]}); return; }
   if(!S.city.v25){ S.city.v25=1; queueModal({icon:'⚡',title:'市政大改革！',body:`<p>新的市政制度上路了：</p><div class="note">⚡ <b>電力</b>：建築要用電，電不夠會停電。${S.city.pgift?`隔壁城市先借電 10 分鐘，另外補助 <b>$${fmt(S.city.pgift)}</b> 讓你蓋發電廠（在 🏗️ 建設 → ⚡ 能源）`:'在 🏗️ 建設 → ⚡ 能源 蓋發電廠'}<br>🔒 <b>新建築解鎖</b>：看人口、發電量、有沒有先蓋前置建築<br>📋 <b>市政決策</b>：議會會不定期送提案，可能有陷阱<br>🔗 <b>隱藏組合</b>：某些建築蓋在一起收入大增<br>🏅 <b>任期與勳章</b>：${TERM} 年一任，連任、組合、卸任結算都拿勳章，可以換永久升級</div>`,buttons:[{label:'了解！'}]}); delete S.city.pgift; }
   if(!S.city.noHosp){ S.city.noHosp=1; queueModal({icon:'🏛️',title:'醫院改建成市政府',body:'<p>怪病醫院搬去隔壁城市了，原地蓋起了氣派的市政府，門口還有一座柴犬雕像。</p><div class="note">🏛️ 點市政府就能打開市政<br>⚙️ 音效和重新開始在「設定」</div>',buttons:[{label:'好'}]}); }
 }
@@ -2266,7 +2290,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.9</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.9.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
