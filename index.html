@@ -925,7 +925,7 @@ function draw(){
   drawLandLabels();
   drawWeather();
   S.rooms.forEach(drawSign);
-  floats.forEach(f=>{ if(f.c) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
+  floats.forEach(f=>{ if(f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   patients.forEach(p=>{ if(p.sayT>0&&!p.hidden&&!(p.thinkT>0)) drawSay(p.x,p.y,p.say); });
   patients.forEach(p=>{ if(p.thinkT>0&&!p.hidden) drawThink(p); });
   if(sayStaff && sayStaff.t>0) drawSay(sayStaff.x,sayStaff.y,sayStaff.say);
@@ -1494,6 +1494,7 @@ const CB={
   bubble: {svc:'shop',cap:10,fee:2.5,sign:'飲料店',cat:'shop',name:'手搖飲料店',icon:'🧋',cost:1200,w:1,stage:0,jobs:4,desc:'招牌：全糖去冰加一隻鴨。'},
   market: {svc:'shop',cap:45,fee:3,sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:8000,w:2,stage:1,jobs:25,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
   mall:   {svc:'shop',cap:100,fee:3.5,cat:'shop',name:'百貨公司',icon:'🛍️',cost:25000,w:2,stage:2,jobs:60,desc:'週年慶時，鴨子也來排隊。'},
+  shiba:  {svc:'fun',cap:30,fee:5,cat:'shop',name:'柴犬咖啡廳',icon:'🐕',cost:6000,w:2,stage:0,tour:3,jobs:8,happy:3,sign:'柴犬咖啡',desc:'2×2。點一杯拿鐵，柴犬會用屁股對著你。本市最療癒的地方。'},
   startup:{exp:70,sign:'新創',cat:'tech',name:'科技新創',icon:'💡',cost:8000,w:1,stage:1,jobs:20,desc:'正在開發「幫你決定午餐吃什麼」的 App。'},
   solar:  {exp:50,cat:'tech',name:'太陽能發電場',icon:'☀️',cost:8000,w:2,stage:1,green:1,sign:'太陽能',desc:'把電賣給隔壁城市。陰天時板子會自己唱歌打氣。'},
   robot:  {exp:280,sign:'機器人工廠',cat:'tech',name:'機器人工廠',icon:'🤖',cost:30000,w:2,stage:2,jobs:50,desc:'做出來的機器人會上街掃地，偶爾迷路。'},
@@ -1519,13 +1520,21 @@ const CB={
 };
 const CCATS=[['traffic','🛣️ 交通'],['home','🏠 住宅'],['shop','🏪 商業'],['tech','🔬 科技'],['tour','🎡 觀光'],['public','🏛️ 公共']];
 const CITY_OS={
-  city:['市長什麼時候要蓋公園啊？','我們家附近終於有便利商店了！','公車司機今天又是一隻鴨子。','聽說市長每天都在滑手機玩遊戲。','這城市好怪，可是我好喜歡。','我搬來這裡，是因為醫院的醫生是貓。','剛剛有一台機器人跟我說早安。','鹹酥雞市花的提案，我投贊成。'],
+  dog:['我家柴犬今天又拒絕走路，原地變成一塊麻糬。','遛狗遛了一小時，其實是狗在遛我。','這城市的柴犬比人還有名。','柴犬咖啡廳的拿鐵拉花是柴犬臉，捨不得喝。'],
+  city:['這是柴犬友善城市，我們家柴犬很驕傲。','市長什麼時候要蓋公園啊？','我們家附近終於有便利商店了！','公車司機今天又是一隻鴨子。','聽說市長每天都在滑手機玩遊戲。','這城市好怪，可是我好喜歡。','我搬來這裡，是因為醫院的醫生是貓。','剛剛有一台機器人跟我說早安。','鹹酥雞市花的提案，我投贊成。'],
   tour:['這個城市的鴨子比人還多！','導遊說下一站是「會唱歌的燒杯」。','我要買十個鴨子鑰匙圈回去送人。','拍照拍到手機沒電了。','這裡的夜市臭豆腐配冰淇淋，必吃！'],
   jobless:['找不到工作…要不要去賣雞排？','聽說科技新創在徵「午餐決定師」。'],
   nopark:['好想要一座公園，可以發呆的那種。'],
   traffic:['公車站在哪裡？我已經走了三條街。']
 };
+const SHIBA_OS=['汪！（翻譯：今天的罐罐呢？）','我不是胖，是毛多。','散步可以，但我要走我想走的那條。','（原地趴下，變成一塊麻糬）','聽說這裡是柴犬友善城市，我很滿意。','咖啡廳那隻柴犬是我表哥。','我剛剛對鴨子叫了一聲，牠沒理我。'];
 const CITY_EVENTS=[
+  {icon:'🐕',title:'柴犬名譽市長',text:'一隻柴犬跑進市政府，坐上市長的椅子，怎麼拉都不下來。',choices:[
+    {label:'任命牠為名譽市長',fn:()=>({text:'柴犬名譽市長上任，第一道命令是全市發罐罐。市民笑到不行，幸福度上升 90 秒！',buff:['cityhappy',90]})},
+    {label:'用肉乾引牠下來',fn:()=>({text:'柴犬吃完肉乾，還是不下來。市長只好坐旁邊的板凳辦公。'})}]},
+  {icon:'🐾',title:'柴犬散步節',text:'市民提議舉辦「柴犬散步節」，全市柴犬一起上街遊行。',choices:[
+    {label:'辦！',fn:()=>({text:'上百隻柴犬塞爆大街，觀光客瘋狂拍照，商店生意大好。',money:400,buff:['cityhappy',60]})},
+    {label:'明年再說',fn:()=>({text:'柴犬們集體在市政府門口趴下抗議，可愛到沒人敢趕。'})}]},
   {icon:'🦆',title:'鴨子請願',text:'一群鴨子排隊來到市政府，要求設立「鴨子專用道」。',choices:[
     {label:'同意！',fn:()=>({text:'鴨子專用道開通，觀光客專程來拍照。幸福度上升 90 秒。',buff:['cityhappy',90]})},
     {label:'再研究',fn:()=>({text:'鴨子們在市政府門口靜坐了一下午，最後被路人餵飽回家了。'})}]},
@@ -1599,6 +1608,10 @@ const isRoad=(x,y)=>ROADS.has(x+','+y);
 const OLDW={park:1,school:1,museum:1,onsen:1,solar:1};
 function cityRebuild(){ rot=S.city.rot||0; S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; }
 const BW=b=>b.w||CB[b.t].w;
+const gapOf=(ax,ay,aw,bx,by,bw)=>Math.max(0,bx-(ax+aw),ax-(bx+bw),by-(ay+aw),ay-(by+bw));
+function nearPop(x,y,w,R){ let n=0; S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok!==false&&!h.burnt&&gapOf(x,y,w,h.x,h.y,BW(h))<=R) n+=h.occ||0; }); return n; }
+function svcNear(x,y,w,svc,R){ return S.city.b.some(q=>{ const D=CB[q.t]; return D.svc===svc&&q.ok&&gapOf(x,y,w,q.x,q.y,BW(q))<=R; }); }
+const LOCAL_SVC={shop:1,fun:1,edu:1,move:1};
 const costOf=k=>{ const D=CB[k]; if(k==='road') return D.cost; const n=S.city.b.filter(b=>b.t===k).length; return Math.round(D.cost*Math.pow(1.12,n)/10)*10; };
 const upOf=b=>{ const D=CB[b.t]; if(D.fixed) return 0; return D.cost*.003+(D.jobs||0)*.5; };
 const PAYM=()=>1+S.city.stage*.1;
@@ -1617,13 +1630,15 @@ function cityCalc(){
   const dem={shop:emp*1+un*.3+tourists*1.2, move:emp*.6+un*.2+tourists*.8, fun:emp*.5+un*.3+tourists*1.5+fans, edu:pop*.15, help:pop*.04+tourists*.15, trash:pop+tourists*.3, water:pop};
   const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0,exp:0};
   Object.keys(dem).forEach(k=>sat[k]=dem[k]<1?1:Math.min(1,sup[k]/dem[k]));
+  const wsum={}; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.near=LOCAL_SVC[D.svc]?nearPop(b.x,b.y,BW(b),4):0; b.wgt=LOCAL_SVC[D.svc]?.5+Math.min(1,b.near/30):1; wsum[D.svc]=(wsum[D.svc]||0)+b.cap*b.wgt; });
+  let covS=0,covF=0; S.city.b.forEach(h=>{ if(!CB[h.t].pop||!h.ok||!(h.occ>0)) return; const w=BW(h); if(svcNear(h.x,h.y,w,'shop',4)) covS+=h.occ; if(svcNear(h.x,h.y,w,'fun',4)) covF+=h.occ; }); covS=pop?covS/pop:1; covF=pop?covF/pop:1;
   S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); if(!b.ok) return;
     if(D.rent){ b.rev=(b.occ||0)*er*D.rent*viewMult(b); inc.rent+=b.rev; }
-    if(D.svc){ const sh=sup[D.svc]?Math.min(dem[D.svc],sup[D.svc])/sup[D.svc]:0; b.served=b.cap*sh; b.busy=dem[D.svc]>sup[D.svc]*1.02; const r=b.served*D.fee*viewMult(b); b.rev+=r; inc[D.svc]+=r; }
+    if(D.svc){ const tot=Math.min(dem[D.svc],sup[D.svc]); b.served=wsum[D.svc]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[D.svc]):0; b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b); b.rev+=r; inc[D.svc]+=r; }
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b)); b.rev+=r; inc.exp+=r; } });
   const pk=pop>40?1:0;
-  let h=40+Math.min(20,hb)+Math.min(8,green)+S.tier*3+Math.min(6,views*.6)+14*er+4*sat.shop+3*sat.move+4*sat.fun+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0);
-  CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc};
+  let h=40+Math.min(20,hb)+Math.min(8,green)+S.tier*3+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0);
+  CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,covS,covF,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc};
 }
 function cityNeeds(){
   const v=[], d=CS.dem||{}, s=CS.sat||{};
@@ -1724,6 +1739,7 @@ function cityUpdate(dt){
     if(D.pop){ const target=b.ok?D.pop*fac:0; if((b.occ||0)<target&&grow) b.occ=Math.min(target,(b.occ||0)+dt*.35*(1+D.pop/30)); else if((b.occ||0)>target) b.occ=Math.max(target,(b.occ||0)-dt*.2); }
     if(!D.fixed){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round((b.ok?payOf(b)*PAYM()*(protest?.8:1):0)-(b.up||0)); if(m){ S.money+=m; if(m>0) S.stats.earned+=m; if(mode==='city'&&(m>0||m<=-2)){ const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,BW(b)>1?1.4:.9); floats.push({c:1,text:(m>0?'+$':'-$')+fmt(Math.abs(m)),x:c.x,y:c.y,life:1.1,color:m>0?'#e09a12':'#e2574c'}); } } } }
   });
+  cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
   if(mode==='city'&&!modalOpen) misTick(dt); fireTick(dt); protestTick(dt); deputyTick(dt);
   if(mode==='city'){ updateCars(dt); updatePeds(dt); cityEvT-=dt; if(cityEvT<=0&&!modalOpen){ cityEvT=110+Math.random()*80; const ev=pick(CITY_EVENTS); sfx.pop(); queueModal({icon:ev.icon,title:ev.title,body:`<p>${ev.text}</p>`,buttons:ev.choices.map((c,i)=>({label:c.label,ghost:i===1,fn:()=>applyOutcome(ev,c.fn())}))}); } }
 }
@@ -1742,7 +1758,7 @@ function updateCars(dt){
 function updatePeds(dt){
   const want=Math.min(30,3+Math.floor(CS.pop/14)), wantT=Math.min(14,Math.floor(CS.tour*1.4)), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
-  const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res') persona(a); a.sick=k==='res'&&Math.random()<.12?pick(pool().length?pool():DISEASES.slice(0,2)).icon:null; a.phase=0; peds.push(a); return true; };
+  const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<.3; } a.sick=k==='res'&&Math.random()<.12?pick(pool().length?pool():DISEASES.slice(0,2)).icon:null; a.phase=0; peds.push(a); return true; };
   while(count('res')<want){ if(!add('res')) break; } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
   peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
   peds=peds.filter(p=>!p.dead);
@@ -1777,6 +1793,24 @@ function bldg(x,y,w,h,wall,roof,o={}){
   if(roof) box(X-.03,Y-.03,L+.06,L+.06,.08,roof,h);
   const top=P3(x+w/2,y+w/2,h+.08); if(o.icon) emoji(o.icon,top.x,top.y-tw*.14,tw*(o.isz||.3));
   return top;
+}
+// ---- 柴犬 ----
+function drawShiba(sx,sy,s,o={}){ const f=o.face||1, pose=o.pose||'walk', ph=o.phase||0, O='#e39a4a', W='#fff7ea', D='#7a4a22';
+  ellipse(sx,sy,s*.42,s*.12,'rgba(0,0,0,.18)');
+  if(pose==='lie'){ ellipse(sx,sy-s*.16,s*.46,s*.17,O); ellipse(sx+f*s*.05,sy-s*.1,s*.3,s*.08,W); const hx=sx+f*s*.38, hy=sy-s*.24; circle(hx,hy,s*.19,O); ellipse(hx+f*s*.08,hy+s*.06,s*.12,s*.08,W);
+    [[-.12,1],[.06,1]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.06,hy-s*.12); ctx.lineTo(hx+dx*s,hy-s*.3); ctx.lineTo(hx+dx*s+s*.07,hy-s*.12); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
+    ctx.strokeStyle=D; ctx.lineWidth=Math.max(1,s*.03); ctx.beginPath(); ctx.arc(hx+f*s*.02,hy-s*.02,s*.04,0,Math.PI); ctx.stroke(); circle(hx+f*s*.16,hy+s*.04,s*.03,'#222'); circle(sx-f*s*.42,sy-s*.26,s*.1,O); return; }
+  if(pose==='sit'){ ellipse(sx,sy-s*.28,s*.24,s*.3,O); ellipse(sx+f*s*.06,sy-s*.25,s*.13,s*.22,W); const hx=sx+f*s*.08, hy=sy-s*.66; circle(sx-f*s*.24,sy-s*.18,s*.1,O); circle(sx-f*s*.24,sy-s*.18,s*.05,W);
+    circle(hx,hy,s*.22,O); ellipse(hx+f*s*.07,hy+s*.07,s*.13,s*.09,W); circle(hx-s*.12,hy+s*.04,s*.05,'#ffd9c7'); circle(hx+s*.14,hy+s*.04,s*.05,'#ffd9c7');
+    [[-.1],[.1]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.07,hy-s*.13); ctx.lineTo(hx+dx*s,hy-s*.33); ctx.lineTo(hx+dx*s+s*.07,hy-s*.13); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
+    circle(hx-s*.05,hy-s*.02,s*.03,'#222'); circle(hx+s*.09,hy-s*.02,s*.03,'#222'); circle(hx+f*s*.12,hy+s*.06,s*.03,'#222'); return; }
+  const leg=Math.sin(ph)*s*.06;
+  [[-.25,leg],[-.12,-leg],[.15,-leg],[.28,leg]].forEach(([dx,l])=>{ ctx.fillStyle=O; ctx.fillRect(sx+f*dx*s-s*.035,sy-s*.2,s*.07,s*.2+l*.3); });
+  ellipse(sx,sy-s*.3,s*.36,s*.17,O); ellipse(sx+f*s*.05,sy-s*.22,s*.24,s*.08,W);
+  ctx.strokeStyle=O; ctx.lineWidth=s*.1; ctx.beginPath(); ctx.arc(sx-f*s*.3,sy-s*.48,s*.1,0,Math.PI*2); ctx.stroke(); circle(sx-f*s*.3,sy-s*.48,s*.04,W);
+  const hx=sx+f*s*.34, hy=sy-s*.5+Math.abs(Math.sin(ph))*s*.03; circle(hx,hy,s*.2,O); ellipse(hx+f*s*.08,hy+s*.07,s*.12,s*.08,W);
+  [[-.08],[.08]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.06,hy-s*.12); ctx.lineTo(hx+dx*s,hy-s*.3); ctx.lineTo(hx+dx*s+s*.06,hy-s*.12); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
+  circle(hx+f*s*.06,hy-s*.03,s*.028,'#222'); circle(hx+f*s*.17,hy+s*.05,s*.03,'#222');
 }
 // ---- 建築造型工具（v1.1：剪影差異） ----
 function ln(a,b,col,w){ ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
@@ -1862,6 +1896,7 @@ function drawCityB(b,ox,oy){
         const pg=[x+q,y+w-q]; box(pg[0]-.2,pg[1]-.15,.16,.16,.35,'#f2c14e'); poly([P3(pg[0]-.04,pg[1]-.15,.35),P3(pg[0]-.04,pg[1]+.01,.35),P3(pg[0]+.3,pg[1]+.01,0),P3(pg[0]+.3,pg[1]-.15,0)],'#e2574c');
         bench(x+m+.35,y+m-.3); bench(x+m-.3,y+m+.35); }
       else { bed(x+.75,y+.75,.12); bench(x+.25,y+.78); }
+      if(w>1){ const sp=(ph*.15+b.x*.3)%1, ang=sp*Math.PI*2, dx=x+m+Math.cos(ang)*(w*.3), dy=y+m+Math.sin(ang)*(w*.3), c0=iso(dx,dy), c1=iso(dx+Math.cos(ang+.1)*.1,dy+Math.sin(ang+.1)*.1); drawShiba(c0.x,c0.y,tw*.26,{pose:'walk',face:c1.x>c0.x?-1:1,phase:ph*9}); }
       if(w>2){ bush(x+.4,y+m,.16); bush(x+w-.4,y+m,.16); bed(x+m,y+.45,.18); bed(x+m,y+w-.45,.18); }
       const fr=w>1?.16*w:.16; cyl(x+m,y+m,fr,0,.08,'#cfd6e6'); const wt=P3(x+m,y+m,.08); ellipse(wt.x,wt.y,fr*tw*.6,fr*tw*.3,'#8fd3ff'); cyl(x+m,y+m,fr*.25,.08,.18,'#e6e9ee');
       for(let k=0;k<4;k++){ const pp=(ph*1.2+k/4)%1, a=k*Math.PI/2+ph*.3, sp=P3(x+m+Math.cos(a)*fr*.5*pp,y+m+Math.sin(a)*fr*.5*pp,.26+Math.sin(pp*Math.PI)*.18); circle(sp.x,sp.y,tw*.025,'rgba(160,215,255,.9)'); }
@@ -1930,6 +1965,14 @@ function drawCityB(b,ox,oy){
     case 'fire':{ const {X,Y,L}=body(x,y,1,.55,'#e2574c',{inset:.1,rows:1,cols:2,wc:'rgba(255,240,220,.9)'}); box(X-.02,Y-.02,L+.04,L+.04,.05,'#a8322a',.55);
       poly([P3(X+L*.15,Y+L+.004,0),P3(X+L*.75,Y+L+.004,0),P3(X+L*.75,Y+L+.004,.32),P3(X+L*.15,Y+L+.004,.32)],'#f4efe4'); for(let k=1;k<4;k++) ln(P3(X+L*.15,Y+L+.005,k*.08),P3(X+L*.75,Y+L+.005,k*.08),'#cfc8bb',1);
       box(x+.35,y+.4,.3,.1,.32,'#f4efe4',.6); const on=Math.floor(ph*3)%2; box(x+.38,y+.62,.1,.1,.08,on?'#ff4040':'#ffb3b3',.6); const t=P3(x+.75,y+.25,.85); emoji('🚒',t.x,t.y,tw*.22); top=P3(x+.5,y+.5,1.0); break; }
+    case 'shiba':{ cPlate(x,y,w,'#e8dcc6',.04); box(x+.12,y+.12,1.76,.85,.6,'#f6e3c4'); bwinZ('L',x+.12,y+.972,1.76,.6,1,4,'rgba(255,226,170,.95)',0); bwinZ('R',x+1.882,y+.12,.85,.6,1,2,'rgba(240,210,160,.95)',0); box(x+.1,y+.1,1.8,.89,.05,'#8a5a36',.6);
+      for(let k=0;k<7;k++){ const a=x+.12+1.76*k/7, b2=x+.12+1.76*(k+1)/7; poly([P3(a,y+.97,.48),P3(b2,y+.97,.48),P3(b2,y+1.17,.38),P3(a,y+1.17,.38)],k%2?'#fff7ea':'#e39a4a'); }
+      const rf=P3(x+1,y+.55,.66); drawShiba(rf.x,rf.y,tw*.55,{pose:'sit',face:1});
+      [[.55,1.55],[1.35,1.6]].forEach(([a,c])=>{ cyl(x+a,y+c,.16,0,.22,'#8a5a36'); const u=P3(x+a,y+c,.22); ln(u,P3(x+a,y+c,.55),'#888',1.5); const t=P3(x+a,y+c,.55); ctx.beginPath(); ctx.moveTo(t.x-tw*.22,t.y+tw*.07); ctx.quadraticCurveTo(t.x,t.y-tw*.12,t.x+tw*.22,t.y+tw*.07); ctx.closePath(); ctx.fillStyle='#e39a4a'; ctx.fill(); emoji('☕',u.x+tw*.06,u.y-tw*.04,tw*.1); });
+      const l1=iso(x+.35,y+1.85); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
+      const rr=(ph*.25)%1, wx=x+.3+1.4*(rr<.5?rr*2:2-rr*2), wf=rr<.5?1:-1, wp=iso(wx,y+1.25); drawShiba(wp.x,wp.y,tw*.3,{pose:'walk',face:wf,phase:ph*8});
+      const pw=P3(x+1.88,y+1.5,0), pt=P3(x+1.88,y+1.5,.5); ln(pw,pt,'#8a5a36',2); rrect(pt.x-tw*.12,pt.y-tw*.12,tw*.24,tw*.2,4,'#fff7ea','#8a5a36',1.5); emoji('🐾',pt.x,pt.y-tw*.02,tw*.13);
+      top=P3(x+1,y+.55,1.25); break; }
     case 'ferris':{ poly([iso(x+.1,y+.1),iso(x+1.9,y+.1),iso(x+1.9,y+1.9),iso(x+.1,y+1.9)],'#cfd6e6'); const b0=P3(x+1,y+1,0), c=P3(x+1,y+1,1.25), R=tw*.85; ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b0.x-tw*.3,b0.y); ctx.lineTo(c.x,c.y); ctx.lineTo(b0.x+tw*.3,b0.y); ctx.stroke(); ctx.beginPath(); ctx.arc(c.x,c.y,R,0,Math.PI*2); ctx.strokeStyle='#e2574c'; ctx.lineWidth=2; ctx.stroke(); for(let k=0;k<8;k++){ const a=ph*.4+k*Math.PI/4, px=c.x+Math.cos(a)*R, py=c.y+Math.sin(a)*R; ctx.strokeStyle='rgba(150,160,180,.7)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(px,py); ctx.stroke(); rrect(px-tw*.07,py,tw*.14,tw*.12,3,['#f2c14e','#7cc6fe','#ff8fa3','#3fae7a'][k%4]); } circle(c.x,c.y,tw*.06,'#e2574c'); top={x:c.x,y:c.y-R}; break; }
     case 'duck':{ box(x+.3,y+.3,1.4,1.4,.3,'#b9bec8'); const c=P3(x+1,y+1,.3); emoji('🦆',c.x,c.y-tw*.85,tw*1.6); if(Math.floor(ph*1.5)%3===0) emoji('✨',c.x+tw*.6,c.y-tw*1.4,tw*.25); top={x:c.x,y:c.y-tw*1.6}; break; }
     case 'lost':{ const {X,Y,L}=body(x,y,1,.55,'#e6eefc',{inset:.12,rows:1,cols:2}); const n='#2f3a6b';
@@ -1993,9 +2036,11 @@ function drawRobot(p){
   ctx.strokeStyle='#8a8f99'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(c.x,c.y-s*.65-bob); ctx.lineTo(c.x,c.y-s*.75-bob); ctx.stroke(); circle(c.x,c.y-s*.77-bob,s*.025,'#e2574c');
   ctx.strokeStyle='#8a5a36'; ctx.beginPath(); ctx.moveTo(c.x+s*.1,c.y-s*.3-bob); ctx.lineTo(c.x+s*.18+Math.sin(clock*10)*s*.04,c.y); ctx.stroke();
 }
+function dogPos(p){ const t=Math.max(0,Math.min(1,p.t-.18)), lane=.36*p.side+.14*p.side; const dx=p.nx-p.x, dy=p.ny-p.y; return {x:p.x+dx*t+.5+(-dy)*lane, y:p.y+dy*t+.5+dx*lane}; }
 function drawPed(p){
   if(p.k==='robot') return drawRobot(p);
   const q=agentPos(p,.36*p.side); p.px=q.x; p.py=q.y; const L=p.look;
+  if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1; ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*tw*.08,c.y-tw*.15); ctx.stroke(); drawShiba(c.x,c.y,tw*.24,{pose:'walk',face:f,phase:p.phase*1.4}); p.dx=d.x; p.dy=d.y; }
   drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
 }
 function drawCityGround(){
@@ -2038,12 +2083,40 @@ function drawCity(){
   if(protest) peds.forEach(p=>{ if(p.k==='res'&&p.px!==undefined&&((p.seed*7)|0)%3===0){ const c=iso(p.px,p.py); emoji('✊',c.x+tw*.12,c.y-tw*.75+Math.sin(clock*6+p.seed)*tw*.04,tw*.18); } });
   if(ghost&&ghost.bull&&ghost.b&&ghost.b._hit){ ctx.globalAlpha=.3+.15*Math.sin(clock*6); poly(ghost.b._hit.poly,'#e2574c'); ctx.globalAlpha=1; poly(ghost.b._hit.poly,null,'#c0392b',2); }
   citySigns(tops);
+  cityPops.forEach(p=>{ if(!p.b._hit) return; const P=p.b._hit.poly, cx=(P[0].x+P[2].x)/2, a=Math.min(1,p.life*2), up=(3.2-p.life)*tw*.15, cy=P[4].y-tw*.35-up; ctx.globalAlpha=a;
+    const fs=Math.max(14,tw*.24), wdt=fs*6.4, hh=fs*2.5; rrect(cx-wdt/2,cy-hh,wdt,hh,fs*.5,'#fffdf8',p.stars>=4?'#3fae7a':p.stars<=1?'#c9b9a0':'#f2b544',2.5);
+    txt('市民滿意度',cx,cy-hh+fs*.62,fs*.62,'#7a6a58',800);
+    for(let i=0;i<5;i++){ const sx=cx+(i-2)*fs*1.1, pop=i<p.stars?1+.25*Math.max(0,Math.sin(Math.min(Math.PI,(3.2-p.life)*6-i*.6))):1; txt(i<p.stars?'★':'☆',sx,cy-fs*.72,fs*1.05*pop,i<p.stars?'#f2b544':'#d8cdbd',900); }
+    ctx.globalAlpha=1; });
   drawWeather();
-  floats.forEach(f=>{ if(!f.c) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
+  floats.forEach(f=>{ if(!f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   peds.forEach(p=>{ if(p.thinkT>0&&p.px!==undefined) drawThink({x:p.px,y:p.py,look:p.look,think:p.think}); });
   if(!S.city.intro2&&mode==='city'){ const h=S.city.b.find(b=>b.t==='hospital'); if(h){ const c=P3(h.x+1,h.y+1,1.5); emoji('👆',c.x+tw*.1,c.y+Math.abs(Math.sin(clock*4))*tw*.15,Math.max(24,tw*.45)); } }
 }
 // ---- 互動 ----
+function rateBuild(k,x,y){
+  const D=CB[k], w=D.w, near=nearPop(x,y,w,4), DIV=Math.max(10,Math.min(30,(CS.pop||0)*.5)), nearN=Math.min(1,near/DIV), d=CS.dem||{}, sp=CS.sup||{}, un=CS.un||0;
+  const lack=v=>Math.max(0,(d[v]||0)-(sp[v]||0)), jobNeed=D.jobs?Math.min(1,un/D.jobs):0;
+  const smellNear=S.city.b.some(q=>CB[q.t].smell&&gapOf(x,y,w,q.x,q.y,BW(q))<=1), homes2=nearPop(x,y,w,2)>0||S.city.b.some(q=>CB[q.t].pop&&gapOf(x,y,w,q.x,q.y,BW(q))<=1);
+  let need=0, place=1, why='';
+  if(D.pop){ const vac=CS.jobs>CS.pop?Math.min(1,(CS.jobs-CS.pop)/D.pop):0, full=CS.cap&&CS.pop>=CS.cap*.95&&CS.happy>35;
+    need=CS.unemp?.15:Math.max(.35,vac,full?.75:0); const sN=svcNear(x,y,w,'shop',4), fN=svcNear(x,y,w,'fun',4);
+    place=.3+(sN?.35:0)+(fN?.35:0); if(smellNear){ place*=.4; } if(S.city.b.some(q=>CB[q.t].noise&&gapOf(x,y,w,q.x,q.y,BW(q))<=1)) place*=.6;
+    why=CS.unemp?'失業的人還很多，先開店或開公司比較好':smellNear?'旁邊有垃圾場或污水廠，住起來很臭':(sN&&fN)?'附近有商店又有公園，住起來超方便':sN?'附近有商店，但沒有公園可以散步':fN?'附近有公園，但買東西要走很遠':'附近沒有商店和公園，住戶有點不方便'; }
+  else if(LOCAL_SVC[D.svc]){ const ls=Math.min(1,lack(D.svc)/D.cap); let unc=0; if(D.svc==='shop'||D.svc==='fun') S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok&&gapOf(x,y,w,h.x,h.y,BW(h))<=4&&!svcNear(h.x,h.y,BW(h),D.svc,4)) unc+=h.occ||0; }); const cn=Math.min(1,unc/DIV); need=Math.max(ls,cn,jobNeed*.8); if(D.tour) need=Math.max(need,.45); if(D.svc==='edu'&&CS.pop<40) need=Math.min(need,.2);
+    place=.25+.75*nearN; if(D.cat==='tour'&&viewOf({t:k,x,y,w})) place=Math.min(1,place+.25); if(D.tour&&!LOCAL_SVC[D.svc]) place=1; if(smellNear) place*=.6;
+    why=need<.15?`${SVC[D.svc][1]}已經夠了，市民沒那麼需要`:cn>.5&&near>=5?`附近 ${Math.round(unc)} 位居民本來沒地方${D.svc==='shop'?'買東西':'休閒'}，現在有了`:nearN<.2&&!D.tour?'附近幾乎沒有住戶，生意會很冷清':nearN<.6?`附近住戶不多（${Math.round(near)} 人），生意普通`:`附近有 ${Math.round(near)} 位居民，${ls>.3?`正缺${SVC[D.svc][1]}`:'會常來光顧'}`;
+    if(need>=.15&&jobNeed>ls&&jobNeed>.3) why+='，還能創造工作'; }
+  else if(D.svc==='trash'||D.svc==='water'){ const thr=D.svc==='trash'?40:80, ls=Math.min(1,lack(D.svc)/D.cap*1.2); need=CS.pop<thr*.6?.15:ls; if(D.smell&&homes2) place=.25;
+    why=(D.smell&&homes2)?'離住宅太近，附近會很臭':need<=.15?(CS.pop<thr*.6?'人口還少，現在還用不到':`${SVC[D.svc][1]}處理量已經夠了`):(D.smell&&homes2)?'離住宅太近，附近會很臭':'正好解決市民的煩惱，位置也不錯'; }
+  else if(D.svc==='help'){ need=Math.min(1,lack('help')/D.cap); place=.6+.4*nearN; why=need<.15?'迷路的人不多，暫時用不到':'迷路的人終於有地方求救了'; }
+  else if(k==='fire'){ const st=S.city.b.filter(q=>q.t==='fire'); const cand=S.city.b.filter(q=>!CB[q.t].fixed&&q.t!=='fire'); const unc=cand.filter(q=>!st.some(f=>gapOf(q.x,q.y,BW(q),f.x,f.y,1)<=6)), cov=cand.filter(q=>gapOf(q.x,q.y,BW(q),x,y,1)<=6&&unc.includes(q)).length; need=cand.length?Math.min(1,cov/6):0; place=1; why=cov?`能保護附近 ${cov} 棟還沒有消防保護的建築`:'附近已經有消防局，或附近沒有建築'; }
+  else if(D.exp||D.jobs){ need=D.jobs?Math.max(jobNeed,.15):.35; place=(D.noise&&homes2)?.6:1; why=D.jobs?(jobNeed>.3?`創造 ${D.jobs} 個工作，失業的人有救了`:'工作機會已經很多，現在缺的是人'):'穩定賺外地的錢，市民沒什麼感覺'; }
+  else { need=.4; why='對城市有一點幫助'; }
+  if(D.happy) need=Math.min(1,need+D.happy*.03);
+  return {stars:Math.max(0,Math.min(5,Math.round(5*need*place))),why};
+}
+let cityPops=[];
 function cityPlace(k,x,y){
   const D=CB[k];
   if(k==='road'){ if(x<0||y<0||x>=citySize()||y>=citySize()||isRoad(x,y)||bAt(x,y)) return false; const tt=terr(x,y); if(tt==='h'){ ticker('⛰️ 山坡太陡，路鋪不上去。'); return false; } const cost=tt==='w'?300:D.cost; if(S.money<cost){ ticker('💸 錢不夠鋪路了。'); return false; } S.money-=cost; if(tt==='w'&&!S.city.bridge){ S.city.bridge=1; ticker('🌉 第一座橋完工！鴨子們從橋下游過去表示祝賀。'); } S.city.r.push(x+','+y); ROADS.add(x+','+y); cityDirty=true; sfx.pop(); return true; }
@@ -2051,10 +2124,11 @@ function cityPlace(k,x,y){
   if(D.coast&&y!==0){ ticker('⚓ 港口要蓋在最上面的海邊，靠著海才能停船。'); sfx.bad(); return false; }
   if(!footFree(x,y,D.w)){ ticker(blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
   if(!nearRoad(x,y,D.w)){ ticker('🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
+  const rate=rateBuild(k,x,y);
   const cost=costOf(k); if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
-  S.money-=cost; S.city.b.push({t:k,x,y,occ:0,w:D.w,paid:cost}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
+  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars}; S.city.b.push(nb); cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
-  ticker(pick([`🏗️ ${D.icon} ${D.name}蓋好了！市民們跑來圍觀。`,`🏗️ ${D.name}完工！剪綵的時候鴨子也來了。`,`🏗️ ${D.icon} ${D.name}開張，市長致詞只說了三個字：「好、很好。」`]));
+  const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,`${D.name}完工・市民滿意度 ${st}`,rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
   saveLocal(); return true;
 }
 function cityBulldoze(x,y){
@@ -2102,6 +2176,8 @@ function cityTap(sx,sy){
     const k=placing.city, D=CB[k];
     if(ghost&&!ghost.bull&&ghost.k===k&&inFoot(ghost,x,y,D.w)){ if(!ghost.msg) confirmGhost(); else sfx.bad(); return; }
     ghost=bestAnchor(k,w.x,w.y); sfx.pop(); ghostBanner(); return; }
+  const dg=peds.find(p=>p.dog&&p.dx!==undefined&&Math.hypot(sx-iso(p.dx,p.dy).x,sy-(iso(p.dx,p.dy).y-tw*.12))<tw*.18);
+  if(dg){ peds.forEach(q=>q.thinkT=0); dg.think='🐕 '+pick(SHIBA_OS); dg.thinkT=4; sfx.pop(); return; }
   let hit=null, hd=-1e9;
   peds.forEach(p=>{ if(p.k==='robot'||p.px===undefined) return; const c=iso(p.px,p.py); const dd=dep(p.px,p.py); if(Math.abs(sx-c.x)<tw*.2&&sy<c.y+tw*.08&&sy>c.y-tw*.9&&dd>hd){ hd=dd; hit=p; } });
   if(hit){ peds.forEach(q=>q.thinkT=0); hit.think=cityOS(hit); hit.thinkT=4.5; sfx.pop(); return; }
@@ -2112,13 +2188,14 @@ function cityTap(sx,sy){
   if(b){ if(b.fire>0){ extinguish(b); return; } if(b.t==='hospital'){ S.city.intro2=1; switchMode('hospital'); return; } citySel=b; openSheet(cityBHTML); }
 }
 const WORK_OS={
+  shiba:['我的工作是幫柴犬梳毛，梳下來的毛可以再做一隻柴犬。','今天有客人跟柴犬求婚，柴犬拒絕了。'],
   conv:['凌晨三點有人來買一顆茶葉蛋配一把傘。','微波爐今天又爆了一顆蛋。'],bubble:['今天搖了 300 杯，手臂變得很壯。','有客人點「全糖去冰去珍珠去茶」，所以是一杯水？'],
   market:['臭豆腐配冰淇淋今天又賣光了！','有觀光客說我們的魷魚是他看過最帥的。'],mall:['週年慶的時候，鴨子也來排隊。','我負責在電梯裡說「歡迎光臨」，一天說兩千次。'],
   startup:['我們在開發「幫你決定午餐吃什麼」的 App，開發三年了還沒決定。','老闆說明年上市，去年也這麼說。'],robot:['今天做了 50 台掃地機器人，跑掉了 3 台。','機器人學會說「下班了」，比我還早下班。'],
   ai:['AI 想了一整天，結論是要多喝水。','我的工作是跟 AI 聊天，牠今天心情不好。'],school:['今天的課：如何跟鴨子溝通。學生都學會了，我還沒。'],lost:['今天找到三個人、兩隻貓，還有一個人的自信。'],
   mrt:['列車很準時，有時準時到太早。']
 };
-const SPEND={conv:['茶葉蛋',3],bubble:['珍奶',2.5],market:['臭豆腐',3],mall:['新衣服',3.5],bus:['公車',1],bike:['單車',1],mrt:['捷運',1.5],park:['公園長椅投幣',1],museum:['博物館門票',4],onsen:['泡溫泉',7],ferris:['摩天輪',7],beach:['海邊陽傘',2],lighthouse:['燈塔咖啡',5],duck:['跟鴨子合照',9]};
+const SPEND={shiba:['柴犬拿鐵',5],conv:['茶葉蛋',3],bubble:['珍奶',2.5],market:['臭豆腐',3],mall:['新衣服',3.5],bus:['公車',1],bike:['單車',1],mrt:['捷運',1.5],park:['公園長椅投幣',1],museum:['博物館門票',4],onsen:['泡溫泉',7],ferris:['摩天輪',7],beach:['海邊陽傘',2],lighthouse:['燈塔咖啡',5],duck:['跟鴨子合照',9]};
 const NEED_OS={debt:'聽說市庫沒錢了，市長是不是又亂蓋東西？',protest:'我今天請假去市政府前面舉牌，牌子是我阿嬤寫的。',fire:'那邊冒煙了！市長快來！',ruin:'那棟燒掉的房子，晚上看起來有點可怕。',noise:'每三分鐘就有一架飛機從我家屋頂飛過去，我已經會背航班表了。',trash:'家門口的垃圾堆得比我還高，市長快蓋垃圾場！',water:'馬桶沖不下去…這城市需要污水處理廠！',smell:'我家隔壁是垃圾場，窗戶都不敢開。',shop:'下班想買東西，結果排到店門外…市長多開幾間店啦！',move:'公車又客滿，我已經走了三條街。',fun:'週末想出去走走，可是沒地方去，只好在家看鴨子。',edu:'我家小孩沒學校讀，每天在家教鴨子算數。',help:'我又迷路了…這城市有沒有人專門帶路的？',staff:'我們店缺人手，我一個人做三個人的工作！',home:'我朋友想搬來，可是房子都住滿了。',road:'那間新開的店怎麼沒有路可以走進去？'};
 function spendLine(){ const have=[...new Set(S.city.b.filter(b=>b.ok&&SPEND[b.t]).map(b=>b.t))]; if(!have.length) return null; const it=have.sort(()=>Math.random()-.5).slice(0,3); const tot=it.reduce((a,k)=>a+SPEND[k][1],0); return `今天花了 $${tot}：${it.map(k=>SPEND[k][0]).join('、')}。不用繳稅，用多少付多少！`; }
 function cityOS(p){
@@ -2126,6 +2203,7 @@ function cityOS(p){
   if(p.sick) return '🤒 '+pick(['我要去怪病醫院，聽說醫生是貓。','身體怪怪的，可能要掛號了。']);
   const sat=CS.sat||{};
   if(p.k==='tour'){ if(sat.fun<.85&&Math.random()<.5) return '📷 景點都在排隊，排到我的鴨子鑰匙圈都融化了。'; if(sat.move<.85&&Math.random()<.4) return '📷 從車站走過來好遠，公車都客滿。'; if(Math.random()<.4){ const l=spendLine(); if(l) return '💸 '+l.replace('不用繳稅，用多少付多少！','錢包很痛，但是好好玩！'); } return '📷 '+pick(CITY_OS.tour); }
+  if(p.dog&&Math.random()<.45) return '🐕 '+pick(CITY_OS.dog);
   const ns=cityNeeds();
   if(!p.job&&(CS.unemp||Math.random()<.5)) return '😟 '+pick([`住在${p.home}，找不到工作，房租快付不出來了。`,'履歷投了十間，只有鴨子回信。','市長！我想上班！商店或公司都可以！','沒工作就沒錢，連公園長椅都坐不起。']);
   const r=Math.random();
@@ -2144,6 +2222,8 @@ function cityBHTML(){
   if(D.svc){ kv.push(['客人',`${Math.round(b.served||0)} / ${Math.round(D.cap)} 人`]); kv.push(['單價',`$${D.fee}`]); kv.push(['狀況',!b.ok?'未營業':b.busy?'🔥 大排長龍':(b.served||0)<D.cap*.5?'😴 有點冷清':'🙂 生意不錯']); }
   if(D.exp) kv.push(['產品外銷',D.jobs&&CS.staff<1?`員工只來 ${Math.round(CS.staff*100)}%`:'全力生產']);
   if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]);
+  if(b.stars!==undefined) kv.push(['蓋好時的市民滿意度','★'.repeat(b.stars)+'☆'.repeat(5-b.stars)]);
+  if(D.svc&&LOCAL_SVC[D.svc]) kv.push(['附近居民',`${Math.round(b.near||0)} 人`]);
   if(!D.fixed){ const inc=(b.rev||0)*M*(protest?.8:1), up=(b.up||upOf(b))*6, net=inc-up; kv.push(['每分鐘收入',`$${fmt(inc)}`]); kv.push(['🔧 維護費',`-$${fmt(up)} / 分`]); kv.push(['淨利',Math.abs(net)<1?'打平 $0 / 分':`<span style="color:${net>=0?'var(--good)':'var(--bad)'}">${net>=0?'+':'-'}$${fmt(Math.abs(net))} / 分</span>`]); }
   if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewBase(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewBase(b)-1)*100)}%`]); if(b.smell) kv.push(['🪰 臭味','收入 -25%']); if(b.noise) kv.push(['🔊 飛機噪音','收入 -20%']); if(b.t==='stadium') kv.push(['今天',matchOn()?'⚽ 比賽中！客人加倍':'休賽中，等下一場']);
   if(b.burnt){ const c=Math.round(D.cost*.4/10)*10; return `<h2>🏚️ ${D.name}（燒毀）</h2><div class="sub">只剩焦黑的骨架，不能營業，但維護費照付。</div><div class="row"><button class="btn" ${S.money<c?'disabled':''} data-act="cityRepair">重建（$${fmt(c)}）</button><button class="btn ghost" data-act="cityDemolish">清掉（不退錢）</button></div>`; }
@@ -2182,7 +2262,8 @@ function deputyAdvice(){
   const nx=CITY_STAGES[S.city.stage+1]; if(nx&&!stageReady()){ const c=stageChecks(S.city.stage+1).find(c=>!c.ok); if(c) L.push({lv:0,t:`主線：升格「${nx.name}」還差 <b>${c.t}</b>（${c.v}）。`,go:()=>openSheet(cityGovHTML)}); }
   const ruin=S.city.b.find(b=>b.burnt); if(ruin) L.push({lv:0,t:`${CB[ruin.t].name}燒毀後還沒處理，點它可以重建或清掉。`,go:()=>{ camX=ruin.x+.5; camY=ruin.y+.5; clampCam(); }});
   if(!S.city.b.some(b=>b.t==='fire')&&S.city.b.length>=8) L.push({lv:0,t:'建議蓋<b>🚒 消防局</b>，失火會自動出動，市長不用親自提水桶',go:()=>goBuild('public')});
-  if(!L.length) L.push({lv:0,good:1,t:pick(['一切順利！要不要蓋點觀光設施，讓外地人來花錢？','市民都很滿意。市長可以去醫院巡一下。','今天風和日麗，適合鋪一條新路。']),go:()=>openSheet(cityBuildHTML)});
+  if(!S.city.b.some(b=>b.t==='shiba')&&CS.pop>=10) L.push({lv:0,t:'本市是<b>柴犬友善城市</b>，還沒有柴犬咖啡廳說不過去吧？',go:()=>goBuild('shop')});
+  if(!L.length) L.push({lv:0,good:1,t:pick(['一切順利！要不要蓋點觀光設施，讓外地人來花錢？','街上的柴犬今天也很圓。','市民都很滿意。市長可以去醫院巡一下。','今天風和日麗，適合鋪一條新路。']),go:()=>openSheet(cityBuildHTML)});
   return L;
 }
 function deputyTick(dt){
@@ -2449,7 +2530,7 @@ function officeHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    <div class="sub" style="margin-top:14px">怪病診所 v1.9（搞怪城市）</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v2.0（搞怪城市）</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
@@ -2553,7 +2634,7 @@ function boot(){
     mode='city'; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); $('navH').classList.add('hidden'); $('navC').classList.remove('hidden');
     ticker(pick(['🏙️ 早安，市長！今天的城市也很怪。','🏙️ 市長上班了，鴨子們在市政府門口排隊。']));
     if(S.tut===0){ S.tut=1; S.day=today(); } else { welcomeBack(t0); }
-    makeKidLooks(); cityIntro(); lastCityKey=''; checkProgress(); checkGoals(); updateLabDot(); if(S.tut>0&&!S.unl.garden){ S.unl.garden=1; setTimeout(()=>toast('🌱','新功能：花園','建造 → 🌱 花園，種花種樹'),2500); } saveLocal();
+    makeKidLooks(); cityIntro(); lastCityKey=''; checkProgress(); checkGoals(); updateLabDot(); if(S.tut>0&&!S.unl.garden&&mode==='hospital'){ S.unl.garden=1; setTimeout(()=>toast('🌱','新功能：花園','建造 → 🌱 花園，種花種樹'),2500); } saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
   setTimeout(()=>finish(null),hadLocal?1500:6000);
