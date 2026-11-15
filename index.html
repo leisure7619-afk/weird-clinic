@@ -251,7 +251,7 @@ function shade0(hex,amt){ if(hex[0]!=='#') return hex; let hh=hex.slice(1); if(h
 function poly(pts,fill,stroke,lw){ ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();} }
 const EMOJI_FONT='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 const EMO_C=new Map();
-function emoji(ch,x,y,size){ if(!ch||size<3) return; const bi=Math.round(Math.log(size)/.077), bs=Math.exp(bi*.077), key=ch+'|'+bi; let c=EMO_C.get(key);
+function emoji(ch,x,y,size){ if(!ch||size<3) return; if(ch==='🐕'){ const cv=feltShiba('head'), w=size*1.12, h=w*cv.height/cv.width; ctx.drawImage(cv,x-w/2,y-h*.52,w,h); return; } const bi=Math.round(Math.log(size)/.077), bs=Math.exp(bi*.077), key=ch+'|'+bi; let c=EMO_C.get(key);
   if(!c){ if(EMO_C.size>600) EMO_C.clear(); c=document.createElement('canvas'); const r=2, pp=Math.ceil(bs*1.4)+2; c.width=pp*r; c.height=pp*r; const g=c.getContext('2d'); g.scale(r,r); g.font=`${Math.round(bs)}px ${EMOJI_FONT}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(ch,pp/2,pp/2); c._p=pp/bs; EMO_C.set(key,c); }
   const d=c._p*size; ctx.drawImage(c,x-d/2,y-d/2,d,d); }
 function txt(t,x,y,size,col,weight=800,stroke){ ctx.font=`${weight} ${Math.round(size)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; if(stroke){ ctx.lineWidth=3; ctx.strokeStyle=stroke; ctx.strokeText(t,x,y); } ctx.fillStyle=col; ctx.fillText(t,x,y); }
@@ -655,7 +655,7 @@ function cityCalc(){
   const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*fxMul('tour'));
   const MS=mrtOk(), line=MS.length>=2, mrtMul=line?Math.min(1.6,.6+.2*MS.length):.3, tiles=line&&transit.mrt?transit.mrt.tiles:0;
   const gsup={}; const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=(b.t==='mrt'?mrtMul:1)*D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:NK>.35?3*NK:0):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; b.grp=grpOf(b.t); b.nov=b.bt!==undefined&&(FREQ[b.t]==='rare'||FREQ[b.t]==='weekly'||FREQ[b.t]==='event')?Math.max(0,1-(S.time-b.bt)/150):0; gsup[b.grp]=(gsup[b.grp]||0)+b.cap; sup[D.svc]+=b.cap; });
-  const gdem={'shop:daily':emp*.9+un*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+tourists*.5,move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:pop+tourists*.3,water:pop};
+  const gdem={'shop:daily':emp*.9+un*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+tourists*.5,move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:(pop+tourists*.3)*(T==='food'?1.2:1),water:pop};
   { const rt={}; let rsum=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(b.ok&&FREQ[b.t]==='rare'){ rt[b.t]=(rt[b.t]||0)+(D.tour||1)*(rt[b.t]?.3:1); } }); Object.values(rt).forEach(v=>rsum+=v); Object.keys(rt).forEach(k=>{ gdem['fun:rare:'+k]=emp*.04+un*.02+tourists*1.1*rt[k]/rsum; }); }
   S.city.b.forEach(b=>{ if(b.ok&&b.nov>0) gdem[b.grp]=(gdem[b.grp]||0)+CB[b.t].cap*.9*b.nov; });
   Object.keys(gdem).forEach(g=>{ gdem[g]*=fxMul('dem',g.split(':')[0]); });
@@ -668,13 +668,13 @@ function cityCalc(){
   const sur=Math.max(0,pcap-puse);
   S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); b.mrtB=0; if(b.t==='mrt'&&MS.includes(b)&&line) b.up+=tiles*TRACK_UP/MS.length; if(!b.ok) return;
     let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf; if(line&&(D.cat==='shop'||D.cat==='tour')&&D.svc&&MS.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,2)<=3)){ m*=1.3; b.mrtB=1; }
-    if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK);
+    if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK); if(T==='food'&&b.t==='market') m*=1.5; if(T==='rainy'&&weather.type==='rain'&&(b.t==='conv'||b.t==='mall'||b.t==='museum')) m*=1.5; if(T==='windy'&&b.t==='bike') m*=.7; if(T==='slow'&&D.cat==='tech') m*=.8;
     if(D.rent){ const r=(b.occ||0)*er*D.rent*viewMult(b)*m; b.rev+=r; inc.rent+=r; }
     if(D.svc){ const g=b.grp, tot=Math.min(gdem[g]||0,gsup[g]||0); b.served=wsum[g]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[g]):0; b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m; b.rev+=r; inc[D.svc]+=r; }
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b))*m; b.rev+=r; inc.exp+=r; }
     if(D.pwr&&!D.fixed&&praw>0){ const r=(Math.min(puse,pcap)*.2+sur*.12)*pwrOf(b)/praw; b.rev+=r; inc.power+=r; } });
   const pk=pop>40?1:0;
-  let h=40+Math.min(20,hb)+Math.min(8,green)+S.city.stage*2+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0)+comboHappy()+fxSum('happy')-(pr<1?(1-pr)*20+3:0)-(T==='tech'?3:0);
+  let h=40+Math.min(20,hb)+Math.min(8,green)+S.city.stage*2+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0)+comboHappy()+fxSum('happy')-(pr<1?(1-pr)*20+3:0)-(T==='tech'?3:0)+(T==='slow'?5:0);
   CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,covS,covF,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc,gdem,gsup,gsat,pw:{cap:pcap,use:puse,ratio:pr,grace}};
 }
 function cityNeeds(){
@@ -831,7 +831,12 @@ const TRAITS={
   tour:{icon:'📸',name:'網美城市',desc:'隨便拍都好看：觀光客 +30%'},
   eco:{icon:'🌿',name:'節能城市',desc:'市民很省電：用電 -25%'},
   lazy:{icon:'🛋️',name:'懶人城市',desc:'沒人想走路：交通需求和票價都 +30%'},
-  party:{icon:'🌃',name:'不夜城',desc:'晚上才是重點：夜晚商店和觀光收入 +30%'}
+  party:{icon:'🌃',name:'不夜城',desc:'晚上才是重點：夜晚商店和觀光收入 +30%'},
+  fest:{icon:'🎊',name:'節慶之都',desc:'市民超愛過節：季節活動的效果加倍'},
+  food:{icon:'🍢',name:'美食之都',desc:'為了吃什麼都願意：夜市收入 +50%，但垃圾量 +20%'},
+  rainy:{icon:'☔',name:'雨都',desc:'很常下雨：雨天時便利商店、百貨、博物館收入 +50%'},
+  windy:{icon:'🌬️',name:'風城',desc:'風超大：風力發電 +50%，但單車站收入 -30%'},
+  slow:{icon:'🐢',name:'慢活小城',desc:'大家慢慢來：幸福度 +5，但科技公司收入 -20%'}
 };
 const UPG=[
   {k:'cash',icon:'💰',name:'起家基金',desc:'新城市起始資金 +$2,000',max:3,cost:[2,3,4]},
@@ -873,7 +878,15 @@ const COMBOS=[
   {id:'loop',icon:'♻️',name:'循環經濟',t:['recycle','robot','solar'],b:.4,h:1,hint:'垃圾、機器、太陽'},
   {id:'spa',icon:'♨️',name:'溫泉老街',t:['onsen','market','museum'],b:.4,h:2,hint:'泡完湯逛老街、看古董'},
   {id:'wind',icon:'🌬️',name:'海風電廠',t:['wind','beach','lighthouse'],b:.3,h:1,hint:'海邊吹風的三種東西'},
-  {id:'heaven',icon:'🌈',name:'柴犬天堂',t:['shiba','bigpark','treeh'],b:.5,h:4,hint:'柴犬最想住的地方：超大草地，加上樹上的家'}
+  {id:'heaven',icon:'🌈',name:'柴犬天堂',t:['shiba','bigpark','treeh'],b:.5,h:4,hint:'柴犬最想住的地方：超大草地，加上樹上的家'},
+  {id:'tod',icon:'🚇',name:'捷運共構',t:['mrt','mall','tower'],b:.4,h:1,hint:'下了捷運直接逛百貨，再搭電梯回家'},
+  {id:'lab',icon:'🔬',name:'產學合作',t:['school','startup','ai'],b:.4,h:1,hint:'學生做專題，做到一半被公司挖角'},
+  {id:'kids',icon:'🧒',name:'親子放電區',t:['school','bigpark','lost'],b:.3,h:3,hint:'上學、放電、走丟了也找得回來'},
+  {id:'idol',icon:'🎤',name:'演唱會散場',t:['stadium','bubble','bus'],b:.35,h:1,hint:'散場後大家搶著買飲料、擠公車'},
+  {id:'harbor',icon:'🌅',name:'港灣夕陽',t:['port','lighthouse','ferris'],b:.45,h:2,hint:'船、燈塔，還有看夕陽最高的地方'},
+  {id:'spa2',icon:'🛁',name:'柴犬泡湯',t:['shiba','onsen'],b:.4,h:3,hint:'泡完湯，跟毛小孩一起躺著'},
+  {id:'forest',icon:'🌲',name:'森林城市',t:['bigpark','treeh','bike'],b:.35,h:3,hint:'騎單車穿過森林，回到樹上的家'},
+  {id:'sky',icon:'🎈',name:'空中散步',t:['balloon','ferris','tower'],b:.4,h:2,hint:'三個看得最遠的地方'}
 ];
 const COMBO_BY=Object.fromEntries(COMBOS.map(c=>[c.id,c]));
 let CMB=[], cmbKey='';
@@ -893,7 +906,7 @@ function checkDex(){ if(!S.meta) return; CMB.forEach(o=>{ const C=o.C; if(S.meta
 const comboHappy=()=>Math.min(12,CMB.reduce((a,o)=>a+o.C.h,0));
 
 // ---- 電力與解鎖 ----
-function pwrOf(b){ const D=CB[b.t]; if(!D.pwr) return 0; return D.pwr*(b.t==='wind'&&(b.view==='sea'||b.view==='hill')?1.5:1); }
+function pwrOf(b){ const D=CB[b.t]; if(!D.pwr) return 0; return D.pwr*(b.t==='wind'&&(b.view==='sea'||b.view==='hill')?1.5:1)*(b.t==='wind'&&S.city.trait==='windy'?1.5:1); }
 function lockOf(k){ const D=CB[k], q=D.req||{}, r=[];
   if((D.sand||D.coast)&&!hasSea()) return ['這座城市沒有海'];
   if(q.pop&&CS.pop<q.pop) r.push(`👥 人口 ${q.pop}（現在 ${CS.pop}）`);
@@ -917,7 +930,7 @@ function nightK(){ if(S&&S.noNight) return 0; const t=((S&&S.time||0)%DAYLEN)/DA
 let CURB=null, NLC=null; const LITM=new Map();
 const nlit=fn=>{ if(NIGHT>.03&&CURB){ let a=LITM.get(CURB); if(!a){ a=[]; LITM.set(CURB,a); } a.push(fn); } };
 const marketOpen=()=>S.noNight||nightK()>.35;
-const LITFRAC={house:.55,apt:.5,treeh:.6,tower:.5,conv:1,bubble:1,market:1,mall:.95,shiba:.05,startup:.35,robot:.3,ai:.45,museum:.05,onsen:1,school:.04,lost:.8,fire:.8,cityhall:.35,lighthouse:1,recycle:.3,sewage:.2,garbage:.1,coal:.4,port:.5,airport:.8,stadium:.6};
+const LITFRAC={mrt:.8,house:.55,apt:.5,treeh:.6,tower:.5,conv:1,bubble:1,market:1,mall:.95,shiba:.05,startup:.35,robot:.3,ai:.45,museum:.05,onsen:1,school:.04,lost:.8,fire:.8,cityhall:.35,lighthouse:1,recycle:.3,sewage:.2,garbage:.1,coal:.4,port:.5,airport:.8,stadium:.6};
 function drawNight(){ const k=NIGHT;
   ctx.fillStyle=`rgba(14,20,62,${(.52*k).toFixed(3)})`; ctx.fillRect(0,0,W,H);
   if(!NLC){ NLC=document.createElement('canvas'); }
@@ -999,7 +1012,36 @@ const DECS=[
   {id:'shiba',w:()=>CS.pop>=20?.8:0,make:P=>({icon:'🐕',title:'流浪柴犬變多了',text:'動保處：「街上的柴犬越來越多，雖然很可愛，但牠們會搶路人的雞排。」',opts:[
     optBuild('shiba','柴犬咖啡廳收編了流浪柴犬，牠們現在有工作了（負責睡覺）。'),
     optPol('舉辦柴犬認養日（2 分鐘）',P*.4,4,[{k:'happy',n:8,t:120,lb:'🐾 認養日'}],'每隻柴犬都找到家了，市民開心到在街上跳舞。'),
-    optTrap('幫每隻柴犬辦身分證',P*.35,'柴犬拍大頭照時一直轉頭，辦了三天一張都沒辦成。')]})}
+    optTrap('幫每隻柴犬辦身分證',P*.35,'柴犬拍大頭照時一直轉頭，辦了三天一張都沒辦成。')]})},
+  {id:'scooter',w:()=>CS.pop>=60?.8:0,make:P=>({icon:'🛵',title:'機車停滿人行道',text:'市民投書：「推嬰兒車上街要玩障礙賽，柴犬散步也要繞路。」',opts:[
+    optPol('畫機車停車格＋拖吊（4 分鐘）',P*.5,4,[{k:'happy',n:4,t:240,lb:'🛵 停車格'}],'人行道清空了，柴犬終於可以直直走。'),
+    optBuild('bike','共享單車站開了，有人把機車賣掉改騎單車。'),
+    optTrap('請柴犬擔任交通糾察',P*.3,'柴犬看到機車坐墊很溫暖，直接躺上去睡著了。')]})},
+  {id:'wifi',w:()=>(CS.cnt.startup||0)+(CS.cnt.ai||0)>=1?.7:0,make:P=>({icon:'📶',title:'科技業要求全市免費 Wi-Fi',text:'新創老闆：「工程師在咖啡廳連不上網，就沒辦法假裝在工作。」',opts:[
+    optPol('建置全市免費 Wi-Fi（4 分鐘）',P*.8,3,[{k:'rev',s:'tech',m:1.3,t:240,lb:'📶 免費 Wi-Fi'},{k:'happy',n:2,t:240}],'全市都有網路了，連公園的鴨子都在滑手機。'),
+    optBuild(bestOf(['startup','ai'],k=>unlocked(k)&&aiSpot(k)),'AI 規劃了新的辦公室，網路線直接拉到桌上。'),
+    optTrap('在每根電線桿貼 Wi-Fi 密碼',P*.3,'密碼是「12345678」，貼完隔天就被改掉了。')]})},
+  {id:'cny',w:()=>monthNo()<=2&&CS.pop>=20?3:0,make:P=>({icon:'🧧',title:'春節連假要怎麼過？',text:'經發局：「連假九天，市民口袋有年終獎金，就看我們怎麼讓大家花出來。」',opts:[
+    optPol('發放春節消費券（2 分鐘）',P*.8,4,[{k:'rev',s:'shop',m:1.35,t:120,lb:'🧧 消費券'},{k:'happy',n:4,t:120}],'消費券一發，年貨大街擠到柴犬都被抱起來走。'),
+    optBuild(unlocked('market')?'market':'conv','新的年貨攤位開張，賣的糖果比過年的親戚還多。'),
+    optTrap('市長親筆寫春聯送全市',P*.4,'市長的字太草，大家把「招財進寶」貼成「招財進鴨」。')]})},
+  {id:'heat',w:()=>{ const m=monthNo(); return m>=6&&m<=8&&CS.pop>=20?2:0; },make:P=>({icon:'🥵',title:'熱浪來襲',text:'氣象局：「明天 38 度，柏油路可以煎蛋，柴犬拒絕出門。」',opts:[
+    optPol('公園裝噴霧降溫（2 分半）',P*.5,4,[{k:'happy',n:5,t:150,lb:'💦 噴霧降溫'},{k:'dem',s:'fun',m:1.2,t:150}],'公園裡一片白霧，大家搶著去公園吹涼。'),
+    optBuild('bubble','新開的手搖飲店門口排滿了人，全部點全糖去冰。'),
+    optTrap('發公文請太陽小力一點',P*.3,'太陽沒有回覆公文。')]})},
+  {id:'typhoon',w:()=>{ const m=monthNo(); return m>=6&&m<=9&&CS.pop>=30?1.6:0; },make:P=>({icon:'🌀',title:'颱風要來了！',text:'氣象局：「中度颱風明天登陸。沒準備的話，招牌會飛、店家會淹水。」',
+    after:o=>{ weather={type:'rain',t:50}; if(o.kind!=='pol') S.city.fx.push({k:'rev',m:.7,until:S.time+60,lb:'🌀 颱風災損'}); },opts:[
+    optPol('清水溝、修剪行道樹、綁招牌',P*.6,4,[{k:'rev',m:.92,t:40,lb:'🌀 颱風（有準備）'}],'颱風過境，城市幾乎沒受損，只有一隻柴犬的雨衣被吹走。'),
+    optPol('宣布放颱風假',P*0,3,[{k:'rev',m:.6,t:60,lb:'🌀 颱風假'},{k:'happy',n:8,t:120}],'市民歡呼，大家在家吃泡麵追劇。店家倒是休息了一天。',{stars:3}),
+    optTrap('請市長到海邊做颱風連線報導',P*.3,'市長被風吹到隔壁城市，城市該淹的還是淹了。')]})},
+  {id:'moon',w:()=>{ const m=monthNo(); return m>=8&&m<=9&&CS.pop>=30?3:0; },make:P=>({icon:'🥮',title:'中秋節要開放河濱烤肉嗎？',text:'市民陳情：「中秋不烤肉，跟柴犬不捲尾巴一樣奇怪。」環保局：「烤完的垃圾誰收？」',opts:[
+    optPol('開放烤肉＋加派清潔隊（2 分半）',P*.7,4,[{k:'happy',n:6,t:150,lb:'🍖 中秋烤肉'},{k:'sup',s:'trash',m:1.3,t:150}],'全城都在烤肉，清潔隊烤完就收，連柴犬都分到一片香腸。'),
+    optPol('開放烤肉就好（垃圾自己帶回家）',P*.15,3,[{k:'happy',n:6,t:150,lb:'🍖 中秋烤肉'},{k:'dem',s:'trash',m:1.4,t:150}],'大家烤得很開心，只是隔天河濱公園多了好多竹籤和醬料罐。'),
+    optTrap('發送印著市長頭像的月餅',P*.4,'月餅太硬，被拿去當門擋。')]})},
+  {id:'xmas',w:()=>monthNo()===12&&CS.pop>=30?3:0,make:P=>({icon:'🎆',title:'跨年晚會要怎麼辦？',text:'觀光局：「隔壁城市今年放了 30 分鐘煙火，我們不能輸！」',opts:[
+    optPol('放跨年煙火（2 分鐘）',P*1.2,4,[{k:'tour',m:1.6,t:120,lb:'🎆 跨年煙火'},{k:'happy',n:5,t:120}],'煙火一放，全城的柴犬一起抬頭（然後躲到床底下）。',{fw:120}),
+    optPol('辦聖誕市集（2 分半）',P*.6,3,[{k:'rev',s:'shop',m:1.3,t:150,lb:'🎄 聖誕市集'}],'市集賣熱紅酒和柴犬聖誕帽，攤位前排滿了人。'),
+    optTrap('請過氣歌手連唱十首',P*.5,'唱到第三首觀眾就回家了，歌手自己唱完了剩下七首。')]})}
 ];
 function makeDecision(){ const c=DECS.map(d=>({d,w:d.id===S.city.lastDec?0:d.w()})).filter(o=>o.w>0); if(!c.length) return null; let t=c.reduce((a,o)=>a+o.w,0)*Math.random(); let pickD=c[0].d; for(const o of c){ t-=o.w; if(t<=0){ pickD=o.d; break; } }
   S.city.lastDec=pickD.id; const P=P10(Math.max(800,Math.min(20000,netPerMin()*1.5))); const d=pickD.make(P); d.opts=d.opts.filter(o=>o&&(o.kind!=='build'||o.k)&&(o.kind!=='dem'||o.b)); return d; }
@@ -1011,19 +1053,47 @@ function showDecision(d){ sfx.pop(); const hint=upL('hint')>0;
       sub:o.kind==='none'?'不花錢・支持率 -2':o.cost<0?`市庫 +$${fmt(-o.cost)}`:o.cost===0?'免費':`$${fmt(o.cost)}${o.kind==='build'?'（2 倍價）':o.kind==='dem'?'（拆除工程費 2 倍，不退錢）':''}${o.dis?'・'+o.dis:''}`,
       dis:!!o.dis||(o.cost>0&&S.money<o.cost),fn:()=>runOpt(d,o)}))}); }
 function runOpt(d,o){ const v=voteState(); let stars=o.stars||0, extra='';
-  if(o.kind==='none'){ v.bonus=(v.bonus||0)-2; sfx.bad(); queueModal({icon:'😶',title:'暫不處理',body:'<p>議員們嘆了一口氣，把提案收進抽屜。</p><div class="note">🗳️ 支持率 -2（算到下次選舉）</div>',buttons:[{label:'好'}]}); saveLocal(); return; }
+  if(o.kind==='none'){ if(d.after) d.after(o); v.bonus=(v.bonus||0)-2; sfx.bad(); queueModal({icon:'😶',title:'暫不處理',body:'<p>議員們嘆了一口氣，把提案收進抽屜。</p><div class="note">🗳️ 支持率 -2（算到下次選舉）</div>',buttons:[{label:'好'}]}); saveLocal(); return; }
   if(o.cost>0&&S.money<o.cost){ sfx.bad(); return; }
   if(o.kind==='build'){ const sp=aiSpot(o.k); if(!sp||!cityPlace(o.k,sp.x,sp.y,{cost:o.cost,ai:1})){ sfx.bad(); toast('🤖','找不到地方蓋','錢沒有扣'); return; }
     const nb=S.city.b[S.city.b.length-1]; stars=nb.stars||0; camX=sp.x+CB[o.k].w/2; camY=sp.y+CB[o.k].w/2; clampCam(); extra=`📍 AI 選的位置：附近住了 ${Math.round(nearPop(sp.x,sp.y,CB[o.k].w,4))} 人`; }
   else { S.money-=o.cost; }
   if(o.kind==='dem'&&S.city.b.includes(o.b)){ camX=o.b.x+BW(o.b)/2; camY=o.b.y+BW(o.b)/2; clampCam(); cityBulldoze(o.b.x,o.b.y,{noRefund:1}); }
-  (o.fx||[]).forEach(f=>S.city.fx.push({k:f.k,s:f.s,m:f.m,n:f.n,until:S.time+f.t,lb:f.lb}));
+  (o.fx||[]).forEach(f=>S.city.fx.push({k:f.k,s:f.s,m:f.m,n:f.n,until:S.time+f.t,lb:f.lb})); if(o.fw) S.city.fw=S.time+o.fw; if(d.after) d.after(o);
   const dv=o.kind==='trap'?0:stars>=4?2:stars>=3?1:0; v.bonus=(v.bonus||0)+dv; cityDirty=true; cityCalc();
   if(o.kind==='trap') sfx.bad(); else sfx.fan();
   queueModal({icon:o.kind==='trap'?'🙈':d.icon,title:o.kind==='trap'?'錢花了，但是…':'方案執行！',body:`<p>${o.txt||''}</p><div class="note" style="text-align:center"><div style="font-size:24px;color:#f2b544;letter-spacing:3px">${'★'.repeat(stars)}<span style="color:#d8cdbd">${'☆'.repeat(5-stars)}</span></div>市民滿意度 ${o.kind==='trap'?'<b>+0</b>　這是陷阱…':''}${dv?`<br>🗳️ 支持率 +${dv}`:''}${extra?'<br>'+extra:''}${o.fx&&o.fx[0]&&o.fx[0].lb?`<br>⏱️ ${o.fx[0].lb} 效果開始`:''}</div>`,buttons:[{label:'好'}]});
   saveLocal(); }
 function decTick(dt){ if(modalOpen||S.city.over||!booted) return; decT-=dt; if(decT>0) return; decT=150+Math.random()*70; const d=makeDecision(); if(d&&d.opts.length) showDecision(d); }
 
+// ---- 季節活動：每年固定月份自動登場，效果持續一個月 ----
+const SEASON_EV={
+  1:{icon:'🧧',name:'春節年貨大街',desc:'大家拿年終獎金辦年貨：商店收入 +25%、幸福度 +3',fx:[{k:'rev',s:'shop',m:1.25},{k:'happy',n:3}]},
+  2:{icon:'🏮',name:'元宵燈會',desc:'晚上滿街燈籠：觀光客 +30%',fx:[{k:'tour',m:1.3}]},
+  4:{icon:'🌸',name:'賞花季',desc:'公園的花開了：觀光客 +20%、幸福度 +3',fx:[{k:'tour',m:1.2},{k:'happy',n:3}]},
+  6:{icon:'🐉',name:'端午龍舟賽',desc:'河上划龍舟、岸邊吃粽子：觀光客 +30%',fx:[{k:'tour',m:1.3}]},
+  7:{icon:'🏖️',name:'暑假',desc:'學生放假到處玩：景點收入 +25%',fx:[{k:'rev',s:'tour',m:1.25}]},
+  8:{icon:'👻',name:'中元普渡',desc:'家家戶戶拜拜：便利商店、夜市收入 +20%',fx:[{k:'rev',s:'shop',m:1.2}]},
+  9:{icon:'🥮',name:'中秋節',desc:'月圓人團圓（柴犬戴柚子帽）：幸福度 +5',fx:[{k:'happy',n:5}]},
+  10:{icon:'🎃',name:'柴犬萬聖節',desc:'柴犬變裝遊行：觀光客 +25%',fx:[{k:'tour',m:1.25}]},
+  12:{icon:'🎄',name:'聖誕節',desc:'聖誕採買：商店收入 +20%、幸福度 +3',fx:[{k:'rev',s:'shop',m:1.2},{k:'happy',n:3}]}
+};
+function seasonTick(){ const m=monthNo(), key=yearNo()*100+m; if(S.city.sev===key) return; S.city.sev=key; const E=SEASON_EV[m]; if(!E) return;
+  const end=(Math.floor(S.time/MONTH)+1)*MONTH, x2=S.city.trait==='fest';
+  E.fx.forEach((f,i)=>S.city.fx.push({k:f.k,s:f.s,m:f.m&&(x2?1+(f.m-1)*2:f.m),n:f.n&&(x2?f.n*2:f.n),until:end,lb:i?null:E.icon+' '+E.name}));
+  cityDirty2=true; toast(E.icon,E.name+(x2?'（節慶之都加倍！）':''),E.desc); }
+// 節慶裝飾（畫在地圖上）
+function festDeco(list){ const m=monthNo(); if(tw<20) return;
+  if(m<=2){ const R=[...ROADS]; for(let i=0;i<R.length;i+=3){ const [x,y]=R[i].split(',').map(Number); if(!isRoad(x,y)||(x*7+y*13)%4) continue; list.push({d:dep(x+.5,y+.5)+.2,fn:()=>{ const q=R2(x+.5,y+.5), a=P3(q[0]-.4,q[1]+.4,.62), b=P3(q[0]+.4,q[1]-.4,.62); ctx.strokeStyle='#5b4636'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo((a.x+b.x)/2,(a.y+b.y)/2+tw*.08,b.x,b.y); ctx.stroke();
+      for(let k=1;k<4;k++){ const t=k/4, px=a.x+(b.x-a.x)*t, py=a.y+(b.y-a.y)*t+tw*.08*4*t*(1-t), sw=Math.sin(clock*2+k+x)*tw*.01; ellipse(px+sw,py+tw*.05,tw*.045,tw*.055,'#e2392f'); ctx.fillStyle='#f2c14e'; ctx.fillRect(px+sw-tw*.03,py+tw*.004,tw*.06,tw*.012); ctx.fillRect(px+sw-tw*.006,py+tw*.1,tw*.012,tw*.03); if(NIGHT>.3) nlitG(()=>ellipse(px+sw,py+tw*.05,tw*.045,tw*.055,'#ff6a4a')); } }}); } }
+  if(m===10) S.city.b.forEach(b=>{ if(!CB[b.t].pop||b.burnt||(b.x*3+b.y)%2) return; const an=rotAnchor(b.x,b.y,BW(b)); list.push({d:an[0]+an[1]+BW(b)+.05,fn:()=>{ const c=P3(an[0]+BW(b)-.12,an[1]+BW(b)-.12,0); emoji('🎃',c.x,c.y-tw*.08,tw*.2); }}); });
+}
+const FESTLIT=[]; const nlitG=f=>FESTLIT.push(f);
+function festSky(){ const m=monthNo();
+  if(m===9&&NIGHT>.3){ const r=Math.min(W,H)*.08, x=W*.8, y=H*.33; ctx.globalAlpha=Math.min(1,(NIGHT-.3)*2); circle(x,y,r,'#fff3c4'); circle(x-r*.3,y-r*.15,r*.2,'#f2e2a8'); circle(x+r*.25,y+r*.3,r*.13,'#f2e2a8'); circle(x+r*.35,y-r*.35,r*.09,'#f2e2a8'); ctx.globalAlpha=1; }
+  const fw=(S.city.fw||0)>S.time||(m===12&&S.time%MONTH>MONTH*.75);
+  if(fw&&NIGHT>.4){ if(!festSky.p) festSky.p=[]; const P=festSky.p; if(Math.random()<.05){ const cx=W*(.15+Math.random()*.7), cy=H*(.18+Math.random()*.3), col=pick(['#ff5a5a','#ffd84a','#5ad1ff','#9bff6a','#ff8ce0']); for(let i=0;i<26;i++){ const a=i/26*6.283; P.push({x:cx,y:cy,vx:Math.cos(a)*(60+Math.random()*30),vy:Math.sin(a)*(60+Math.random()*30),l:1.2,col}); } }
+    P.forEach(p=>{ p.l-=1/60; p.x+=p.vx/60; p.y+=p.vy/60; p.vy+=40/60; ctx.globalAlpha=Math.max(0,Math.min(1,p.l)); circle(p.x,p.y,Math.max(2,tw*.05),p.col); }); ctx.globalAlpha=1; festSky.p=P.filter(p=>p.l>0); } }
 // ---- 任期、勳章、新城市 ----
 function settleCalc(kind){ const st=S.city.stage, pb=Math.floor(Math.log2(1+CS.pop/150)), tb=kind==='full'?3:0, md=st+pb+tb;
   return {md,lines:`🏛️ 城市等級「${CITY_STAGES[st].name}」 🏅+${st}<br>👥 人口 ${fmt(CS.pop)} 🏅+${pb}${tb?`<br>🎖️ ${TERM} 年任期圓滿 🏅+${tb}`:''}`}; }
@@ -1062,6 +1132,57 @@ function cityMigrate(){ const c=S.city;
   if(!c.unl){ c.unl={}; c.b.forEach(b=>c.unl[b.t]=1); }
   if(!c.pv){ c.pv=1; const use=c.b.reduce((a,b)=>a+(CB[b.t]?CB[b.t].pw||0:0),0); if(use>20){ c.pgrace=(S.time||0)+600; const g=Math.ceil(use/80)*4000; S.money+=g; c.pgift=g; } }
 }
+
+// ---- 羊毛氈柴犬（柴犬咖啡的招牌與屋頂）----
+const FELT={};
+function feltShiba(mode){ if(FELT[mode]) return FELT[mode];
+  const head=mode==='head', S=256, H=head?236:300, cv=document.createElement('canvas'); cv.width=S; cv.height=H; const g=cv.getContext('2d');
+  let seed=7; const R=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  const O='#e6a052', O2='#d48a3e', O3='#f2bb74', C='#fbf2e3', C2='#eadcc4', K='#3a2618';
+  const hx=128, hy=head?132:112, hr=head?98:90, hry=head?86:78;
+  const sh=(c,k)=>{ const n=parseInt(c.slice(1),16); let r=n>>16,gg=n>>8&255,b=n&255; const f=v=>Math.max(0,Math.min(255,Math.round(v+k*255))); return `rgb(${f(r)},${f(gg)},${f(b)})`; };
+  // 毛邊：沿著形狀邊緣往外刺出細纖維
+  const fuzz=(pts,col,n,len)=>{ g.lineCap='round'; for(let i=0;i<n;i++){ const k=Math.floor(R()*pts.length), [x,y,nx,ny]=pts[k], L=len*(.3+R()*.7), a=(R()-.5)*1.1, cs=Math.cos(a), sn=Math.sin(a), dx=nx*cs-ny*sn, dy=nx*sn+ny*cs; g.strokeStyle=sh(col,(R()-.5)*.12); g.globalAlpha=.3+R()*.45; g.lineWidth=.6+R()*1.1; g.beginPath(); g.moveTo(x-dx*L*.5,y-dy*L*.5); g.quadraticCurveTo(x+dx*L*.4+(R()-.5)*3,y+dy*L*.4+(R()-.5)*3,x+dx*L,y+dy*L); g.stroke(); } g.globalAlpha=1; };
+  const ePts=(cx,cy,rx,ry,a0=0,a1=Math.PI*2)=>{ const P=[]; for(let i=0;i<=80;i++){ const t=a0+(a1-a0)*i/80, x=cx+Math.cos(t)*rx, y=cy+Math.sin(t)*ry; let nx=Math.cos(t)/rx, ny=Math.sin(t)/ry; const l=Math.hypot(nx,ny); P.push([x,y,nx/l,ny/l]); } return P; };
+  const pPts=(Q)=>{ const P=[]; for(let i=0;i<Q.length;i++){ const a=Q[i], b=Q[(i+1)%Q.length], dx=b[0]-a[0], dy=b[1]-a[1], l=Math.hypot(dx,dy); for(let s=0;s<l;s+=2){ P.push([a[0]+dx*s/l,a[1]+dy*s/l,dy/l,-dx/l]); } } return P; };
+  // 表面：細細的纖維紋理
+  const tex=(clip,col,n)=>{ g.save(); clip(); g.clip(); g.lineCap='round'; for(let i=0;i<n;i++){ const x=R()*S, y=R()*H, a=R()*Math.PI, L=3+R()*7; g.strokeStyle=sh(col,(R()-.5)*.16); g.globalAlpha=.35+R()*.35; g.lineWidth=.6+R()*1.1; g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+Math.cos(a)*L*.5+(R()-.5)*3,y+Math.sin(a)*L*.5+(R()-.5)*3,x+Math.cos(a)*L,y+Math.sin(a)*L); g.stroke(); } g.globalAlpha=1; g.restore(); };
+  const ell=(cx,cy,rx,ry)=>()=>{ g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); };
+  const fillE=(cx,cy,rx,ry,col,grad)=>{ ell(cx,cy,rx,ry)(); if(grad){ const gr=g.createRadialGradient(cx-rx*.3,cy-ry*.45,rx*.1,cx,cy,Math.max(rx,ry)*1.05); gr.addColorStop(0,sh(col,.07)); gr.addColorStop(.7,col); gr.addColorStop(1,sh(col,-.07)); g.fillStyle=gr; } else g.fillStyle=col; g.fill(); };
+  if(!head){ // 身體、腳、尾巴
+    const by=222; // 尾巴（後面左上）
+    fillE(58,190,26,24,O,1); tex(ell(58,190,26,24),O,120); fuzz(ePts(58,190,26,24),O,90,7); g.strokeStyle=C; g.lineWidth=7; g.lineCap='round'; g.beginPath(); for(let i=0;i<=40;i++){ const t=i/40*Math.PI*3.2, r=3+i*.42, x=58+Math.cos(t)*r, y=190+Math.sin(t)*r*.9; i?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+    fillE(hx,by,74,58,O,1); tex(ell(hx,by,74,58),O,500); fuzz(ePts(hx,by,74,58),O,500,6);
+    fillE(hx,by+6,44,46,C); tex(ell(hx,by+6,44,46),C,260);
+    [[92,268],[164,268]].forEach(([x,y])=>{ fillE(x,y,22,22,C,1); tex(ell(x,y,22,22),C,90); fuzz(ePts(x,y,22,22,0,Math.PI),C,60,5); });
+  }
+  // 耳朵
+  [[-1],[1]].forEach(([s])=>{ const base=[hx+s*hr*.82,hy-hry*.32], tip=[hx+s*hr*.78,hy-hry*1.18], inn=[hx+s*hr*.28,hy-hry*.78];
+    const Q=[base,tip,inn]; g.beginPath(); g.moveTo(base[0],base[1]); g.quadraticCurveTo(tip[0]+s*6,tip[1]+14,tip[0],tip[1]); g.quadraticCurveTo(tip[0]-s*16,tip[1]+10,inn[0],inn[1]); g.closePath(); g.fillStyle=O2; g.fill(); fuzz(s<0?pPts(Q).reverse().map(p=>[p[0],p[1],-p[2],-p[3]]):pPts(Q),O2,70,6);
+    const c=[(base[0]*2+tip[0]*2+inn[0]*2)/6,(base[1]*2+tip[1]*2+inn[1]*2)/6]; g.beginPath(); g.moveTo(base[0]+(c[0]-base[0])*.35,base[1]+(c[1]-base[1])*.35); g.lineTo(tip[0]+(c[0]-tip[0])*.38,tip[1]+(c[1]-tip[1])*.38); g.lineTo(inn[0]+(c[0]-inn[0])*.35,inn[1]+(c[1]-inn[1])*.35); g.closePath(); g.fillStyle='#f6dcc0'; g.fill(); });
+  // 頭
+  fillE(hx,hy,hr,hry,O,1); tex(ell(hx,hy,hr,hry),O,900); fuzz(ePts(hx,hy,hr,hry,Math.PI*.9,Math.PI*2.1),O,700,7);
+  // 裏白：兩頰＋口鼻
+  const W=()=>{ g.beginPath(); [[hx-hr*.42,hy+hry*.36,hr*.5,hry*.5],[hx+hr*.42,hy+hry*.36,hr*.5,hry*.5],[hx,hy+hry*.42,hr*.46,hry*.6]].forEach(([x,y,a,b])=>{ g.moveTo(x+a,y); g.ellipse(x,y,a,b,0,0,Math.PI*2); }); };
+  g.save(); ell(hx,hy,hr,hry)(); g.clip(); W(); g.fillStyle=C; g.fill(); tex(W,C,600); g.restore();
+  fuzz(ePts(hx,hy,hr,hry,Math.PI*.12,Math.PI*.88),C,380,6);
+  // 麻呂眉
+  [[-1],[1]].forEach(([s])=>{ fillE(hx+s*hr*.33,hy-hry*.33,hr*.12,hry*.09,C); fuzz(ePts(hx+s*hr*.33,hy-hry*.33,hr*.12,hry*.09),C,30,3); });
+  // 臉頰淡淡的粉紅
+  [[-1],[1]].forEach(([s])=>{ g.globalAlpha=.22; g.beginPath(); g.ellipse(hx+s*hr*.58,hy+hry*.3,hr*.14,hry*.1,0,0,Math.PI*2); g.fillStyle="#f39a8a"; g.fill(); g.globalAlpha=1; });
+  // 瞇瞇眼（笑）
+  g.strokeStyle=K; g.lineWidth=hr*.055; g.lineCap='round'; [[-1],[1]].forEach(([s])=>{ const ex=hx+s*hr*.36, ey=hy+hry*.06; g.beginPath(); g.moveTo(ex-hr*.13,ey+hry*.03); g.quadraticCurveTo(ex,ey-hry*.12,ex+hr*.13,ey+hry*.03); g.stroke(); });
+  // 鼻子＋嘴巴
+  const ny=hy+hry*.24; g.beginPath(); g.moveTo(hx-hr*.12,ny-hry*.05); g.quadraticCurveTo(hx,ny-hry*.11,hx+hr*.12,ny-hry*.05); g.quadraticCurveTo(hx+hr*.1,ny+hry*.08,hx,ny+hry*.1); g.quadraticCurveTo(hx-hr*.1,ny+hry*.08,hx-hr*.12,ny-hry*.05); g.fillStyle='#231a14'; g.fill(); fillE(hx-hr*.03,ny-hry*.04,hr*.035,hry*.02,'rgba(255,255,255,.55)');
+  g.lineWidth=hr*.03; g.strokeStyle=K; g.beginPath(); g.moveTo(hx,ny+hry*.09); g.lineTo(hx,ny+hry*.17); g.moveTo(hx-hr*.2,ny+hry*.14); g.quadraticCurveTo(hx-hr*.1,ny+hry*.27,hx,ny+hry*.17); g.quadraticCurveTo(hx+hr*.1,ny+hry*.27,hx+hr*.2,ny+hry*.14); g.stroke();
+  if(!head){ // 紅白繩項圈＋金鈴鐺
+    const cy=hy+hry*.92; g.lineCap='butt'; for(let i=0;i<16;i++){ const t0=Math.PI*(.14+.72*i/16), t1=Math.PI*(.14+.72*(i+1)/16), x0=hx+Math.cos(t0)*hr*.78, y0=cy-34+Math.sin(t0)*30, x1=hx+Math.cos(t1)*hr*.78, y1=cy-34+Math.sin(t1)*30; g.strokeStyle=i%2?'#fff8f0':'#d8373a'; g.lineWidth=13; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); }
+    const bx=hx, byy=cy+2; const gr=g.createRadialGradient(bx-5,byy-6,2,bx,byy,15); gr.addColorStop(0,'#fff3b0'); gr.addColorStop(.5,'#e8b934'); gr.addColorStop(1,'#a77a12'); g.beginPath(); g.arc(bx,byy,14,0,Math.PI*2); g.fillStyle=gr; g.fill(); g.strokeStyle='#7a560c'; g.lineWidth=2; g.beginPath(); g.moveTo(bx-12,byy+1); g.lineTo(bx+12,byy+1); g.stroke(); g.beginPath(); g.arc(bx,byy+6,3,0,Math.PI*2); g.fillStyle='#5a3e08'; g.fill(); }
+  FELT[mode]=cv; return cv; }
+// 羊毛氈柴犬：x,y 是腳底中心，h 是高度
+function drawFelt(x,y,h,mode='body',sway=0){ const cv=feltShiba(mode), w=h*cv.width/cv.height; if(sway){ ctx.save(); ctx.translate(x,y); ctx.rotate(sway); ctx.drawImage(cv,-w/2,-h,w,h); ctx.restore(); } else ctx.drawImage(cv,x-w/2,y-h,w,h); }
+const icoH=i=>i==='🐕'?`<img src="${feltURL()}" alt="🐕" style="width:1.15em;height:1.06em;vertical-align:-.18em">`:i;
+let FELT_URL=null; const feltURL=()=>FELT_URL||(FELT_URL=feltShiba('head').toDataURL());
 
 // ---- 交通與行人 ----
 function roadNbrs(x,y){ return DIRS.map(([a,b])=>[x+a,y+b]).filter(([a,b])=>isRoad(a,b)); }
@@ -1114,12 +1235,26 @@ function rebuildTransit(){
 function updateTransit(dt){ transit.buses.forEach(a=>{ if(!a.col) a.col=['#3fae7a','#f2b544','#4d7cc7'][transit.buses.indexOf(a)%3]; a.kind='bus'; });
   rebuildTransit(); const m=transit.mrt;
   if(m) transit.trains.forEach(t=>{ if(!t.dir) t.dir=1; if(t.dwell>0){ t.dwell-=dt; return; } let ns=t.s+dt*2.2*t.dir; if(!m.ring) ns=Math.max(0,Math.min(m.L,ns)); m.stopS.forEach((ss,i)=>{ if(((t.s<ss&&ns>=ss)||(t.s>ss&&ns<=ss))&&t.last!==i){ t.dwell=1.8; t.last=i; } }); t.s=ns; if(m.ring){ if(t.s>=m.L){ t.s-=m.L; t.last=-1; } } else if(t.s>=m.L) t.dir=-1; else if(t.s<=0) t.dir=1; });
-  const r=transit.route; if(r) transit.buses.forEach(a=>{ const P=r.P; if(a.i>=P.length-1) a.i=0; if(a.wait>0){ a.wait-=dt; } else { a.t+=dt*1.05; if(a.t>=1){ a.t=0; a.i++; if(a.i>=P.length-1) a.i=0; if(r.stops.has(P[a.i].join(','))){ a.wait=2.2; } } } const c=P[a.i], n=P[Math.min(P.length-1,a.i+1)]; a.x=c[0]; a.y=c[1]; a.nx=n[0]; a.ny=n[1]; });
+  const r=transit.route; if(r) transit.buses.forEach(a=>{ const P=r.P; if(a.i>=P.length-1) a.i=0; if(a.wait>0){ a.wait-=dt; } else if(a.t>.2&&a.t<.4&&redFor(a)){ /* 公車也等紅燈 */ } else { a.t+=dt*1.05; if(a.t>=1){ a.t=0; a.i++; if(a.i>=P.length-1) a.i=0; if(r.stops.has(P[a.i].join(','))){ a.wait=2.2; } } } const c=P[a.i], n=P[Math.min(P.length-1,a.i+1)]; a.x=c[0]; a.y=c[1]; a.nx=n[0]; a.ny=n[1]; });
 }
 function drawMrtPillars(list){ const m=transit.mrt; if(!m) return; const P=m.P; let acc=0; for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); for(let s=(1.5-acc%1.5);s<d;s+=1.5){ const t=s/d, x=P[i-1][0]+(P[i][0]-P[i-1][0])*t, y=P[i-1][1]+(P[i][1]-P[i-1][1])*t; if(bAt(Math.floor(x),Math.floor(y))) continue; list.push({d:dep(x,y)+.3,fn:()=>{ const q=R2(x,y); RAW=true; const g=iso(q[0],q[1]); ellipse(g.x,g.y,tw*.14,tw*.06,'rgba(0,0,0,.18)'); box(q[0]-.1,q[1]-.1,.2,.2,.78,'#c3c8cf'); box(q[0]-.2,q[1]-.2,.4,.4,.14,'#cdd1d7',.78); RAW=false; }}); } acc+=d; } }
 function shibaFace(x,y,r){ const ear=(sx)=>{ ctx.beginPath(); ctx.moveTo(x+sx*r*.95,y-r*.35); ctx.lineTo(x+sx*r*.25,y-r*.8); ctx.lineTo(x+sx*r*.85,y-r*1.15); ctx.closePath(); ctx.fillStyle='#d9853a'; ctx.fill(); }; ear(-1); ear(1);
   circle(x,y,r,'#e39a4a'); ellipse(x,y+r*.35,r*.62,r*.5,'#fff7ea'); circle(x-r*.38,y-r*.15,r*.13,'#2b2b2b'); circle(x+r*.38,y-r*.15,r*.13,'#2b2b2b'); circle(x,y+r*.18,r*.14,'#2b2b2b'); }
-function drawMrtTop(){ const m=transit.mrt; if(!m) return; RAW=true;
+const mrtStations=()=>S.city.b.filter(b=>b.t==='mrt'&&!b.burnt).sort((a,b)=>{ const p=R2(...bctr(a)), q=R2(...bctr(b)); return p[0]+p[1]-q[0]-q[1]; });
+function mrtH(b){ const m=transit.mrt; let wh=true; if(m){ const c=bctr(b), i=m.P.findIndex(p=>Math.abs(p[0]-c[0])<.01&&Math.abs(p[1]-c[1])<.01); if(i>=0){ let j=i+1<m.P.length?i+1:i-1; if(j>=0&&m.P[j][0]===m.P[i][0]&&m.P[j][1]===m.P[i][1]) j=i-1; if(j>=0) wh=Math.abs(m.P[j][1]-m.P[i][1])<.01; } } return (ROTV%2===0)?wh:!wh; }
+// 月台（post=0：軌道之後、列車之前；post=1：列車之後的近側柱子和雨棚）
+function stationTop(b,post){ const h=mrtH(b), c=R2(...bctr(b)), cu=h?c[0]:c[1], cv=h?c[1]:c[0], z=.92, zt=1.08;
+  if(!post){ [[-.62],[.25]].forEach(([v])=>{ vbox(cu-.85,cv+v,1.7,.37,.16,'#d5d8de',z,h); vbox(cu-.85,cv+v+(v<0?.31:0),1.7,.06,.006,'#f2c14e',zt,h); });
+    [-.75,0,.75].forEach(s=>vbox(cu+s-.035,cv-.6,.07,.07,.4,'#e8eaee',zt,h)); return; }
+  [-.75,0,.75].forEach(s=>vbox(cu+s-.035,cv+.53,.07,.07,.4,'#e8eaee',zt,h));
+  vbox(cu-.94,cv-.7,1.88,1.4,.05,'#3b7a5a',1.46,h); if(h) gableX(cu-.94,cv-.7,1.88,1.4,1.51,.16,'#f2f4f6'); else gableY(cv-.7,cu-.94,1.4,1.88,1.51,.16,'#f2f4f6');
+  [-.6,0,.6].forEach(s=>{ const q=h?P3(cu+s,cv+.72,1.47):P3(cv+.72,cu+s,1.47); MLIT.push(()=>{ ctx.fillStyle='#ffe9a8'; ctx.fillRect(q.x-tw*.06,q.y,tw*.12,Math.max(1.5,tw*.025)); }); }); }
+let MLC=null; const MLIT=[];
+function darkLayer(fn){ MLIT.length=0; if(NIGHT<=.02){ fn(); return; } if(!MLC) MLC=document.createElement('canvas'); if(MLC.width!==cv.width||MLC.height!==cv.height){ MLC.width=cv.width; MLC.height=cv.height; }
+  const lc=MLC.getContext('2d'); lc.setTransform(1,0,0,1,0,0); lc.clearRect(0,0,MLC.width,MLC.height); lc.setTransform(ctx.getTransform()); const sv=ctx; ctx=lc; fn();
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalCompositeOperation='source-atop'; ctx.fillStyle=`rgba(14,20,62,${(.52*NIGHT).toFixed(3)})`; ctx.fillRect(0,0,MLC.width,MLC.height); ctx.restore(); ctx.globalCompositeOperation='source-over';
+  if(NIGHT>.3) MLIT.forEach(f=>f()); ctx=sv; ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(MLC,0,0); ctx.restore(); }
+function drawMrtTop(){ const m=transit.mrt, ST=mrtStations(); if(!m){ if(ST.length){ RAW=true; ST.forEach(b=>stationTop(b,0)); ST.forEach(b=>stationTop(b,1)); RAW=false; } return; } RAW=true;
   const Wd=.5, z0=.92, hD=.16, zt=z0+hD;
   const pcs=[]; for(let i=1;i<m.P.length;i++){ const a=R2(m.P[i-1][0],m.P[i-1][1]), b=R2(m.P[i][0],m.P[i][1]), h=Math.abs(a[0]-b[0])>=Math.abs(a[1]-b[1]); const ua=h?a[0]:a[1], ub=h?b[0]:b[1], v=h?a[1]:a[0]; const u0=Math.min(ua,ub)-Wd/2, len=Math.abs(ub-ua)+Wd; pcs.push({h,u0,len,v0:v-Wd/2,d:(u0+len/2)+v}); }
   pcs.sort((a,b)=>a.d-b.d);
@@ -1128,6 +1263,7 @@ function drawMrtTop(){ const m=transit.mrt; if(!m) return; RAW=true;
     if(tw>=22){ ctx.strokeStyle='#8b8378'; ctx.lineWidth=Math.max(1,tw*.03); ctx.beginPath(); for(let u=c.u0+.06;u<c.u0+c.len;u+=.14){ const a=PT(c,u,c.v0+.11,zt), b=PT(c,u,c.v0+Wd-.11,zt); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); } ctx.stroke(); }
     [.17,.33].forEach(r=>{ const a=PT(c,c.u0,c.v0+r,zt+.01), b=PT(c,c.u0+c.len,c.v0+r,zt+.01); ln(a,b,'#e7ebf0',Math.max(1.2,tw*.025)); });
     vbox(c.u0,c.v0,c.len,.06,.06,'#dfe2e6',zt,c.h); });
+  ST.forEach(b=>stationTop(b,0));
   const cars=[], W2=s0=>m.ring?((s0%m.L)+m.L)%m.L:Math.max(0,Math.min(m.L,s0)); transit.trains.forEach(t=>{ const dr=t.dir||1; for(let i=0;i<3;i++){ const sc=W2(t.s-dr*(.38+i*.76)), q=polyAt(m.P,sc), a=polyAt(m.P,W2(sc+.08*dr)), b=polyAt(m.P,W2(sc-.08*dr)), v=R2(q[0],q[1]), va=R2(a[0],a[1]), vb=R2(b[0],b[1]), hh=Math.abs(va[0]-vb[0])>=Math.abs(va[1]-vb[1]); cars.push({u:v[0],v:v[1],h:hh,front:i===0,sg:Math.sign(hh?va[0]-vb[0]:va[1]-vb[1])||1}); } });
   cars.sort((a,b)=>(a.u+a.v)-(b.u+b.v));
   cars.forEach(c=>{ const L=.7, CW=.3, z=zt+.03, u0=(c.h?c.u:c.v)-L/2, v0=(c.h?c.v:c.u)-CW/2;
@@ -1135,7 +1271,7 @@ function drawMrtTop(){ const m=transit.mrt; if(!m) return; RAW=true;
     if(tw>=20){ const sp=c.h?P3(u0+L*.5,v0+CW,z+.11):P3(v0+CW,u0+L*.5,z+.11); shibaFace(sp.x,sp.y,tw*.075); const p1=c.h?P3(u0+L*.18,v0+CW,z+.05):P3(v0+CW,u0+L*.18,z+.05), p2=c.h?P3(u0+L*.82,v0+CW,z+.05):P3(v0+CW,u0+L*.82,z+.05); [p1,p2].forEach(q=>{ circle(q.x,q.y,tw*.018,'#fff7ea'); [-1,0,1].forEach(k=>circle(q.x+k*tw*.018,q.y-tw*.026,tw*.008,'#fff7ea')); }); }
     if(c.front){ const ec=c.sg>0?u0+L*.75:u0+L*.25, ea=c.h?P3(ec,v0+CW*.25,z+.28):P3(v0+CW*.25,ec,z+.28), eb=c.h?P3(ec,v0+CW*.75,z+.28):P3(v0+CW*.75,ec,z+.28); [ea,eb].forEach(e=>{ ctx.beginPath(); ctx.moveTo(e.x-tw*.045,e.y); ctx.lineTo(e.x+tw*.045,e.y); ctx.lineTo(e.x,e.y-tw*.1); ctx.closePath(); ctx.fillStyle='#d9853a'; ctx.fill(); ctx.beginPath(); ctx.moveTo(e.x-tw*.022,e.y); ctx.lineTo(e.x+tw*.022,e.y); ctx.lineTo(e.x,e.y-tw*.06); ctx.closePath(); ctx.fillStyle='#fff7ea'; ctx.fill(); }); }
     if(c.front){ const fu=c.sg>0?u0+L:u0, cc=c.h?P3(fu,v0+CW/2,z+.05):P3(v0+CW/2,fu,z+.05); circle(cc.x,cc.y,Math.max(1.5,tw*.03),'#fff7b0'); } });
-  pcs.forEach(c=>vbox(c.u0,c.v0+Wd-.06,c.len,.06,.05,'#e8ebee',zt,c.h));
+  pcs.forEach(c=>vbox(c.u0,c.v0+Wd-.06,c.len,.06,.05,'#e8ebee',zt,c.h)); ST.forEach(b=>stationTop(b,1));
   RAW=false; }
 function drawAir(){ transit.air.forEach(r=>{ const p=((clock*.05+r.ph)%2), t=p<1?p:2-p, x=r.a[0]+(r.b[0]-r.a[0])*t, y=r.a[1]+(r.b[1]-r.a[1])*t, z=r.k==='airport'?2.2+Math.sin(t*Math.PI)*1.5:1.6+Math.sin(t*Math.PI)*1.2, c=P3(x,y,z); emoji(r.k==='airport'?'✈️':'🎈',c.x,c.y,tw*(r.k==='airport'?.45:.4)); }); }
 // ---- 排隊：服務不夠就看得到人龍 ----
@@ -1158,7 +1294,7 @@ function updatePeds(dt){
   const add=(k,near)=>{ let a=null; if(near&&MS.length){ const r=roadNear(pick(MS)); if(r){ const nb=roadNbrs(r[0],r[1]); if(nb.length){ const n=pick(nb); a={x:r[0],y:r[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; } } } if(!a) a=spawnAgent(); if(!a) return false; if(near) a.mrt=1; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<(S.city.trait==='shiba'?.55:.3); } a.phase=0; peds.push(a); return true; };
   while(count('res')<want){ if(!add('res')) break; } { let nm=peds.filter(p=>p.mrt).length; while(nm<Math.round(wantM*ck)){ if(!add(Math.random()<.4?'tour':'res',1)) break; nm++; } } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
   const over={res:count('res')-want,tour:count('tour')-wantT};
-  peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ if(over[p.k]>0&&!(p.thinkT>0)&&Math.random()<.25){ over[p.k]--; p.dead=1; } stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
+  peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.wt=p.t>.3&&p.t<.46&&redFor(p); if(p.wt) return; /* 行人等紅燈 */ p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ if(over[p.k]>0&&!(p.thinkT>0)&&Math.random()<.25){ over[p.k]--; p.dead=1; } stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
   peds=peds.filter(p=>!p.dead);
   needBubT-=dt; if(needBubT<=0){ needBubT=4+Math.random()*3; const ns=cityNeeds(); if(ns.length&&!peds.some(p=>p.thinkT>0)){ const n=Math.random()<.6?ns[0]:pick(ns); const c=peds.filter(p=>p.k==='res'&&p.px!==undefined&&(n.k!=='job'||!p.job)); if(c.length){ const p=pick(c); p.think=n.i+' '+n.say; p.thinkT=2.8; } } }
 }
@@ -1427,7 +1563,7 @@ function drawCityB(b,ox,oy){
       box(x+.35,y+.4,.3,.1,.32,'#f4efe4',.6); const on=Math.floor(ph*3)%2; box(x+.38,y+.62,.1,.1,.08,on?'#ff4040':'#ffb3b3',.6); const t=P3(x+.75,y+.25,.85); emoji('🚒',t.x,t.y,tw*.22); top=P3(x+.5,y+.5,1.0); break; }
     case 'shiba':{ cPlate(x,y,w,'#e8dcc6',.04); box(x+.12,y+.12,1.76,.85,.6,'#f6e3c4'); bwinZ('L',x+.12,y+.972,1.76,.6,1,4,'rgba(255,226,170,.95)',0); bwinZ('R',x+1.882,y+.12,.85,.6,1,2,'rgba(240,210,160,.95)',0); box(x+.1,y+.1,1.8,.89,.05,'#8a5a36',.6);
       for(let k=0;k<7;k++){ const a=x+.12+1.76*k/7, b2=x+.12+1.76*(k+1)/7; poly([P3(a,y+.97,.48),P3(b2,y+.97,.48),P3(b2,y+1.17,.38),P3(a,y+1.17,.38)],k%2?'#fff7ea':'#e39a4a'); }
-      const rf=P3(x+1,y+.55,.66); drawShiba(rf.x,rf.y,tw*.68,{pose:'sit',face:1});
+      const rf=P3(x+1,y+.55,.66); ellipse(rf.x,rf.y,tw*.2,tw*.07,'rgba(90,50,20,.22)'); drawFelt(rf.x,rf.y+tw*.03,tw*.82,'body',Math.sin(ph*1.3)*.04);
       [[.55,1.55],[1.35,1.6]].forEach(([a,c])=>{ cyl(x+a,y+c,.16,0,.22,'#8a5a36'); const u=P3(x+a,y+c,.22); ln(u,P3(x+a,y+c,.55),'#888',1.5); const t=P3(x+a,y+c,.55); ctx.beginPath(); ctx.moveTo(t.x-tw*.22,t.y+tw*.07); ctx.quadraticCurveTo(t.x,t.y-tw*.12,t.x+tw*.22,t.y+tw*.07); ctx.closePath(); ctx.fillStyle='#e39a4a'; ctx.fill(); emoji('☕',u.x+tw*.06,u.y-tw*.04,tw*.1); });
       const l1=iso(x+.35,y+1.85); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
       const rr=(ph*.25)%1, wx=x+.3+1.4*(rr<.5?rr*2:2-rr*2), wf=rr<.5?1:-1, wp=iso(wx,y+1.25); drawShiba(wp.x,wp.y,tw*.3,{pose:'walk',face:wf,phase:ph*8});
@@ -1447,7 +1583,17 @@ function drawCityB(b,ox,oy){
       const lp=P3(cx,cy,1.38), ang=clock*1.5; nlit(()=>{ circle(lp.x,lp.y,tw*.08,'#fff3a0'); ctx.save(); ctx.globalAlpha=.35; ctx.beginPath(); ctx.moveTo(lp.x,lp.y); ctx.lineTo(lp.x+Math.cos(ang)*tw*1.4,lp.y+Math.sin(ang)*tw*.45-tw*.08); ctx.lineTo(lp.x+Math.cos(ang)*tw*1.4,lp.y+Math.sin(ang)*tw*.45+tw*.08); ctx.closePath(); ctx.fillStyle='#fff7b0'; ctx.fill(); ctx.restore(); }); top={x:tp.x,y:tp.y-tw*.12}; break; }
     case 'bus':{ poly([iso(x+.15,y+.15),iso(x+.85,y+.15),iso(x+.85,y+.85),iso(x+.15,y+.85)],'#d9d2c4'); box(x+.2,y+.25,.6,.12,.55,'rgba(150,200,230,.7)'); box(x+.15,y+.2,.7,.5,.05,'#4d7cc7',.55); const c=P3(x+.75,y+.75,0), t=P3(x+.75,y+.75,.7); ln(c,t,'#666',2); emoji('🚏',t.x,t.y,tw*.2); top=P3(x+.5,y+.5,.75); break; }
     case 'bike':{ poly([iso(x+.1,y+.1),iso(x+.9,y+.1),iso(x+.9,y+.9),iso(x+.1,y+.9)],'#d9d2c4'); for(let k=0;k<3;k++){ const c=P3(x+.25+k*.25,y+.5,0); emoji('🚲',c.x,c.y-tw*.12,tw*.22); } top=P3(x+.5,y+.5,.4); break; }
-    case 'mrt':{ const {X,Y,L}=body(x,y,2,.7,'#eef0f2',{inset:.12,rows:1}); gableX(X-.05,Y+.2,L+.1,L-.4,.7,.35,'#3b7a5a'); const c=P3(x+1,y+1.85,.95); rrect(c.x-tw*.18,c.y-tw*.4,tw*.36,tw*.3,6,'#3b7a5a'); txt('M',c.x,c.y-tw*.25,tw*.22,'#fff',900); const tx=((ph*.3)%1); const tp=P3(x+.1+tx*1.8,y+2.05,.25); emoji('🚇',tp.x,tp.y,tw*.3); top=P3(x+1,y+1,1.2); break; }
+    case 'mrt':{ // 高架車站：一樓大廳、二樓穿堂，月台和雨棚在 drawMrtTop 跟軌道一起畫
+      const h=mrtH(b), cu=(h?x:y)+1, cv=(h?y:x)+1, PT=(u,v,z)=>h?P3(u,v,z):P3(v,u,z); cPlate(x,y,2,'#dfe1e6',.04);
+      [-.72,.72].forEach(su=>[-.48,.48].forEach(sv=>vbox(cu+su-.06,cv+sv-.06,.12,.12,.56,'#c3c8cf',0,h)));
+      vbox(cu-.62,cv-.32,1.24,.64,.48,'#f3f4f6',0,h); if(h) bwinZ('L',cu-.62,cv+.322,1.24,.48,1,5,'rgba(191,224,242,.95)',0); else bwinZ('R',cv+.322,cu-.62,1.24,.48,1,5,'rgba(170,205,230,.95)',0);
+      vbox(cu-.85,cv-.62,1.7,1.24,.36,'#e6e8ec',.56,h); if(h) bwinZ('L',cu-.85,cv+.622,1.7,.36,1,7,'rgba(191,224,242,.9)',.56); else bwinZ('R',cv+.622,cu-.85,1.7,.36,1,7,'rgba(170,205,230,.9)',.56);
+      if(h) fL(cu-.85,cu+.85,cv+.623,.86,.92,'#3b7a5a'); else fR(cu-.85,cu+.85,cv+.623,.86,.92,'#3b7a5a');
+      // 手扶梯：從人行道爬上二樓穿堂
+      poly([PT(cu+.98,cv+.68,0),PT(cu+.98,cv+.92,0),PT(cu+.2,cv+.92,.56),PT(cu+.2,cv+.68,.56)],'#9aa3ad'); for(let k=1;k<7;k++){ const t=k/7; ln(PT(cu+.98-.78*t,cv+.68,.56*t),PT(cu+.98-.78*t,cv+.92,.56*t),'#7d858f',1); }
+      poly([PT(cu+.98,cv+.92,0),PT(cu+.2,cv+.92,0),PT(cu+.2,cv+.92,.56)],'#cfd4da'); ln(PT(cu+.98,cv+.92,.12),PT(cu+.2,cv+.92,.68),'#5b616b',Math.max(1.5,tw*.025));
+      const sp=PT(cu-.92,cv+.92,0), st=PT(cu-.92,cv+.92,.62); ln(sp,st,'#5b616b',Math.max(2,tw*.03)); rrect(st.x-tw*.11,st.y-tw*.2,tw*.22,tw*.2,5,'#3b7a5a'); txt('M',st.x,st.y-tw*.1,tw*.15,'#fff',900);
+      top=P3(x+1,y+1,1.85); break; }
     case 'balloon':{ poly([iso(x+.1,y+.1),iso(x+1.9,y+.1),iso(x+1.9,y+1.9),iso(x+.1,y+1.9)],'#e8dfcf'); body(x+.15,y+.15,.7,.55,'#ffffff',{inset:0,rows:1}); dome(x+.5,y+.5,.3,.55,'#f2c14e'); [[1.3,.6,0],[.6,1.4,2],[1.4,1.4,4]].forEach(([a,c,o])=>{ const h=((ph*.15+o*.13)%1); const p=P3(x+a,y+c,.2+h*3); ctx.globalAlpha=h>.8?(1-h)*5:1; emoji('🎈',p.x,p.y,tw*.4); ctx.globalAlpha=1; }); top=P3(x+.5,y+.5,1.0); break; }
     case 'coal':{ cPlate(x,y,2,'#bdb7ad'); cyl(x+1.55,y+.5,.17,0,1.5,'#d9d4ca'); box(x+.2,y+.15,.75,.3,.28,'#6b7280');
       const {X,Y,L}=body(x+.02,y+.62,1.3,.62,'#b4583e',{inset:.08,rows:1,cols:3}); box(X-.03,Y-.03,L+.06,L+.06,.05,'#6b3a2a',.62); cyl(x+1.6,y+1.25,.17,0,1.3,'#d9d4ca');
@@ -1523,7 +1669,7 @@ function drawPed(p){
   if(p.k==='robot') return drawRobot(p);
   const q=agentPos(p,.36*p.side); p.px=q.x; p.py=q.y; const L=p.look;
   if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1; ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*tw*.08,c.y-tw*.15); ctx.stroke(); drawShiba(c.x,c.y,tw*.24,{pose:'walk',face:f,phase:p.phase*1.4}); p.dx=d.x; p.dy=d.y; }
-  drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
+  drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:p.wt?0:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
 }
 let groundVer=0, vigG=null, vigK='';
 const gC={cv:document.createElement('canvas'),key:'',cx:0,cy:0,tw:0,W:0,H:0};
@@ -1588,8 +1734,12 @@ function drawCity(){
   const n=citySize(), list=[];
   if(CS.sat&&CS.pop>=40&&CS.sat.trash<.9&&ROADS.size){ const arr=[...ROADS], nb=Math.min(arr.length,Math.round((1-CS.sat.trash)*16)); for(let i=0;i<nb;i++){ const [x,y]=arr[(i*7919+3)%arr.length].split(',').map(Number); list.push({d:dep(x+.5,y+.5)-.4,fn:()=>{ const c=iso(x+.2+(i%4)*.15,y+.75); ellipse(c.x,c.y-tw*.04,tw*.07,tw*.06,'#2b2b2b'); ellipse(c.x+tw*.08,c.y-tw*.02,tw*.05,tw*.045,'#3b3b46'); circle(c.x+Math.sin(clock*4+i)*tw*.06,c.y-tw*.14+Math.cos(clock*5+i)*tw*.02,tw*.015,'#111'); }}); } }
   if(CS.sat&&CS.pop>=80&&CS.sat.water<.9&&ROADS.size){ const arr=[...ROADS], nb=Math.min(arr.length,Math.round((1-CS.sat.water)*10)); for(let i=0;i<nb;i++){ const [x,y]=arr[(i*4513+11)%arr.length].split(',').map(Number); list.push({d:dep(x+.5,y+.5)-.45,fn:()=>{ const c=iso(x+.6,y+.4); ellipse(c.x,c.y,tw*.16,tw*.07,'rgba(120,100,60,.75)'); }}); } }
-  const tops=[], GR=mergeGroups(); GR.by.forEach((g,base)=>{ const c=[R2(g.x0,g.y0),R2(g.x1,g.y0),R2(g.x1,g.y1),R2(g.x0,g.y1)], u0=Math.min(...c.map(q=>q[0])), v0=Math.min(...c.map(q=>q[1])), U=Math.max(...c.map(q=>q[0]))-u0, V=Math.max(...c.map(q=>q[1]))-v0, d=u0+v0+(U+V)/2-.4;
-    list.push({d,fn:()=>{ RAW=true; CURB=base; const top=drawBigGroup(g,u0,v0,U,V)||P3(u0+U/2,v0+V/2,.8); CURB=null; RAW=false; const h=hitRect(g.x0,g.y0,g.x1,g.y1,top,d); g.members.forEach(m=>{ m._hit=h; }); tops.push({b:base,top,d}); }}); });
+  const tops=[], GR=mergeGroups(); GR.by.forEach((g,base)=>{ const RR=g.parts.map(P=>{ const c=[R2(P.x0,P.y0),R2(P.x1,P.y0),R2(P.x1,P.y1),R2(P.x0,P.y1)], u0=Math.min(...c.map(q=>q[0])), v0=Math.min(...c.map(q=>q[1])); return {P,u0,v0,U:Math.max(...c.map(q=>q[0]))-u0,V:Math.max(...c.map(q=>q[1]))-v0,e:{u0:0,u1:0,v0:0,v1:0}}; });
+    if(RR.length===2){ const [a,b]=RR, E=.24, ov=(p0,p1,q0,q1)=>Math.min(p1,q1)-Math.max(p0,q0)>.5; // 小的那段往大的那段延伸，接成一棟
+      if(Math.abs(b.u0-(a.u0+a.U))<.01&&ov(a.v0,a.v0+a.V,b.v0,b.v0+b.V)) b.e.u0=E; else if(Math.abs(a.u0-(b.u0+b.U))<.01&&ov(a.v0,a.v0+a.V,b.v0,b.v0+b.V)) b.e.u1=E;
+      else if(Math.abs(b.v0-(a.v0+a.V))<.01&&ov(a.u0,a.u0+a.U,b.u0,b.u0+b.U)) b.e.v0=E; else if(Math.abs(a.v0-(b.v0+b.V))<.01&&ov(a.u0,a.u0+a.U,b.u0,b.u0+b.U)) b.e.v1=E; }
+    RR.forEach((r,k)=>{ const {u0,v0,U,V}=r, d=u0+v0+(U+V)/2-.4;
+    list.push({d,fn:()=>{ RAW=true; CURB=base; const top=drawBigGroup(g,u0,v0,U,V,r.e)||P3(u0+U/2,v0+V/2,.8); CURB=null; RAW=false; const h=hitRect(r.P.x0,r.P.y0,r.P.x1,r.P.y1,top,d); r.P.members.forEach(m=>{ m._hit=h; }); if(k===0) tops.push({b:base,top,d}); }}); }); });
   S.city.b.forEach(b=>{ if(GR.inG.has(b)) return; const w=BW(b), an=rotAnchor(b.x,b.y,w), d=an[0]+an[1]+w-.4; list.push({d,fn:()=>{ RAW=true; CURB=b; const top=drawCityB(b,an[0],an[1]); CURB=null; RAW=false; tops.push({b,top,d}); b._hit=hitShape(b,top,d); }}); });
   drawGhost(list);
   const vw=toWorld(0,0), vw2=toWorld(W,H), vw3=toWorld(W,0), vw4=toWorld(0,H);
@@ -1599,24 +1749,24 @@ function drawCity(){
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
   transit.buses.forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
-  drawMrtPillars(list); drawQueues(list); drawSignals(list);
+  FESTLIT.length=0; festDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
   peds.forEach(p=>{ const q=agentPos(p,.36*p.side); list.push({d:dep(q.x,q.y)+.01,fn:()=>drawPed(p)}); });
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
-  if(NIGHT>.02) drawNight();
+  if(NIGHT>.02) drawNight(); if(NIGHT>.3) FESTLIT.forEach(f=>f());
   S.city.b.forEach(b=>{ if(!b._hit) return; const P=b._hit.poly, cx=(P[0].x+P[2].x)/2, ty=P[4].y;
     if(b.fire>0){ for(let k=0;k<5;k++){ const ox=(k-2)*tw*.18, f=Math.sin(clock*12+k*1.7); emoji('🔥',cx+ox,ty+tw*.1-Math.abs(f)*tw*.08,tw*(.35+.08*f)); } for(let k=0;k<4;k++){ const pp=(clock*.6+k/4)%1; ctx.globalAlpha=(1-pp)*.5; circle(cx+Math.sin(clock+k)*tw*.2,ty-tw*(.2+pp*1.2),tw*(.12+pp*.2),'#555'); ctx.globalAlpha=1; }
       const fs=Math.max(12,tw*.18); ctx.font=`900 ${Math.round(fs)}px sans-serif`; const lab=`🔥 點我滅火 ${Math.ceil(b.fire)}s`, lw=ctx.measureText(lab).width+16; rrect(cx-lw/2,ty-tw*.75-fs,lw,fs*1.6,fs*.8,'#e2574c','#fff',2); txt(lab,cx,ty-tw*.75-fs*.2,fs,'#fff',900); }
     if(b.burnt){ for(let k=0;k<2;k++){ const pp=(clock*.3+k/2)%1; ctx.globalAlpha=(1-pp)*.35; circle(cx+k*tw*.1,ty-tw*pp*.8,tw*(.1+pp*.15),'#444'); ctx.globalAlpha=1; } } });
   if(protest) peds.forEach(p=>{ if(p.k==='res'&&p.px!==undefined&&((p.seed*7)|0)%3===0){ const c=iso(p.px,p.py); emoji('✊',c.x+tw*.12,c.y-tw*.75+Math.sin(clock*6+p.seed)*tw*.04,tw*.18); } });
   if(ghost&&ghost.bull&&ghost.b&&ghost.b._hit){ ctx.globalAlpha=.3+.15*Math.sin(clock*6); poly(ghost.b._hit.poly,'#e2574c'); ctx.globalAlpha=1; poly(ghost.b._hit.poly,null,'#c0392b',2); }
-  drawMrtTop(); drawAir();
+  darkLayer(drawMrtTop); drawAir();
   if(!(ptrs.size>=2)) citySigns(tops);
   cityPops.forEach(p=>{ if(!p.b._hit) return; const P=p.b._hit.poly, cx=(P[0].x+P[2].x)/2, a=Math.min(1,p.life*2), up=(3.2-p.life)*tw*.15, cy=P[4].y-tw*.35-up; ctx.globalAlpha=a;
     const fs=Math.max(14,tw*.24), wdt=fs*6.4, hh=fs*2.5; rrect(cx-wdt/2,cy-hh,wdt,hh,fs*.5,'#fffdf8',p.stars>=4?'#3fae7a':p.stars<=1?'#c9b9a0':'#f2b544',2.5);
     txt('市民滿意度',cx,cy-hh+fs*.62,fs*.62,'#7a6a58',800);
     for(let i=0;i<5;i++){ const sx=cx+(i-2)*fs*1.1, pop=i<p.stars?1+.25*Math.max(0,Math.sin(Math.min(Math.PI,(3.2-p.life)*6-i*.6))):1; txt(i<p.stars?'★':'☆',sx,cy-fs*.72,fs*1.05*pop,i<p.stars?'#f2b544':'#d8cdbd',900); }
     ctx.globalAlpha=1; });
-  drawWeather(); drawVignette();
+  festSky(); drawWeather(); drawVignette();
   floats.forEach(f=>{ if(!f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   peds.forEach(p=>{ if(p.thinkT>0&&p.px!==undefined) drawThink({x:p.px,y:p.py,look:p.look,think:p.think}); });
   if(false){ const h=null; if(h){ const c=P3(h.x+1,h.y+1,1.5); emoji('👆',c.x+tw*.1,c.y+Math.abs(Math.sin(clock*4))*tw*.15,Math.max(24,tw*.45)); } }
@@ -1687,19 +1837,47 @@ function confirmGhost(){ if(!ghost) return;
   if(ghost.bull){ if(ghost.b) cityBulldoze(ghost.b.x,ghost.b.y); else cityBulldoze(ghost.x,ghost.y); saveLocal(); ghost=null; setPlacing(placing); return; }
   const k=ghost.k; if(ghost.msg){ sfx.bad(); return; } if(cityPlace(k,ghost.x,ghost.y)){ ghost=null; if(CB[k].w>1) setPlacing(null); else setPlacing(placing); } }
 // ---- 擴建後合併成一棟大店 ----
-const BIGMODEL=new Set(['conv','bubble','market','mall','shiba']), PODIUM=new Set(['school','museum','onsen','startup','robot','ai','apt','tower']);
-const BIGNAME={conv:'大型超市',bubble:'飲料旗艦店',market:'大夜市',mall:'購物中心',shiba:'柴犬樂園',school:'學園',museum:'大博物館',onsen:'溫泉度假村',startup:'新創大樓',robot:'機器人工業區',ai:'AI 園區',apt:'公寓社區',tower:'大樓社區'};
+const BIGMODEL=new Set(['conv','bubble','market','mall','shiba','house']), PODIUM=new Set(['school','museum','onsen','startup','robot','ai','apt','tower']);
+const BIGNAME={house:'連棟透天',conv:'大型超市',bubble:'飲料旗艦店',market:'大夜市',mall:'購物中心',shiba:'柴犬樂園',school:'學園',museum:'大博物館',onsen:'溫泉度假村',startup:'新創大樓',robot:'機器人工業區',ai:'AI 園區',apt:'公寓社區',tower:'大樓社區'};
 const BIGICON={conv:'🛒',bubble:'🧋',market:'🏮',mall:'🛍️',shiba:'🐕'};
 function mergeGroups(){ const by=new Map(), inG=new Set();
   S.city.b.forEach(b=>{ if(!b.par) return; const base=baseOf(b); if(!base) return; let g=by.get(base); if(!g){ g={base,members:[base]}; by.set(base,g); } g.members.push(b); });
-  by.forEach((g,base)=>{ const t=base.t; if(!(BIGMODEL.has(t)||PODIUM.has(t))){ by.delete(base); return; } let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,area=0; g.members.forEach(m=>{ const w=BW(m); x0=Math.min(x0,m.x); y0=Math.min(y0,m.y); x1=Math.max(x1,m.x+w); y1=Math.max(y1,m.y+w); area+=w*w; });
-    if(area!==(x1-x0)*(y1-y0)){ by.delete(base); return; } g.x0=x0; g.y0=y0; g.x1=x1; g.y1=y1; g.members.forEach(m=>inG.add(m)); });
+  const rc=ms=>{ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,area=0; ms.forEach(m=>{ const w=BW(m); x0=Math.min(x0,m.x); y0=Math.min(y0,m.y); x1=Math.max(x1,m.x+w); y1=Math.max(y1,m.y+w); area+=w*w; }); return {x0,y0,x1,y1,members:ms,ok:area===(x1-x0)*(y1-y0)}; };
+  by.forEach((g,base)=>{ const t=base.t; if(!(BIGMODEL.has(t)||PODIUM.has(t))){ by.delete(base); return; } const R=rc(g.members);
+    if(R.ok){ Object.assign(g,{x0:R.x0,y0:R.y0,x1:R.x1,y1:R.y1}); g.parts=[R]; }
+    else { // L 形：轉角那間＋一邊合成長方形，另一邊貼上去
+      const M=g.members, w=BW(base), adj=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y)===w&&(a.x===b.x||a.y===b.y);
+      const c=M.length===3&&M.every(m=>BW(m)===w)?M.find(m=>M.filter(o=>o!==m&&adj(m,o)).length===2):null;
+      if(!c){ by.delete(base); return; } const arms=M.filter(m=>m!==c), A=rc([c,arms[0]]), B=rc([arms[1]]); g.parts=[A,B]; Object.assign(g,{x0:R.x0,y0:R.y0,x1:R.x1,y1:R.y1}); }
+    g.members.forEach(m=>inG.add(m)); });
   return {by,inG}; }
 const bigName=b=>{ const base=baseOf(b)||b; return base&&BIGNAME[base.t]&&(extCount(base)>0)?BIGNAME[base.t]:null; };
 function fL(u0,u1,v,z0,z1,col){ poly([P3(u0,v,z0),P3(u1,v,z0),P3(u1,v,z1),P3(u0,v,z1)],col); }
 function fR(v0,v1,u,z0,z1,col){ poly([P3(u,v0,z0),P3(u,v1,z0),P3(u,v1,z1),P3(u,v0,z1)],col); }
 function plateR(u0,v0,U,V,col,i=.06){ poly([P3(u0+i,v0+i,0),P3(u0+U-i,v0+i,0),P3(u0+U-i,v0+V-i,0),P3(u0+i,v0+V-i,0)],col); }
-function drawBigGroup(g,u0,v0,U,V){ const t=g.base.t, ph=clock, longU=U>=V, Lg=Math.max(U,V);
+// 透天厝擴建：連棟透天（一格兩戶，共用牆，每戶顏色、高度不太一樣）
+function drawRowHouses(g,u0,v0,U,V,longU){ const i=.1, X=u0+i, Y=v0+i, LU=U-2*i, LV=V-2*i, len=longU?LU:LV, dep0=longU?LV:LU, n=Math.max(2,Math.round(len/.5)), uw=len/n, D=dep0*.72;
+  const sd=(g.base.x*7+g.base.y*13)|0, H=k=>((sd+k*31)*2654435761>>>0)%997/997;
+  const WALL=['#f6e7c8','#ffd9c2','#d9ecff','#e3f0d6','#fbe3ea','#efe6da'], ROOF=['#4d7cc7','#c9573e','#3f8a3c','#7a8ea8'];
+  plateR(u0,v0,U,V,'#d9d2c4',.04); // 騎樓前的人行道
+  if(longU) poly([P3(X,Y+D,0),P3(X+LU,Y+D,0),P3(X+LU,Y+LV,0),P3(X,Y+LV,0)],'#e6dfd2'); else poly([P3(X+D,Y,0),P3(X+LU,Y,0),P3(X+LU,Y+LV,0),P3(X+D,Y+LV,0)],'#e6dfd2');
+  const F=(a0,a1,z0,z1,col)=>longU?fL(a0,a1,Y+D+.004,z0,z1,col):fR(a0,a1,X+D+.004,z0,z1,col);
+  let top=null;
+  for(let k=0;k<n;k++){ const a=(longU?X:Y)+k*uw, h=.62+Math.round(H(k)*2)*.1, col=WALL[Math.floor(H(k+9)*WALL.length)];
+    if(longU) box(a,Y,uw,D,h,col); else box(X,a,D,uw,h,col);
+    // 一樓鐵捲門＋小門
+    F(a+uw*.1,a+uw*.62,0,.2,'#a9aeb6'); for(let r=1;r<5;r++) F(a+uw*.1,a+uw*.62,r*.04-.004,r*.04,'#8d939c'); F(a+uw*.68,a+uw*.9,0,.2,'#8a5a36');
+    // 樓上窗戶＋陽台
+    const fl=Math.round((h-.22)/.2); if(tw>=26){ if(longU) bwinZ('L',a,Y+D+.002,uw,h-.24,fl,1,'rgba(191,224,242,.95)',.22); else bwinZ('R',X+D+.002,a,uw,h-.24,fl,1,'rgba(170,205,230,.95)',.22); }
+    for(let r=0;r<fl;r++){ const z=.22+r*(h-.24)/fl; F(a+.02,a+uw-.02,z,z+.035,shade(col,-.18)); if(tw>=34) F(a+uw*.08,a+uw*.92,z+.035,z+.075,'rgba(255,255,255,.55)'); if(H(k*5+r)>.6&&tw>=30){ const c=longU?P3(a+uw*(.3+.4*H(r)),Y+D+.03,z+.06):P3(X+D+.03,a+uw*(.3+.4*H(r)),z+.06); circle(c.x,c.y,tw*.03,'#4f9a4a'); } }
+    // 屋頂：女兒牆、水塔、鐵皮加蓋
+    if(longU) box(a+.01,Y+.01,uw-.02,D-.02,.04,shade(col,-.08),h); else box(X+.01,a+.01,D-.02,uw-.02,.04,shade(col,-.08),h);
+    const r=H(k+3); if(r<.4){ const rc=ROOF[Math.floor(H(k+5)*ROOF.length)]; if(longU) gableY(a+.04,Y+.04,uw-.08,D*.55,h,.12,rc); else gableX(X+.04,a+.04,D*.55,uw-.08,h,.12,rc); }
+    else if(r<.8){ const c=longU?[a+uw*.5,Y+D*.35]:[X+D*.35,a+uw*.5]; cyl(c[0],c[1],.08,h,.06,'#9aa3ad'); cyl(c[0],c[1],.07,h+.06,.12,r<.6?'#e8edf2':'#4d8fd6'); }
+    const tp=longU?P3(a+uw/2,Y+D/2,h+.2):P3(X+D/2,a+uw/2,h+.2); if(!top||tp.y<top.y) top=tp; }
+  return top; }
+function drawBigGroup(g,u0,v0,U,V,e){ if(e){ u0-=e.u0; v0-=e.v0; U+=e.u0+e.u1; V+=e.v0+e.v1; } const t=g.base.t, ph=clock, longU=U>=V, Lg=Math.max(U,V);
+  if(t==='house') return drawRowHouses(g,u0,v0,U,V,longU);
   if(PODIUM.has(t)){ plateR(u0,v0,U,V,'#ddd5c6',.03); box(u0+.05,v0+.05,U-.1,V-.1,.08,'#cfc6b5'); let top=null; g.members.slice().sort((a,b)=>dep(a.x,a.y)-dep(b.x,b.y)).forEach(m=>{ const an=rotAnchor(m.x,m.y,BW(m)); const tp=drawCityB(m,an[0],an[1]); if(!top||tp.y<top.y) top=tp; }); return top; }
   const i=.12, X=u0+i, Y=v0+i, LU=U-2*i, LV=V-2*i;
   if(t==='conv'){ plateR(u0,v0,U,V,'#d6d8dd',.03); const h=.6;
@@ -1732,7 +1910,7 @@ function drawBigGroup(g,u0,v0,U,V){ const t=g.base.t, ph=clock, longU=U>=V, Lg=M
     box(X+LU*.4,Y+LV,LU*.2,.25,.06,p,.35); return P3(X+LU/2,Y+LV/2,1.9); }
   if(t==='shiba'){ plateR(u0,v0,U,V,'#e8dcc4',.04); const bv=longU?LV*.5:LV, bu=longU?LU:LU*.5; box(X,Y,bu,bv,.6,'#f6e3c4'); bwinZ('L',X,Y+bv+.002,bu,.6,1,Math.round(bu*2.4),'rgba(255,226,170,.95)',0); bwinZ('R',X+bu+.002,Y,bv,.6,1,Math.round(bv*2.4),'rgba(240,210,160,.95)',0); box(X-.02,Y-.02,bu+.04,bv+.04,.05,'#8a5a36',.6);
     for(let k=0;k<Math.floor(bu/.25);k++) poly([P3(X+k*.25,Y+bv,.48),P3(X+k*.25+.25,Y+bv,.48),P3(X+k*.25+.25,Y+bv+.2,.38),P3(X+k*.25,Y+bv+.2,.38)],k%2?'#fff7ea':'#e39a4a');
-    const n=Math.max(2,Math.round(Lg*.6)); for(let k=0;k<n;k++){ const r=P3(longU?X+bu*(k+.5)/n:X+bu/2,longU?Y+bv*.5:Y+bv*(k+.5)/n,.66); drawShiba(r.x,r.y,tw*.62,{pose:'sit',face:k%2?-1:1,seed:k}); }
+    const n=Math.max(2,Math.round(Lg*.6)); for(let k=0;k<n;k++){ const r=P3(longU?X+bu*(k+.5)/n:X+bu/2,longU?Y+bv*.5:Y+bv*(k+.5)/n,.66); ellipse(r.x,r.y,tw*.18,tw*.06,'rgba(90,50,20,.22)'); drawFelt(r.x,r.y+tw*.03,tw*.68,'body',Math.sin(ph*1.3+k*1.7)*.04); }
     const tn=Math.max(2,Math.round(Lg*1.2)); for(let k=0;k<tn;k++){ const a=longU?X+LU*(k+.5)/tn:X+LU*.75, c=longU?Y+LV*.78:Y+LV*(k+.5)/tn; cyl(a,c,.14,0,.22,'#8a5a36'); const tp=P3(a,c,.55); ln(P3(a,c,.22),tp,'#888',1.5); ctx.beginPath(); ctx.moveTo(tp.x-tw*.2,tp.y+tw*.06); ctx.quadraticCurveTo(tp.x,tp.y-tw*.11,tp.x+tw*.2,tp.y+tw*.06); ctx.closePath(); ctx.fillStyle=k%2?'#fff7ea':'#e39a4a'; ctx.fill(); }
     const l1=P3(longU?X+LU*.2:X+LU*.85,longU?Y+LV*.95:Y+LV*.2,0); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
     return P3(X+LU/2,Y+LV/2,1.3); }
@@ -1816,7 +1994,7 @@ function cityBHTML(){
   if(FREQ[b.t]) kv.push(['客人多久來一次',FREQ_TXT[FREQ[b.t]]]); if(b.nov>0) kv.push(['✨ 新開幕人潮',`還有約 ${Math.ceil(b.nov*150)} 秒`]);
   if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewBase(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewBase(b)-1)*100)}%`]); if(b.smell) kv.push(['🪰 臭味','收入 -25%']); if(b.noise) kv.push(['🔊 飛機噪音','收入 -20%']); if(b.t==='stadium') kv.push(['今天',matchOn()?'⚽ 比賽中！客人加倍':'休賽中，等下一場']);
   if(b.burnt){ const c=Math.round(D.cost*.4/10)*10; return `<h2>🏚️ ${D.name}（燒毀）</h2><div class="sub">只剩焦黑的骨架，不能營業，但維護費照付。</div><div class="row"><button class="btn" ${S.money<c?'disabled':''} data-act="cityRepair">重建（$${fmt(c)}）</button><button class="btn ghost" data-act="cityDemolish">清掉（不退錢）</button></div>`; }
-  return `<h2>${D.icon} ${bigName(b)?`${bigName(b)}（${D.name}擴建）`:D.name}</h2><div class="sub">${D.desc}</div>${b.ok?'':'<div class="note" style="color:var(--bad);margin-bottom:8px">⚠️ 沒有接到道路，還不能運作。</div>'}<div class="kv">${kv.map(([a,v])=>`<div>${a}<b>${v}</b></div>`).join('')}</div>
+  return `<h2>${icoH(D.icon)} ${bigName(b)?`${bigName(b)}（${D.name}擴建）`:D.name}</h2><div class="sub">${D.desc}</div>${b.ok?'':'<div class="note" style="color:var(--bad);margin-bottom:8px">⚠️ 沒有接到道路，還不能運作。</div>'}<div class="kv">${kv.map(([a,v])=>`<div>${a}<b>${v}</b></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" data-act="cityDemolish">拆除（退 $${fmt((b.paid||D.cost)*.5)}）</button></div>`;
 }
 function cityDemolish(){ const b=citySel; if(!b) return; cityBulldoze(b.x,b.y); closeSheet(); saveLocal(); }
@@ -1824,7 +2002,7 @@ function cityBuildHTML(){
   const st=S.city.stage, seg=`<div class="seg" style="flex-wrap:wrap">${CCATS.map(([k,l])=>`<button style="flex:1 1 30%" class="${cityTab===k?'on':''}" data-act="setCityTab" data-arg="${k}">${l}</button>`).join('')}</div>`;
   const items=Object.entries(CB).filter(([k,D])=>D.cat===cityTab&&!D.fixed&&k!=='hospital').map(([k,D])=>{ const lock=!unlocked(k), why=lock?(lockOf(k)||['再等一下']):null;
     const tags=[D.pop?`👥${D.pop}　租$${D.rent}`:'',D.svc?`🧾$${D.fee}×${D.cap}人`:'',D.exp?`📦外銷$${D.exp}`:'',D.jobs?`💼${D.jobs}`:'',D.trans?`🚏+${D.trans}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.w>1?`${D.w}×${D.w}`:'',D.pwr?`⚡發電+${D.pwr}`:'',D.pw?`⚡用電${D.pw}`:'',k!=='road'?`🔧維護$${fmt(upOf({t:k})*6)}/分`:''].filter(Boolean).join('　');
-    return `<div class="item ${lock?'locked':''}"><div class="ic" style="background:#eef5fd">${D.icon}</div><div class="txt"><div class="nm">${D.name}</div><div class="ds">${D.desc}</div><div class="ds" style="color:var(--ink);margin-top:3px">${tags}</div></div>
+    return `<div class="item ${lock?'locked':''}"><div class="ic" style="background:#eef5fd">${icoH(D.icon)}</div><div class="txt"><div class="nm">${D.name}</div><div class="ds">${D.desc}</div><div class="ds" style="color:var(--ink);margin-top:3px">${tags}</div></div>
       ${lock?`<div class="ds" style="text-align:right;max-width:112px">🔒 ${why.join('<br>')}</div>`:`<button class="btn" ${S.money<costOf(k)?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(costOf(k))}</button>`}</div>`; }).join('');
   const pw=CS.pw||{cap:0,use:0}; return `<h2>🏗️ 城市建設</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・⚡ ${Math.round(pw.use)} / ${Math.round(pw.cap)}・同一種蓋越多越貴（+12%）・🔒 人口變多、電夠、先蓋前置建築就會解鎖</div>${items}`;
 }
@@ -1957,7 +2135,7 @@ let lastMoney=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
-  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免危機 ${f(c.left)}｜滿意度 ${CS.happy}/55`:`${NIGHT>.5?'🌙':SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月｜🗳️ ${f(v.next-S.time)} 支持 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
+  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免危機 ${f(c.left)}｜滿意度 ${CS.happy}/55`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月｜🗳️ ${f(v.next-S.time)} 支持 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   const m=Math.floor(S.money);
   if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
   cityHud();
@@ -1966,7 +2144,7 @@ let tickTimer=null;
 let HSIM=false;
 function ticker(msg){ if(HSIM&&mode==='city') return; const el=$('ticker'); el.textContent=msg; el.classList.add('flash'); clearTimeout(tickTimer); tickTimer=setTimeout(()=>el.classList.remove('flash'),600); }
 function toast(icon,title,sub){
-  const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icon}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
+  const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icoH(icon)}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
   $('toast').appendChild(el); sfx.pop();
   setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
 }
@@ -2002,7 +2180,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.7.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.8</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
@@ -2062,10 +2240,10 @@ async function cloudSave(force){
 let last=performance.now();
 function cityTime(dt){
   clock+=dt; floats.forEach(f=>{ f.life-=dt; f.y-=dt*30; }); floats=floats.filter(f=>f.life>0);
-  if(modalOpen||!booted) return; S.time+=dt;
+  if(modalOpen||!booted) return; S.time+=dt; if(mode==='city'&&S.city) seasonTick();
   { const nt=nightK()>.5; if(nt!==wasNight){ wasNight=nt; if(nt) ticker(pick(['🌙 天黑了，夜市開張，家家戶戶亮起燈。','🌙 晚上了，柴犬們排隊散步回家。','🌙 夜深了，便利商店的燈是全城最亮的。'])); else ticker(pick(['☀️ 天亮了，早餐店的蛋餅香味飄滿整條街。','☀️ 早安！公車司機（鴨子）準時發車。'])); } }
   if(weather.t>0){ weather.t-=dt; if(weather.t<=0) weather={type:'clear',t:0}; }
-  else { weatherT-=dt; if(weatherT<=0){ weatherT=150+Math.random()*120; const se=seasonOf(monthNo()); if(se==='winter'){ weather={type:'snow',t:40}; ticker(pick(['❄️ 下雪了！市民在市政府門口堆了一個柴犬雪人。','❄️ 下雪了，鴨子們穿上了小圍巾（想像的）。'])); } else { weather={type:'rain',t:25}; ticker(pick(['🌧️ 下雨了，柴犬們拒絕出門散步。','🌧️ 一陣雨，雨傘店老闆偷偷笑了。','🌧️ 下雨了，公園的花都喝飽了。'])); } } }
+  else { weatherT-=dt; if(weatherT<=0){ weatherT=(S.city.trait==='rainy'?60:150)+Math.random()*120; const se=seasonOf(monthNo()); if(se==='winter'){ weather={type:'snow',t:40}; ticker(pick(['❄️ 下雪了！市民在市政府門口堆了一個柴犬雪人。','❄️ 下雪了，鴨子們穿上了小圍巾（想像的）。'])); } else { weather={type:'rain',t:S.city.trait==='rainy'?45:25}; ticker(pick(['🌧️ 下雨了，柴犬們拒絕出門散步。','🌧️ 一陣雨，雨傘店老闆偷偷笑了。','🌧️ 下雨了，公園的花都喝飽了。'])); } } }
 }
 function loop(now){
   const dt=Math.min(.1,(now-last)/1000); last=now;
