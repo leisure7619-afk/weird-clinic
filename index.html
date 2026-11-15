@@ -641,7 +641,7 @@ function cityCalc(){
   jobs+=fxSum('jobs');
   const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
   const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*fxMul('tour'));
-  const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?.6+.9*NK:1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; sup[D.svc]+=b.cap; });
+  const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:.6+.9*NK):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; sup[D.svc]+=b.cap; });
   const dem={shop:emp*1+un*.3+tourists*1.2, move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1), fun:emp*.5+un*.3+tourists*1.5+fans, edu:pop*.15, help:pop*.04+tourists*.15, trash:pop+tourists*.3, water:pop};
   Object.keys(dem).forEach(k=>dem[k]*=fxMul('dem',k));
   const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0,exp:0,power:0};
@@ -651,7 +651,7 @@ function cityCalc(){
   const sur=Math.max(0,pcap-puse);
   S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); if(!b.ok) return;
     let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf;
-    if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*NK;
+    if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK);
     if(D.rent){ const r=(b.occ||0)*er*D.rent*viewMult(b)*m; b.rev+=r; inc.rent+=r; }
     if(D.svc){ const tot=Math.min(dem[D.svc],sup[D.svc]); b.served=wsum[D.svc]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[D.svc]):0; b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m; b.rev+=r; inc[D.svc]+=r; }
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b))*m; b.rev+=r; inc.exp+=r; }
@@ -895,7 +895,8 @@ const P10=n=>Math.round(n/10)*10;
 
 // ---- 日夜 ----
 const DAYLEN=120; let NIGHT=0, NWIN=[], wasNight=false, LAMPS=null, lampKey='', GLOW=null;
-function nightK(){ const t=((S&&S.time||0)%DAYLEN)/DAYLEN; return t<.55?0:t<.65?(t-.55)/.1:t<.9?1:1-(t-.9)/.1; }
+const crowdK=()=>1-(S.city.trait==='party'?.45:.75)*nightK();
+function nightK(){ if(S&&S.noNight) return 0; const t=((S&&S.time||0)%DAYLEN)/DAYLEN; return t<.55?0:t<.65?(t-.55)/.1:t<.9?1:1-(t-.9)/.1; }
 function drawNight(){ const k=NIGHT;
   ctx.fillStyle=`rgba(14,20,62,${(.52*k).toFixed(3)})`; ctx.fillRect(0,0,W,H);
   if(NWIN.length){ ctx.globalAlpha=Math.min(1,k*1.15); ctx.fillStyle=(CS.pw&&CS.pw.ratio<.7)?'#5a5a6a':'#ffd77a'; ctx.beginPath(); NWIN.forEach(q=>{ ctx.moveTo(q[0].x,q[0].y); ctx.lineTo(q[1].x,q[1].y); ctx.lineTo(q[2].x,q[2].y); ctx.lineTo(q[3].x,q[3].y); ctx.closePath(); }); ctx.fill(); ctx.globalAlpha=1; }
@@ -1000,8 +1001,8 @@ function settle(kind){ if(S.city.settled) return 0; const s=settleCalc(kind); S.
 function chooseMap(){ const m=S.meta;
   queueModal({icon:'🗺️',title:'選一塊新土地',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。<br>新城市會隨機抽一個城市特色。</p><div class="note">💰 起始資金 $${fmt(3000+2000*upL('cash'))}<br>🏅 勳章可以在「名人堂」換永久升級和新地圖</div>`,
     buttons:Object.entries(MAPS).map(([k,M])=>({label:`${M.icon} ${M.name}`,sub:m.maps[k]?M.desc:`🔒 名人堂用 🏅${M.cost} 解鎖`,dis:!m.maps[k],fn:()=>startNewCity(k)})).concat([{label:'🏅 先去名人堂',ghost:1,fn:()=>openSheet(fameHTML)}])}); }
-function startNewCity(type){ const meta=S.meta, muted=S.muted, earned=S.stats.earned;
-  S=newState(); S.meta=meta; S.muted=muted; S.stats.earned=earned; S.tut=1; S.day=today();
+function startNewCity(type){ const meta=S.meta, muted=S.muted, earned=S.stats.earned, nn=S.noNight;
+  S=newState(); S.meta=meta; S.muted=muted; S.noNight=nn; S.stats.earned=earned; S.tut=1; S.day=today();
   S.city=initCity(type); S.money=3000+2000*upL('cash');
   transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1;
   resetRuntime(); rot=0; ROTV=0; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey='';
@@ -1039,7 +1040,7 @@ const CAR_COLS=['#e2574c','#4d7cc7','#3fae7a','#f2c14e','#9b6dd6','#ffffff','#3b
 function stepAgent(a){ const nb=roadNbrs(a.nx,a.ny); let opts=nb.filter(([x,y])=>!(x===a.x&&y===a.y)); if(!opts.length) opts=nb; if(!opts.length){ a.dead=1; return; } const [x,y]=pick(opts); a.x=a.nx; a.y=a.ny; a.nx=x; a.ny=y; a.t=0; }
 function spawnAgent(){ const s=randRoad(); if(!s) return null; const nb=roadNbrs(s[0],s[1]); if(!nb.length) return null; const n=pick(nb); return {x:s[0],y:s[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; }
 function updateCars(dt){
-  const want=ROADS.size<3?0:Math.min(22,2+Math.floor(CS.pop/30));
+  const want=ROADS.size<3?0:Math.round(Math.min(22,2+Math.floor(CS.pop/30))*(.35+.65*crowdK()));
   while(cars.length<want){ const a=spawnAgent(); if(!a) break; a.col=pick(CAR_COLS); a.kind=Math.random()<.12?'duck':(CS.cnt.robot&&Math.random()<.3)?'robot':'car'; a.sp=1.2+Math.random()*.4; cars.push(a); }
   if(cars.length>want) cars.length=want;
   cars.forEach(a=>{ a.t+=dt*a.sp; if(a.t>=1) stepAgent(a); }); cars=cars.filter(a=>!a.dead);
@@ -1101,11 +1102,12 @@ function drawQueues(list){ S.city.b.forEach(b=>{ let n=queueLen(b), ex=null;
     if(b.t==='cityhall'){ const jq=CS.unemp?Math.min(6,1+Math.round(CS.un/(CS.pop||1)*8)):0, hq=(CS.cap&&CS.pop>=CS.cap*.95&&CS.happy>35)?4:0; n=jq+hq; ex=jq?'📄':'🧳'; if(!n) return; const sp=queueSpots(b,n); sp.forEach(([x,y],i)=>list.push({d:dep(x,y)+.02,fn:()=>drawMini(x,y,i+b.x,i<jq?(i%3===0?'📄':null):(i%2===0?'🧳':null))})); return; }
     if(!n) return; const sp=queueSpots(b,n); sp.forEach(([x,y],i)=>list.push({d:dep(x,y)+.02,fn:()=>drawMini(x,y,i+b.x+b.y,i===n-1&&n>=5&&Math.floor(clock*1.5+i)%3===0?'💢':null)})); }); }
 function updatePeds(dt){
-  const want=Math.min(30,3+Math.floor(CS.pop/14)), wantT=Math.min(14,Math.floor(CS.tour*1.4)), wantR=Math.min(6,(CS.cnt.robot||0)*3);
+  const ck=crowdK(), want=Math.round(Math.min(30,3+Math.floor(CS.pop/14))*ck), wantT=Math.round(Math.min(14,Math.floor(CS.tour*1.4))*ck), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
   const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<(S.city.trait==='shiba'?.55:.3); } a.phase=0; peds.push(a); return true; };
   while(count('res')<want){ if(!add('res')) break; } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
-  peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
+  const over={res:count('res')-want,tour:count('tour')-wantT};
+  peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ if(over[p.k]>0&&!(p.thinkT>0)&&Math.random()<.25){ over[p.k]--; p.dead=1; } stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
   peds=peds.filter(p=>!p.dead);
   needBubT-=dt; if(needBubT<=0){ needBubT=4+Math.random()*3; const ns=cityNeeds(); if(ns.length&&!peds.some(p=>p.thinkT>0)){ const n=Math.random()<.6?ns[0]:pick(ns); const c=peds.filter(p=>p.k==='res'&&p.px!==undefined&&(n.k!=='job'||!p.job)); if(c.length){ const p=pick(c); p.think=n.i+' '+n.say; p.thinkT=2.8; } } }
 }
@@ -1117,15 +1119,31 @@ function persona(a){
 }
 function agentPos(a,lane){ const t=Math.min(1,a.t), x=a.x+(a.nx-a.x)*t+.5, y=a.y+(a.ny-a.y)*t+.5, dx=a.nx-a.x, dy=a.ny-a.y; return {x:x+(-dy)*lane, y:y+dx*lane, dx, dy}; }
 // ---- 繪圖 ----
+const RD=(x,y)=>isRoad(x,y);
+const PERP={x:[[0,-1],[0,1]],y:[[-1,0],[1,0]]}, ALNG={x:[[-1,0],[1,0]],y:[[0,-1],[0,1]]};
+const alongBoth=(x,y,ax)=>ax==='x'?RD(x-1,y)&&RD(x+1,y):RD(x,y-1)&&RD(x,y+1);
+function cand0(x,y,ax){ if(!alongBoth(x,y,ax)) return false; let any=false; for(const [a,b] of PERP[ax]){ if(RD(x+a,y+b)){ any=true; if(!alongBoth(x+a,y+b,ax)) return false; } } return any; }
+function wideAx(x,y){ for(const ax of ['x','y']){ if(!cand0(x,y,ax)) continue; if(PERP[ax].every(([a,b])=>!RD(x+a,y+b)||cand0(x+a,y+b,ax))) return ax; } return null; }
+function hasParallel(x,y){ for(const ax of ['x','y']) for(const [a,b] of PERP[ax]){ if(!RD(x+a,y+b)) continue; for(const [c,d] of ALNG[ax]) if(RD(x+c,y+d)&&RD(x+a+c,y+b+d)) return true; } return false; }
+const isJunc=(x,y)=>RD(x,y)&&!wideAx(x,y)&&roadNbrs(x,y).length>=3;
+function zebra(x,y,dx,dy){ ctx.fillStyle='rgba(255,255,255,.82)';
+  for(let i=0;i<5;i++){ const s0=.14+i*.15, s1=s0+.08; let q;
+    if(dy===-1) q=[[x+s0,y+.06],[x+s1,y+.06],[x+s1,y+.26],[x+s0,y+.26]];
+    else if(dy===1) q=[[x+s0,y+.74],[x+s1,y+.74],[x+s1,y+.94],[x+s0,y+.94]];
+    else if(dx===-1) q=[[x+.06,y+s0],[x+.26,y+s0],[x+.26,y+s1],[x+.06,y+s1]];
+    else q=[[x+.74,y+s0],[x+.94,y+s0],[x+.94,y+s1],[x+.74,y+s1]];
+    poly(q.map(([u,v])=>iso(u,v)),'rgba(255,255,255,.82)'); } }
 function drawRoadTile(x,y){
   poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],'#7d838f');
-  const c=iso(x+.5,y+.5); ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=Math.max(1,tw*.025); ctx.setLineDash([tw*.08,tw*.08]);
-  DIRS.forEach(([a,b])=>{ if(isRoad(x+a,y+b)){ const e=iso(x+.5+a*.5,y+.5+b*.5); ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(e.x,e.y); ctx.stroke(); } });
-  ctx.setLineDash([]);
-  const nb=roadNbrs(x,y).length; if(nb>=3){ circle(c.x,c.y,tw*.05,'#f2c14e'); }
+  const wa=wideAx(x,y), jn=!wa&&roadNbrs(x,y).length>=3, par=!wa&&!jn&&hasParallel(x,y);
+  if(!wa&&!jn&&!par){ const c=iso(x+.5,y+.5); ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=Math.max(1,tw*.025); ctx.setLineDash([tw*.08,tw*.08]);
+    DIRS.forEach(([a,b])=>{ if(RD(x+a,y+b)){ const e=iso(x+.5+a*.5,y+.5+b*.5); ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(e.x,e.y); ctx.stroke(); } }); ctx.setLineDash([]); }
+  if(wa){ const [a,b]=PERP[wa][1]; if(RD(x+a,y+b)&&wideAx(x+a,y+b)===wa&&!RD(x-a,y-b)&&!RD(x+2*a,y+2*b)){ // 兩線道大道：中央雙黃線
+      const off=[-.035,.035]; ctx.strokeStyle='#f2c14e'; ctx.lineWidth=Math.max(1.2,tw*.022);
+      off.forEach(o=>{ const p0=wa==='x'?iso(x,y+1+o):iso(x+1+o,y), p1=wa==='x'?iso(x+1,y+1+o):iso(x+1+o,y+1); ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke(); }); } }
   if(tw>=22){ const E=[[0,-1,[x,y],[x+1,y]],[1,0,[x+1,y],[x+1,y+1]],[0,1,[x,y+1],[x+1,y+1]],[-1,0,[x,y],[x,y+1]]];
-    E.forEach(([dx,dy,A,B])=>{ if(isRoad(x+dx,y+dy)) return; const ix=dx===0?0:-dx*.1, iy=dy===0?0:-dy*.1; poly([iso(A[0],A[1]),iso(B[0],B[1]),iso(B[0]+ix,B[1]+iy),iso(A[0]+ix,A[1]+iy)],'#c9ccd2'); ln(iso(A[0]+ix,A[1]+iy),iso(B[0]+ix,B[1]+iy),'rgba(0,0,0,.12)',1); });
-    if(nb>=3) E.forEach(([dx,dy])=>{ if(!isRoad(x+dx,y+dy)) return; for(let k=0;k<4;k++){ const t=.2+k*.2, px=dx===0?x+t:x+.5+dx*.32, py=dy===0?y+t:y+.5+dy*.32, ex=dx===0?0:dx*.1, ey=dy===0?0:dy*.1, a=iso(px-ex*.0,py-ey*.0), b=iso(px+ex,py+ey); ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=Math.max(1.5,tw*.035); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } }); }
+    E.forEach(([dx,dy,A,B])=>{ if(RD(x+dx,y+dy)) return; const ix=dx===0?0:-dx*.1, iy=dy===0?0:-dy*.1; poly([iso(A[0],A[1]),iso(B[0],B[1]),iso(B[0]+ix,B[1]+iy),iso(A[0]+ix,A[1]+iy)],'#c9ccd2'); ln(iso(A[0]+ix,A[1]+iy),iso(B[0]+ix,B[1]+iy),'rgba(0,0,0,.12)',1); });
+    if(jn) DIRS.forEach(([dx,dy])=>{ const nx=x+dx, ny=y+dy; if(!RD(nx,ny)||isJunc(nx,ny)) return; if(!RD(nx+dx,ny+dy)&&roadNbrs(nx,ny).length>1) return; zebra(x,y,dx,dy); }); }
 }
 function bwin(face,x0,y0,len,h,rows,cols,col){ // face 'L'(+y 面) 'R'(+x 面)
   if(tw<26) return;
@@ -1814,19 +1832,21 @@ const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||
 function rotateView(d){ groundVer++; rot=(rot+d+4)%4; S.city.rot=rot; ROTV=mode==='city'?rot:0; sfx.pop(); ticker(pick(['🔄 換個角度看城市。','🔄 市長轉了一圈，看到新的風景。','🔄 從這邊看，鴨子也比較帥。'])); }
 $('zRot').onclick=()=>{ ensureAudio(); if(mode==='city') rotateView(-1); };
 $('zHome').onclick=()=>{ if(mode==='city'){ zoom=cityZoom(); applyZoom(); camX=citySize()/2; camY=citySize()/2; return; } };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,askReset,buyUpg,buyMap,askResign,openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,toggleNight,askReset,buyUpg,buyMap,askResign,openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 let confirmReset=false;
 function citySetHTML(){
   return `<h2>⚙️ 設定</h2><div class="sub">${CITY_STAGES[S.city.stage].name}・${CITY_STAGES[S.city.stage].mayor}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>當市長第<b>${yearNo()} 年</b></div><div>人口<b>👥 ${fmt(CS.pop)}</b></div><div>建築<b>🏢 ${S.city.b.length} 棟</b></div><div>道路<b>🛣️ ${ROADS.size} 格</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div><div>完成任務<b>🎯 ${S.city.misDone||0} 個</b></div></div>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
+    <div class="toggle"><span>🌙 日夜變化（關掉就一直是白天）</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.5.2</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.5.3</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
+function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } confirmReset=false; S=newState(); S.day=today(); S.tut=1; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; resetRuntime(); camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); saveLocal(); cloudSave(true); closeSheet(); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
 
 // ================= 對話框 =================
