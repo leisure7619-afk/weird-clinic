@@ -517,39 +517,39 @@ const CITY_STAGES=[
 ];
 const CB={
   road:   {cat:'traffic',name:'道路',icon:'🛣️',cost:40,w:1,stage:0,desc:'選好之後，用手指在地上拖曳就能連續鋪路。'},
-  bus:    {svc:'move',cap:15,fee:1,cat:'traffic',name:'公車站',icon:'🚏',cost:900,w:1,stage:0,trans:2,desc:'司機有時候是鴨子。交通 +2。'},
-  bike:   {svc:'move',cap:8,fee:1,sign:'單車站',cat:'traffic',name:'共享單車站',icon:'🚲',cost:700,w:1,stage:1,trans:1,green:1,desc:'騎去哪都行，就是不能騎回來。交通 +1。'},
-  mrt:    {svc:'move',cap:120,fee:1.5,cat:'traffic',name:'捷運站',icon:'🚇',cost:18000,w:2,stage:2,trans:8,desc:'2 站以上自動拉高架軌道（每格 $600、維護 $3/分），站越多乘客越多。車站 3 格內的商店、景點是捷運商圈，收入 +30%。'},
-  balloon:{svc:'fun',cap:40,fee:10,sign:'熱氣球機場',cat:'traffic',name:'熱氣球機場',icon:'🎈',cost:70000,w:2,stage:3,trans:10,tour:6,desc:'全世界唯一用熱氣球當航班的機場。'},
+  bus:    {svc:'move',cap:40,fee:1,cat:'traffic',name:'公車站',icon:'🚏',cost:900,w:1,stage:0,trans:2,desc:'司機有時候是鴨子。交通 +2。'},
+  bike:   {svc:'move',cap:25,fee:1,sign:'單車站',cat:'traffic',name:'共享單車站',icon:'🚲',cost:700,w:1,stage:1,trans:1,green:1,desc:'騎去哪都行，就是不能騎回來。交通 +1。'},
+  mrt:    {svc:'move',cap:300,fee:1.5,cat:'traffic',name:'捷運站',icon:'🚇',cost:18000,w:2,stage:2,trans:8,desc:'2 站以上自動拉高架軌道（每格 $600、維護 $3/分），站越多乘客越多。車站 3 格內的商店、景點是捷運商圈，收入 +30%。'},
+  balloon:{svc:'fun',cap:100,fee:10,sign:'熱氣球機場',cat:'traffic',name:'熱氣球機場',icon:'🎈',cost:70000,w:2,stage:3,trans:10,tour:6,desc:'全世界唯一用熱氣球當航班的機場。'},
   house:  {rent:2,cat:'home',name:'透天厝',icon:'🏠',cost:600,w:1,stage:0,pop:6,desc:'一樓是客廳，二樓是阿嬤的神秘房間。'},
   apt:    {rent:2,cat:'home',name:'公寓',icon:'🏢',cost:3000,w:1,stage:1,pop:24,desc:'管理員是一隻貓，收包裹很專業。'},
   treeh:  {rent:2.5,sign:'樹屋',cat:'home',name:'樹屋社區',icon:'🌳',cost:5000,w:1,stage:1,pop:18,green:2,happy:1,desc:'住在樹上，鳥是鄰居。綠意 +2。'},
   tower:  {rent:2,cat:'home',name:'住宅大樓',icon:'🏙️',cost:15000,w:2,stage:2,pop:100,desc:'電梯有點慢，因為每層都有人在聊天。'},
-  conv:   {svc:'shop',cap:12,fee:3,sign:'便利商店',cat:'shop',name:'怪怪便利商店',icon:'🏪',cost:1500,w:1,stage:0,jobs:6,desc:'24 小時營業，凌晨 3 點客人特別怪。'},
-  bubble: {svc:'shop',cap:10,fee:2.5,sign:'飲料店',cat:'shop',name:'手搖飲料店',icon:'🧋',cost:1200,w:1,stage:0,jobs:4,desc:'招牌：全糖去冰加一隻鴨。'},
-  market: {svc:'shop',cap:45,fee:3,sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:8000,w:2,stage:1,jobs:25,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
-  mall:   {svc:'shop',cap:100,fee:3.5,cat:'shop',name:'百貨公司',icon:'🛍️',cost:25000,w:2,stage:2,jobs:60,desc:'週年慶時，鴨子也來排隊。'},
-  shiba:  {svc:'fun',cap:30,fee:5,cat:'shop',name:'柴犬咖啡廳',icon:'🐕',cost:6000,w:2,stage:0,tour:3,jobs:8,happy:3,sign:'柴犬咖啡',desc:'2×2。點一杯拿鐵，柴犬會用屁股對著你。本市最療癒的地方。'},
+  conv:   {svc:'shop',cap:50,fee:3,sign:'便利商店',cat:'shop',name:'怪怪便利商店',icon:'🏪',cost:1500,w:1,stage:0,jobs:10,desc:'24 小時營業，凌晨 3 點客人特別怪。'},
+  bubble: {svc:'shop',cap:45,fee:2.5,sign:'飲料店',cat:'shop',name:'手搖飲料店',icon:'🧋',cost:1200,w:1,stage:0,jobs:7,desc:'招牌：全糖去冰加一隻鴨。'},
+  market: {svc:'shop',cap:160,fee:3,sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:8000,w:2,stage:1,jobs:35,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
+  mall:   {svc:'shop',cap:300,fee:3.5,cat:'shop',name:'百貨公司',icon:'🛍️',cost:25000,w:2,stage:2,jobs:100,desc:'週年慶時，鴨子也來排隊。'},
+  shiba:  {svc:'fun',cap:80,fee:5,cat:'shop',name:'柴犬咖啡廳',icon:'🐕',cost:6000,w:2,stage:0,tour:3,jobs:12,happy:3,sign:'柴犬咖啡',desc:'2×2。點一杯拿鐵，柴犬會用屁股對著你。本市最療癒的地方。'},
   startup:{exp:70,sign:'新創',cat:'tech',name:'科技新創',icon:'💡',cost:8000,w:1,stage:1,jobs:20,desc:'正在開發「幫你決定午餐吃什麼」的 App。'},
   solar:  {exp:50,cat:'tech',name:'太陽能發電場',icon:'☀️',cost:8000,w:2,stage:1,green:1,sign:'太陽能',desc:'把電賣給隔壁城市。陰天時板子會自己唱歌打氣。'},
   robot:  {exp:280,sign:'機器人工廠',cat:'tech',name:'機器人工廠',icon:'🤖',cost:30000,w:2,stage:2,jobs:50,desc:'做出來的機器人會上街掃地，偶爾迷路。'},
   ai:     {exp:650,sign:'AI 研究所',cat:'tech',name:'想太多 AI 研究所',icon:'🧠',cost:80000,w:2,stage:3,jobs:80,desc:'AI 想了很久，結論是：要多喝水。'},
-  park:   {svc:'fun',cap:20,fee:1,cat:'tour',name:'公園',icon:'⛲',cost:1200,w:2,stage:0,happy:4,green:3,desc:'入園費 $1，長椅要投幣才坐得下去。有噴水池、花圃和一隻固定在這裡發呆的鴨子。'},
-  museum: {sign:'博物館',svc:'fun',cap:30,fee:4,cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:15000,w:2,stage:1,tour:4,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
-  onsen:  {sign:'溫泉',svc:'fun',cap:25,fee:7,cat:'tour',name:'溫泉會館',icon:'♨️',cost:20000,w:2,stage:2,tour:4,happy:2,desc:'有露天風呂，偶爾有猴子一起泡。泡完會變得很有耐心。'},
-  ferris: {svc:'fun',cap:25,fee:7,cat:'tour',name:'摩天輪',icon:'🎡',cost:25000,w:2,stage:2,tour:5,happy:3,desc:'轉一圈 20 分鐘，告白成功率 87%。'},
-  beach:  {svc:'fun',cap:20,fee:2,cat:'tour',name:'海水浴場',icon:'🏖️',cost:2000,w:1,stage:0,tour:3,happy:2,sand:1,desc:'只能蓋在沙灘上。救生員是一隻很認真的鴨子。'},
-  lighthouse:{svc:'fun',cap:18,fee:5,cat:'tour',name:'燈塔咖啡',icon:'🗼',cost:9000,w:1,stage:1,tour:4,sand:1,sign:'燈塔',desc:'只能蓋在沙灘上。頂樓賣咖啡，晚上順便照亮海面。'},
-  duck:   {svc:'fun',cap:60,fee:9,sign:'巨大鴨子',cat:'tour',name:'巨大鴨子地標',icon:'🦆',cost:100000,w:2,stage:3,tour:12,happy:5,desc:'城市的精神象徵，晚上眼睛會發光。'},
-  school: {svc:'edu',cap:30,fee:4,cat:'public',name:'學校',icon:'🏫',cost:9000,w:2,stage:1,happy:5,jobs:14,desc:'學費很便宜，還有操場。今天的課：如何跟鴨子溝通。'},
-  lost:   {svc:'help',cap:6,fee:5,sign:'協尋中心',cat:'public',name:'迷路協尋中心',icon:'🚓',cost:4000,w:1,stage:1,happy:3,jobs:8,desc:'找人收手續費。專找迷路的人、迷路的貓，還有迷路的自信。'},
-  garbage:{svc:'trash',cap:80,fee:.3,cat:'public',name:'垃圾場',icon:'🗑️',cost:2500,w:2,stage:0,jobs:4,smell:1,desc:'垃圾費隨袋徵收。附近會有點臭，別蓋在住宅旁邊。可服務 80 人。'},
-  sewage: {svc:'water',cap:150,fee:.3,cat:'public',name:'污水處理廠',icon:'🚰',cost:7000,w:2,stage:1,jobs:6,smell:1,sign:'污水廠',desc:'用多少水付多少錢。處理過的水乾淨到鴨子都搶著游。附近有點臭。可服務 150 人。'},
-  recycle:{svc:'trash',cap:300,fee:.3,exp:120,cat:'public',name:'資源回收中心',icon:'♻️',cost:25000,w:2,stage:2,jobs:15,sign:'資源回收',desc:'回收物賣到外地，垃圾也能賺錢，而且不會臭。可服務 300 人。'},
-  bigpark:{svc:'fun',cap:50,fee:1,cat:'tour',name:'中央公園',icon:'🌷',cost:15000,w:3,stage:2,happy:8,green:5,tour:2,desc:'3×3 的城市大客廳：噴水池、池塘、溜滑梯，假日人擠人。'},
+  park:   {svc:'fun',cap:70,jobs:3,fee:1,cat:'tour',name:'公園',icon:'⛲',cost:1200,w:2,stage:0,happy:4,green:3,desc:'入園費 $1，長椅要投幣才坐得下去。有噴水池、花圃和一隻固定在這裡發呆的鴨子。'},
+  museum: {sign:'博物館',svc:'fun',cap:80,jobs:12,fee:4,cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:15000,w:2,stage:1,tour:4,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
+  onsen:  {sign:'溫泉',svc:'fun',cap:70,jobs:12,fee:7,cat:'tour',name:'溫泉會館',icon:'♨️',cost:20000,w:2,stage:2,tour:4,happy:2,desc:'有露天風呂，偶爾有猴子一起泡。泡完會變得很有耐心。'},
+  ferris: {svc:'fun',cap:70,jobs:12,fee:7,cat:'tour',name:'摩天輪',icon:'🎡',cost:25000,w:2,stage:2,tour:5,happy:3,desc:'轉一圈 20 分鐘，告白成功率 87%。'},
+  beach:  {svc:'fun',cap:50,fee:2,cat:'tour',name:'海水浴場',icon:'🏖️',cost:2000,w:1,stage:0,tour:3,happy:2,sand:1,desc:'只能蓋在沙灘上。救生員是一隻很認真的鴨子。'},
+  lighthouse:{svc:'fun',cap:45,fee:5,cat:'tour',name:'燈塔咖啡',icon:'🗼',cost:9000,w:1,stage:1,tour:4,sand:1,sign:'燈塔',desc:'只能蓋在沙灘上。頂樓賣咖啡，晚上順便照亮海面。'},
+  duck:   {svc:'fun',cap:150,jobs:15,fee:9,sign:'巨大鴨子',cat:'tour',name:'巨大鴨子地標',icon:'🦆',cost:100000,w:2,stage:3,tour:12,happy:5,desc:'城市的精神象徵，晚上眼睛會發光。'},
+  school: {svc:'edu',cap:100,fee:4,cat:'public',name:'學校',icon:'🏫',cost:9000,w:2,stage:1,happy:5,jobs:24,desc:'學費很便宜，還有操場。今天的課：如何跟鴨子溝通。'},
+  lost:   {svc:'help',cap:30,fee:5,sign:'協尋中心',cat:'public',name:'迷路協尋中心',icon:'🚓',cost:4000,w:1,stage:1,happy:3,jobs:10,desc:'找人收手續費。專找迷路的人、迷路的貓，還有迷路的自信。'},
+  garbage:{svc:'trash',cap:250,fee:.3,cat:'public',name:'垃圾場',icon:'🗑️',cost:2500,w:2,stage:0,jobs:8,smell:1,desc:'垃圾費隨袋徵收。附近會有點臭，別蓋在住宅旁邊。可服務 80 人。'},
+  sewage: {svc:'water',cap:500,fee:.3,cat:'public',name:'污水處理廠',icon:'🚰',cost:7000,w:2,stage:1,jobs:10,smell:1,sign:'污水廠',desc:'用多少水付多少錢。處理過的水乾淨到鴨子都搶著游。附近有點臭。可服務 150 人。'},
+  recycle:{svc:'trash',cap:800,fee:.3,exp:120,cat:'public',name:'資源回收中心',icon:'♻️',cost:25000,w:2,stage:2,jobs:25,sign:'資源回收',desc:'回收物賣到外地，垃圾也能賺錢，而且不會臭。可服務 300 人。'},
+  bigpark:{svc:'fun',cap:220,jobs:10,fee:1,cat:'tour',name:'中央公園',icon:'🌷',cost:15000,w:3,stage:2,happy:8,green:5,tour:2,desc:'3×3 的城市大客廳：噴水池、池塘、溜滑梯，假日人擠人。'},
   stadium:{svc:'fun',cap:120,fee:6,cat:'tour',name:'搞怪體育場',icon:'🏟️',cost:60000,w:3,stage:2,tour:6,jobs:20,happy:4,sign:'體育場',desc:'3×3。比賽日球迷從外地湧進來，門票收入加倍。主場吉祥物是一隻鴨子。'},
   port:   {cat:'traffic',name:'怪怪港',icon:'⚓',cost:50000,w:3,stage:2,trans:6,tour:5,jobs:30,exp:300,coast:1,sign:'港口',desc:'3×3，只能蓋在最上面的海邊。貨櫃外銷賺錢，郵輪載觀光客進來。'},
-  airport:{svc:'move',cap:150,fee:3,cat:'traffic',name:'國際機場',icon:'✈️',cost:180000,w:4,stage:3,trans:15,tour:10,jobs:60,exp:400,noise:1,sign:'機場',desc:'4×4 超大建築。觀光客從世界各地飛來，航空貨運也賺錢。旁邊 2 格內的住宅會被吵到。'},
+  airport:{svc:'move',cap:400,fee:3,cat:'traffic',name:'國際機場',icon:'✈️',cost:180000,w:4,stage:3,trans:15,tour:10,jobs:60,exp:400,noise:1,sign:'機場',desc:'4×4 超大建築。觀光客從世界各地飛來，航空貨運也賺錢。旁邊 2 格內的住宅會被吵到。'},
   fire:   {cat:'public',name:'消防局',icon:'🚒',cost:4000,w:1,stage:0,jobs:6,happy:2,desc:'半徑 6 格內失火會自動出動。不賺錢，但能救命。消防員午休時在練習吹泡泡。'},
   cityhall:{cat:'public',name:'市政府',icon:'🏛️',cost:0,w:2,stage:0,happy:6,jobs:10,fixed:1,desc:'市長辦公的地方。點它打開市政。'},
 };
@@ -647,6 +647,7 @@ const extCount=base=>S.city.b.filter(q=>q.par===bkey(base)).length;
 function expandBase(k,x,y){ if(!EXPAND.has(k)) return null; const w=CB[k].w; for(const q of S.city.b){ if(q.t!==k||q.burnt||!touches(x,y,w,q.x,q.y,BW(q))) continue; const base=baseOf(q); if(base&&!base.burnt&&nearRoad(base.x,base.y,BW(base))&&extCount(base)<2) return base; } return null; }
 function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const edge=(a===-1||a===w)!==(c===-1||c===w); if(edge&&isRoad(x+a,y+c)) return true; } return false; }
 const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋'],trash:['🗑️','垃圾'],water:['🚰','污水']};
+const LABOR=.65;
 function cityCalc(){
   if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&nearRoad(b.x,b.y,BW(b)); }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
   if(cityDirty2){ cityDirty2=false; computeCombos(); }
@@ -656,11 +657,11 @@ function cityCalc(){
   pcap=pcap*(1+.2*upL('green'))+fxSum('pw'); if(T==='eco') puse*=.75;
   const grace=(S.city.pgrace||0)>S.time, pr=grace||puse<1||puse<=pcap?1:pcap/puse, bf=.35+.65*pr;
   jobs+=fxSum('jobs');
-  const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
+  const labor=pop*LABOR, dep=pop-labor, staff=jobs?Math.min(1,labor/jobs):1, emp=Math.min(labor,jobs), un=Math.max(0,labor-emp), er=labor?emp/labor:1; // 約 65% 的人要上班，其餘是小孩、學生、退休
   const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*({plain:.9,river:1.1}[S.city.map&&S.city.map.land]||1)*fxMul('tour'));
   const MS=mrtOk(), line=MS.length>=2, mrtMul=line?Math.min(1.6,.6+.2*MS.length):.3, tiles=line&&transit.mrt?transit.mrt.tiles:0;
   const gsup={}; const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=(b.t==='mrt'?mrtMul:1)*D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:NK>.35?3*NK:0):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; b.grp=grpOf(b.t); b.nov=b.bt!==undefined&&(FREQ[b.t]==='rare'||FREQ[b.t]==='weekly'||FREQ[b.t]==='event')?Math.max(0,1-(S.time-b.bt)/150):0; gsup[b.grp]=(gsup[b.grp]||0)+b.cap; sup[D.svc]+=b.cap; });
-  const gdem={'shop:daily':emp*.9+un*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+tourists*.5,move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:(pop+tourists*.3)*(T==='food'?1.2:1),water:pop*((S.city.map||{}).land==='dry'?1.2:1)};
+  const gdem={'shop:daily':emp*.9+un*.3+dep*.3+tourists*.8,'shop:weekly':emp*.25+un*.05+dep*.1+tourists*.5,move:(emp*.6+un*.2+dep*.15+tourists*.8)*(T==='lazy'?1.3:1),'fun:often':emp*.35+un*.3+dep*.4+tourists*.3,'fun:event':fans+emp*.03,edu:pop*.15,help:pop*.04+tourists*.15,trash:(pop+tourists*.3)*(T==='food'?1.2:1),water:pop*((S.city.map||{}).land==='dry'?1.2:1)};
   { const rt={}; let rsum=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(b.ok&&FREQ[b.t]==='rare'){ rt[b.t]=(rt[b.t]||0)+(D.tour||1)*(rt[b.t]?.3:1); } }); Object.values(rt).forEach(v=>rsum+=v); Object.keys(rt).forEach(k=>{ gdem['fun:rare:'+k]=emp*.04+un*.02+tourists*1.1*rt[k]/rsum; }); }
   S.city.b.forEach(b=>{ if(b.ok&&b.nov>0) gdem[b.grp]=(gdem[b.grp]||0)+CB[b.t].cap*.9*b.nov; });
   Object.keys(gdem).forEach(g=>{ gdem[g]*=fxMul('dem',g.split(':')[0]); });
@@ -680,7 +681,7 @@ function cityCalc(){
     if(D.pwr&&!D.fixed&&praw>0){ const r=(Math.min(puse,pcap)*.2+sur*.12)*pwrOf(b)/praw; b.rev+=r; inc.power+=r; } });
   const pk=pop>40?1:0;
   let h=40+Math.min(20,hb)+Math.min(8,green)+S.city.stage*2+Math.min(6,views*.6)+14*er+2*sat.shop+3*sat.move+2*sat.fun+5*covS+5*covF+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0)-(buffOn('citysad')?6:0)-(S.money<0?10:0)-(S.city.b.some(q=>q.fire>0)?5:0)+comboHappy()+fxSum('happy')-(pr<1?(1-pr)*20+3:0)-(T==='tech'?3:0)+(T==='slow'?5:0)+((S.city.map||{}).land==='forest'?3:0);
-  CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,covS,covF,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc,gdem,gsup,gsat,pw:{cap:pcap,use:puse,ratio:pr,grace}};
+  CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,covS,covF,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>labor*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc,gdem,gsup,gsat,pw:{cap:pcap,use:puse,ratio:pr,grace}};
 }
 function cityNeeds(){
   const v=[], d=CS.dem||{}, s=CS.sat||{};
@@ -2368,9 +2369,9 @@ function cityGovHTML(){
 let lastCityKey='';
 const STAGE_SHORT=[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']];
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const cityName=()=>S.city&&S.city.name?S.city.name:CITY_STAGES[S.city?S.city.stage:0].name;
+const cityName=()=>S.city&&S.city.name&&!CITY_STAGES.some(st=>st.name===S.city.name)?S.city.name:CITY_STAGES[S.city?S.city.stage:0].name;
 function renameCity(){ if(!S.city) return; queueModal({icon:'✏️',title:'幫城市取名字',body:`<p>取一個你喜歡的名字（最多 8 個字）。</p><input id="cityNameIn" maxlength="8" value="${esc(cityName())}" style="width:100%;font-size:18px;font-weight:800;text-align:center;padding:10px;border:2px solid var(--line);border-radius:12px;margin:6px 0 2px">`,
-  buttons:[{label:'就叫這個',fn:()=>{ const v=($('cityNameIn').value||'').trim().slice(0,8); S.city.name=v||undefined; lastCityKey=''; saveLocal(); toast('🏙️','改名成「'+cityName()+'」','市民換上新的城市旗子'); }},{label:'取消',ghost:1}]}); setTimeout(()=>{ const i=$('cityNameIn'); if(i){ i.focus(); i.select(); } },50); }
+  buttons:[{label:'就叫這個',fn:()=>{ const v=($('cityNameIn').value||'').trim().slice(0,8); S.city.name=v&&!CITY_STAGES.some(st=>st.name===v)?v:undefined; lastCityKey=''; saveLocal(); toast('🏙️','改名成「'+cityName()+'」','市民換上新的城市旗子'); }},{label:'取消',ghost:1}]}); setTimeout(()=>{ const i=$('cityNameIn'); if(i){ i.focus(); i.select(); } },50); }
 function cityHud(){
   const nx=S.city.stage+1<CITY_STAGES.length?stageChecks(S.city.stage+1):null, pr=nx?nx.filter(c=>c.ok).length/nx.length:1;
   const k=`${CS.pop}|${CS.happy}|${S.city.stage}|${S.city.name||''}|${pr}`; if(k===lastCityKey) return; lastCityKey=k;
@@ -2471,7 +2472,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.11.3</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.12</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
