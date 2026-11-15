@@ -809,7 +809,7 @@ function cityUpdate(dt){
   });
   cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
   if(mode==='city'&&!modalOpen){ misTick(dt); electionTick(dt); evTick(); incTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
-  if(mode==='city'){ updateCars(dt); updatePeds(dt); updateTransit(dt); decTick(dt); }
+  if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); updateTransit(dt); decTick(dt); }
 }
 // ================= v2.5：地圖、電力、組合、決策、任期 =================
 const MAPS={
@@ -1233,7 +1233,7 @@ function incTick(dt){ if(modalOpen||S.city.over||!booted||CS.pop<12) return;
   incT-=dt; if(incT>0||INC.filter(c=>!c.passive).length>=2) return; incT=55+Math.random()*60;
   if(Math.random()<.4){ const c=Object.entries(INCP).map(([k,P])=>({k,P,w:P.w()})).filter(o=>o.w>0); if(!c.length) return; let t=c.reduce((a,o)=>a+o.w,0)*Math.random(), o=c[0]; for(const q of c){ t-=q.w; if(t<=0){ o=q; break; } } const msg=o.P.go(); sfx.pop(); toast(o.P.icon,o.P.name,msg); cityDirty2=true; return; }
   const ks=Object.keys(INCK).filter(k=>!INCK[k].need||INCK[k].need()), k=pick(ks), K=INCK[k], sp=incSpot(K.on); if(!sp) return;
-  const c={k,x:sp.x,y:sp.y,z:sp.z,until:S.time+K.dur,dur:K.dur,cost:K.cost?incCost(K):0}; if(K.on==='run'){ c.k='shiba'; c.run=1; c.px=Math.floor(sp.x); c.py=Math.floor(sp.y); c.nx=c.px; c.ny=c.py; c.t=1; }
+  const c={k,x:sp.x,y:sp.y,z:sp.z,until:S.time+K.dur,dur:K.dur,cost:K.cost?incCost(K):0}; if(K.on==='run'){ c.k='shiba'; c.run=1; c.col=pick(SHIBA_COLS); c.px=Math.floor(sp.x); c.py=Math.floor(sp.y); c.nx=c.px; c.ny=c.py; c.t=1; }
   INC.push(c); sfx.pop(); toast(K.icon,K.name+'！',`點地圖上的 ${K.icon} ${c.cost?`花 $${fmt(c.cost)} `:''}處理`); }
 function incRun(c,dt){ c.t+=dt*1.4; if(c.t>=1){ c.t=0; c.px=c.nx; c.py=c.ny; const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>[c.px+a,c.py+b]).filter(([a,b])=>isRoad(a,b)), fw=nb.filter(([a,b])=>a!==c.lx||b!==c.ly), q=pick(fw.length?fw:nb.length?nb:[[c.px,c.py]]); c.lx=c.px; c.ly=c.py; c.nx=q[0]; c.ny=q[1]; }
   c.x=c.px+(c.nx-c.px)*c.t+.5; c.y=c.py+(c.ny-c.py)*c.t+.5; }
@@ -1246,7 +1246,7 @@ function incTap(c){ const K=INCK[c.k]; if(!K||c.passive) return false;
   toast(K.icon,K.name+'：處理好了',K.ok+(rw?`（+$${fmt(rw)}）`:'')); return true; }
 function incAtScreen(sx,sy){ let best=null,bd=1e9; INC.forEach(c=>{ if(c._sx==null||c.passive) return; const d=Math.hypot(sx-c._sx,sy-c._sy); if(d<Math.max(28,tw*.42)&&d<bd){ bd=d; best=c; } }); return best; }
 function incDeco(list){ INC.forEach(c=>{
-  if(c.k==='shiba'){ list.push({d:dep(c.x,c.y)+.1,fn:()=>{ const q=R2(c.x,c.y), p=P3(q[0],q[1],0); drawFelt(p.x,p.y,tw*.42,'body',Math.sin(clock*14)*.12); }}); }
+  if(c.k==='shiba'){ list.push({d:dep(c.x,c.y)+.1,fn:()=>{ const q=R2(c.x,c.y), p=P3(q[0],q[1],0); const n=R2(c.nx+.5,c.ny+.5), nc=P3(n[0],n[1],0); if(Math.abs(nc.x-p.x)>.5) c.dir=nc.x>p.x?1:-1; drawDog(p.x,p.y,c.col||'sesame',true,c.dir||1,null,c.x); }}); }
   if(c.k==='ducks'){ const L=c.path.length, prog=(S.time-c.t0)/(c.until-c.t0)*(L-1); for(let k=0;k<5;k++){ const s=prog-k*.22; if(s<0||s>L-1) continue; const i=Math.floor(s), f=s-i, a=c.path[i], b=c.path[Math.min(L-1,i+1)], x=a[0]+(b[0]-a[0])*f+.5, y=a[1]+(b[1]-a[1])*f+.5;
     list.push({d:dep(x,y)+.1,fn:()=>{ const q=R2(x,y), p=P3(q[0],q[1],0); emoji('🦆',p.x,p.y-tw*.08+Math.abs(Math.sin(clock*8+k))*-tw*.03,tw*(k?0.17:.24)); }}); } } }); }
 function drawIncidents(){ INC.forEach(c=>{ c._sx=null; if(c.k==='ducks') return;
@@ -1364,6 +1364,52 @@ function cityMigrate(){ const c=S.city;
   if(!c.unl){ c.unl={}; c.b.forEach(b=>c.unl[b.t]=1); }
   if(!c.pv){ c.pv=1; const use=c.b.reduce((a,b)=>a+(CB[b.t]?CB[b.t].pw||0:0),0); if(use>20){ c.pgrace=(S.time||0)+600; const g=Math.ceil(use/80)*4000; S.money+=g; c.pgift=g; } }
 }
+
+// ---- 柴犬圖片（img/shiba/<毛色>/shiba_<毛色>_<動作>.png，原圖面向右）----
+const SHIBA_COLS=['red','sesame','black','white'], SHIBA_ACTS=['stand','walk1','walk2','sit','sleep','sniff'], SHIBA_IMG={};
+let SHIBA_LEFT=SHIBA_COLS.length*SHIBA_ACTS.length;
+SHIBA_COLS.forEach(c=>{ SHIBA_IMG[c]={}; SHIBA_ACTS.forEach(a=>{ const im=new Image(); im.onload=()=>{ SHIBA_LEFT--; }; im.onerror=()=>{ console.error('柴犬圖片載入失敗',im.src); }; im.src=`img/shiba/${c}/shiba_${c}_${a}.png`; SHIBA_IMG[c][a]=im; }); });
+const shibaReady=()=>SHIBA_LEFT<=0;
+const SHIBA_REF=154; // stand 圖的高度：所有動作用同一個比例縮放，換動作時狗不會忽大忽小
+// x,y：腳底中心（螢幕座標）；h：站著時的高度；dir：1 往右、-1 往左（水平翻轉）
+function drawShibaSpr(x,y,h,col,act,dir,bob){ if(!shibaReady()) return; const im=(SHIBA_IMG[col]||SHIBA_IMG.red)[act]; if(!im||!im.naturalWidth) return;
+  const k=h/SHIBA_REF, w=im.naturalWidth*k, ih=im.naturalHeight*k; ellipse(x,y,w*.36,w*.1,'rgba(0,0,0,.18)');
+  const by=y-ih-(bob||0)+ih*.02; if(dir<0){ ctx.save(); ctx.translate(x,0); ctx.scale(-1,1); ctx.drawImage(im,-w/2,by,w,ih); ctx.restore(); } else ctx.drawImage(im,x-w/2,by,w,ih); }
+const walkAct=seed=>(Math.floor((clock+(seed||0))/.2)%2)?'walk2':'walk1';
+const walkBob=(h,seed)=>Math.abs(Math.sin((clock+(seed||0))*Math.PI/.2))*h*.035;
+const isNight=()=>NIGHT>.5&&!S.noNight;
+const pickIdle=()=>pick(['stand','sit','sniff']);
+const dogH=()=>tw*.52; // 小人大約 tw*.75 高（含頭），狗稍矮
+// 走路／停下的狗（牽著的、阿布、裝飾用的都用這個）
+function drawDog(x,y,col,moving,dir,st,seed){ const h=dogH();
+  if(moving) drawShibaSpr(x,y,h,col,walkAct(seed),dir,walkBob(h,seed));
+  else drawShibaSpr(x,y,h,col,isNight()?'sleep':(st&&st.pose)||'stand',dir,0); }
+const colOf=n=>SHIBA_COLS[Math.abs(Math.floor(n))%4];
+
+// ---- 阿布：城市裡唯一的赤柴，自己在路上閒晃，點他會說話 ----
+const ABU_LINES=['（聞聞）這裡有別隻狗的味道','人好多…社恐發作中','今天的罐罐呢？','我不是胖，是毛多。','這條路我昨天走過了，今天要走另一條。','（原地趴下，變成一塊麻糬）',
+  '市長，你身上有雞胸肉的味道。','那隻鴨子一直看我，我也一直看牠。','聽說咖啡廳那隻是我遠房表哥。','散步可以，但我要自己選路。','（尾巴搖到屁股都在晃）','下雨天不出門，這是原則。',
+  '公車司機每天都跟我打招呼，我們很熟。','我在等紅燈，柴犬也要守規矩。','（假裝沒聽到你叫我）','這個城市越來越熱鬧，我的地盤越來越大。'];
+let ABU=null;
+function abuTick(dt){ if(!S.city||ROADS.size<2){ ABU=null; return; }
+  if(!ABU||!isRoad(ABU.x,ABU.y)){ const ch=S.city.b.find(b=>b.t==='cityhall'), R=[...ROADS].map(k=>k.split(',').map(Number)); if(!R.length) return; R.sort((a,b)=>ch?Math.hypot(a[0]-ch.x,a[1]-ch.y)-Math.hypot(b[0]-ch.x,b[1]-ch.y):0); const [x,y]=R[0];
+    ABU={x,y,nx:x,ny:y,t:1,side:1,idle:2,pose:'sit',say:null,sayT:0,dir:1}; }
+  const A=ABU; if(A.sayT>0) A.sayT-=dt;
+  if(isNight()){ A.pose='sleep'; return; } // 晚上就地睡覺
+  if(A.idle>0){ A.idle-=dt; return; }
+  A.t+=dt*.55; if(A.t>=1){ A.t=0; A.x=A.nx; A.y=A.ny; const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>[A.x+a,A.y+b]).filter(([a,b])=>isRoad(a,b)), fw=nb.filter(([a,b])=>a!==A.lx||b!==A.ly), q=pick(fw.length?fw:nb.length?nb:[[A.x,A.y]]);
+    A.lx=A.x; A.ly=A.y; A.nx=q[0]; A.ny=q[1]; if(Math.random()<.3){ A.idle=2.5+Math.random()*4; A.pose=pickIdle(); } } }
+function abuPos(){ const A=ABU, dx=A.nx-A.x, dy=A.ny-A.y, l=.42*A.side; return {x:A.x+dx*A.t+.5+(-dy)*l, y:A.y+dy*A.t+.5+dx*l}; }
+function abuDeco(list){ if(!ABU) return; const p=abuPos(); list.push({d:dep(p.x,p.y)+.01,fn:()=>{ const q=R2(p.x,p.y), c=P3(q[0],q[1],0), n=R2(ABU.nx+.5,ABU.ny+.5), nc=P3(n[0],n[1],0), A=ABU;
+  const moving=!isNight()&&A.idle<=0&&(A.nx!==A.x||A.ny!==A.y); if(moving&&Math.abs(nc.x-c.x)>.5) A.dir=nc.x>c.x?1:-1;
+  drawDog(c.x,c.y,'red',moving,A.dir,{pose:A.pose},0); A._sx=c.x; A._sy=c.y-dogH()*.5; }}); }
+function abuTap(sx,sy){ const A=ABU; if(!A||A._sx==null||Math.hypot(sx-A._sx,sy-A._sy)>Math.max(24,dogH()*.8)) return false;
+  let s=pick(ABU_LINES); if(isNight()) s=pick(['（睡著了，還在打呼）','zzz…罐罐…zzz','（翻身，繼續睡）']); A.say=s; A.sayT=3.5; sfx.pop(); return true; }
+function drawAbuSay(){ const A=ABU; if(!A||!(A.sayT>0)||A._sx==null) return; const t='阿布：'+A.say, fs=Math.max(12,Math.min(15,tw*.22));
+  ctx.font=`800 ${fs}px -apple-system,"PingFang TC",sans-serif`; const w=Math.min(W*.8,ctx.measureText(t).width+20), x=Math.max(w/2+6,Math.min(W-w/2-6,A._sx)), y=A._sy-dogH()*.7-fs*1.6;
+  ctx.globalAlpha=Math.min(1,A.sayT*2); rrect(x-w/2,y-fs,w,fs*2,fs*.8,'#fffdf8'); ctx.strokeStyle='#e8a253'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect?ctx.roundRect(x-w/2,y-fs,w,fs*2,fs*.8):ctx.rect(x-w/2,y-fs,w,fs*2); ctx.stroke();
+  ctx.fillStyle='#fffdf8'; ctx.beginPath(); ctx.moveTo(A._sx-6,y+fs-1); ctx.lineTo(A._sx,y+fs+8); ctx.lineTo(A._sx+6,y+fs-1); ctx.fill();
+  ctx.fillStyle='#4a3b2c'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(t,x,y,w-14); ctx.globalAlpha=1; }
 
 // ---- 羊毛氈柴犬（柴犬咖啡的招牌與屋頂）----
 const FELT={};
@@ -1523,7 +1569,7 @@ function updatePeds(dt){
   const ck=crowdK(), want=Math.round(Math.min(30,3+Math.floor(CS.pop/14))*ck), wantT=Math.round(Math.min(14,Math.floor(CS.tour*1.4))*ck), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
   const MS=mrtOk(), wantM=MS.length>=2?Math.min(12,MS.length*3):0;
-  const add=(k,near)=>{ let a=null; if(near&&MS.length){ const r=roadNear(pick(MS)); if(r){ const nb=roadNbrs(r[0],r[1]); if(nb.length){ const n=pick(nb); a={x:r[0],y:r[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; } } } if(!a) a=spawnAgent(); if(!a) return false; if(near) a.mrt=1; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<(S.city.trait==='shiba'?.55:.3); } a.phase=0; peds.push(a); return true; };
+  const add=(k,near)=>{ let a=null; if(near&&MS.length){ const r=roadNear(pick(MS)); if(r){ const nb=roadNbrs(r[0],r[1]); if(nb.length){ const n=pick(nb); a={x:r[0],y:r[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; } } } if(!a) a=spawnAgent(); if(!a) return false; if(near) a.mrt=1; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<Math.min(.65,(.2+CS.pop/2500)*(S.city.trait==='shiba'?1.6:1)); a.dcol=pick(SHIBA_COLS); } a.phase=0; peds.push(a); return true; };
   while(count('res')<want){ if(!add('res')) break; } { let nm=peds.filter(p=>p.mrt).length; while(nm<Math.round(wantM*ck)){ if(!add(Math.random()<.4?'tour':'res',1)) break; nm++; } } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
   const over={res:count('res')-want,tour:count('tour')-wantT};
   peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.wt=p.t>.3&&p.t<.46&&redFor(p); if(p.wt) return; /* 行人等紅燈 */ p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ if(over[p.k]>0&&!(p.thinkT>0)&&Math.random()<.25){ over[p.k]--; p.dead=1; } stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
@@ -1597,14 +1643,6 @@ function bldg(x,y,w,h,wall,roof,o={}){
   return top;
 }
 // ---- 柴犬 ----
-function shibaTail(x,y,r,f,wag){ // 捲捲尾巴：粗粗的螺旋，內側米白
-  const pts=[]; for(let i=0;i<=26;i++){ const t=i/26, a=-Math.PI*.5+f*(t*Math.PI*1.75+wag), rr=r*(1-.55*t); pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr]); }
-  const path=()=>{ ctx.beginPath(); pts.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py)); };
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  path(); ctx.strokeStyle='#7a4a22'; ctx.lineWidth=r*.95+2; ctx.stroke();
-  path(); ctx.strokeStyle='#e8a253'; ctx.lineWidth=r*.95; ctx.stroke();
-  ctx.beginPath(); pts.slice(6).forEach(([px,py],i)=>{ const qx=x+(px-x)*.82, qy=y+(py-y)*.82; i?ctx.lineTo(qx,qy):ctx.moveTo(qx,qy); }); ctx.strokeStyle='#fff7ea'; ctx.lineWidth=r*.32; ctx.stroke();
-  ctx.lineCap='butt'; }
 function shibaHead(hx,hy,s,f,o){ const O='#e8a253', W='#fff7ea', L='#7a4a22', lw=Math.max(1,s*.025);
   [[-1],[1]].forEach(([d])=>{ const ex=hx+d*s*.13; ctx.beginPath(); ctx.moveTo(ex-s*.09,hy-s*.12); ctx.quadraticCurveTo(ex+d*s*.02,hy-s*.38,ex+d*s*.03,hy-s*.36); ctx.lineTo(ex+s*.09,hy-s*.1); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ctx.beginPath(); ctx.moveTo(ex-s*.045,hy-s*.13); ctx.quadraticCurveTo(ex+d*s*.015,hy-s*.3,ex+d*s*.02,hy-s*.29); ctx.lineTo(ex+s*.05,hy-s*.12); ctx.closePath(); ctx.fillStyle='#ffd3c2'; ctx.fill(); });
   ctx.beginPath(); ctx.ellipse(hx,hy,s*.25,s*.21,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke();
@@ -1613,22 +1651,6 @@ function shibaHead(hx,hy,s,f,o){ const O='#e8a253', W='#fff7ea', L='#7a4a22', lw
   const ey=hy-s*.02, blink=o.blink; [[-1],[1]].forEach(([d])=>{ const ex=hx+d*s*.09+f*s*.015; circle(ex,ey-s*.075,s*.022,W); if(blink){ ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=lw; ctx.beginPath(); ctx.arc(ex,ey,s*.03,Math.PI*1.1,Math.PI*1.9); ctx.stroke(); } else { circle(ex,ey,s*.034,'#2b2b2b'); circle(ex+s*.012,ey-s*.012,s*.011,'#fff'); } });
   const nx=hx+f*s*.015, ny=hy+s*.045; ellipse(nx,ny,s*.035,s*.025,'#2b2b2b');
   ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=lw; ctx.beginPath(); ctx.arc(nx-s*.03,ny+s*.03,s*.03,0,Math.PI); ctx.moveTo(nx+s*.06,ny+s*.03); ctx.arc(nx+s*.03,ny+s*.03,s*.03,0,Math.PI); ctx.stroke(); }
-function drawShiba(sx,sy,s,o={}){ const f=o.face||1, pose=o.pose||'walk', ph=o.phase||0, O='#e8a253', W='#fff7ea', L='#7a4a22', lw=Math.max(1,s*.025), wag=Math.sin(clock*4+(o.seed||0))*.18, blink=((clock+(o.seed||0)*3)%4)<.15;
-  ellipse(sx,sy,s*.42,s*.12,'rgba(0,0,0,.18)');
-  if(pose==='lie'){ shibaTail(sx-f*s*.4,sy-s*.3,s*.11,-f,wag); ctx.beginPath(); ctx.ellipse(sx,sy-s*.16,s*.46,s*.17,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ellipse(sx+f*s*.05,sy-s*.09,s*.32,s*.08,W);
-    [[.22],[.34]].forEach(([dx])=>ellipse(sx+f*dx*s,sy-s*.02,s*.07,s*.04,W)); shibaHead(sx+f*s*.36,sy-s*.3,s*.85,f,{blink:true}); return; }
-  if(pose==='sit'){ shibaTail(sx-f*s*.27,sy-s*.42,s*.14,-f,wag);
-    ctx.beginPath(); ctx.ellipse(sx,sy-s*.27,s*.25,s*.29,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(sx+f*s*.04,sy-s*.24,s*.14,s*.23,0,0,Math.PI*2); ctx.fillStyle=W; ctx.fill();
-    [[-.09],[.09]].forEach(([dx])=>{ ctx.beginPath(); ctx.ellipse(sx+dx*s+f*s*.03,sy-s*.04,s*.065,s*.05,0,0,Math.PI*2); ctx.fillStyle=W; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); });
-    const tilt=Math.sin(clock*.9+(o.seed||0))>0.7?s*.02:0; shibaHead(sx+f*s*.03+tilt,sy-s*.64,s,f,{blink}); return; }
-  const leg=Math.sin(ph)*s*.06;
-  [[-.25,leg],[-.12,-leg],[.15,-leg],[.28,leg]].forEach(([dx,l])=>{ ctx.fillStyle=O; ctx.fillRect(sx+f*dx*s-s*.04,sy-s*.2,s*.08,s*.2+l*.3); ctx.fillStyle=W; ctx.fillRect(sx+f*dx*s-s*.04,sy-s*.05+l*.3,s*.08,s*.05); });
-  ctx.beginPath(); ctx.ellipse(sx,sy-s*.3,s*.36,s*.18,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ellipse(sx+f*s*.06,sy-s*.21,s*.25,s*.08,W);
-  shibaTail(sx-f*s*.27,sy-s*.5,s*.12,-f,wag);
-  shibaHead(sx+f*s*.33,sy-s*.52+Math.abs(Math.sin(ph))*s*.03,s*.85,f,{blink});
-}
-// ---- 建築造型工具（v1.1：剪影差異） ----
 function ln(a,b,col,w){ ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
 function cPlate(x,y,w,col,i=.06){ poly([iso(x+i,y+i),iso(x+w-i,y+i),iso(x+w-i,y+w-i),iso(x+i,y+w-i)],col); }
 function body(x,y,w,h,wall,o={}){
@@ -1670,7 +1692,7 @@ function drawCityB(b,ox,oy){
       gableY(x+.55,y+1.1,.9,.5,.82,.28,'#bfae8a'); cyl(x+1,y+.85,.32,.82,.3,'#f4efe4'); const dt=dome(x+1,y+.85,.32,1.12,'#7aa6c9'); ln({x:dt.x,y:dt.y},{x:dt.x,y:dt.y-tw*.35},'#777',1.5);
       ctx.fillStyle='#3fae7a'; ctx.beginPath(); ctx.moveTo(dt.x,dt.y-tw*.35); ctx.lineTo(dt.x+tw*.2,dt.y-tw*.3+Math.sin(ph*3)*tw*.02); ctx.lineTo(dt.x,dt.y-tw*.22); ctx.fill(); emoji('🐾',dt.x+tw*.07,dt.y-tw*.29,tw*.07);
       const cc=P3(x+1,y+1.36,1.0); circle(cc.x,cc.y,tw*.08,'#fff'); ctx.strokeStyle='#333'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x,cc.y-tw*.055); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x+tw*.04,cc.y); ctx.stroke();
-      const st=iso(x+1.6,y+1.82); box(x+1.48,y+1.7,.24,.24,.12,'#c9c2b5'); drawShiba(st.x,st.y-tw*.12,tw*.28,{pose:'sit',face:-1});
+      const st=iso(x+1.6,y+1.82); box(x+1.48,y+1.7,.24,.24,.12,'#c9c2b5'); drawShibaSpr(st.x,st.y-tw*.12,dogH(),'red','sit',-1,0);
       top=P3(x+1,y+.85,1.6); break; }
     case 'house':{ const v=(b.x+b.y)%3; const {X,Y,L}=body(x,y,1,.4,['#f6e7c8','#ffd9c2','#d9ecff'][v],{inset:.16,rows:1,cols:2});
       box(X+L*.68,Y+L*.15,.1,.1,.5,'#a0523d',.2); gableX(X-.05,Y-.05,L+.1,L+.1,.4,.32,['#c9573e','#4d7cc7','#3f8a3c'][(b.x*3+b.y)%3]);
@@ -1724,7 +1746,7 @@ function drawCityB(b,ox,oy){
         const pg=[x+q,y+w-q]; box(pg[0]-.2,pg[1]-.15,.16,.16,.35,'#f2c14e'); poly([P3(pg[0]-.04,pg[1]-.15,.35),P3(pg[0]-.04,pg[1]+.01,.35),P3(pg[0]+.3,pg[1]+.01,0),P3(pg[0]+.3,pg[1]-.15,0)],'#e2574c');
         bench(x+m+.35,y+m-.3); bench(x+m-.3,y+m+.35); }
       else { bed(x+.75,y+.75,.12); bench(x+.25,y+.78); }
-      if(w>1){ const sp=(ph*.15+b.x*.3)%1, ang=sp*Math.PI*2, dx=x+m+Math.cos(ang)*(w*.3), dy=y+m+Math.sin(ang)*(w*.3), c0=iso(dx,dy), c1=iso(dx+Math.cos(ang+.1)*.1,dy+Math.sin(ang+.1)*.1); drawShiba(c0.x,c0.y,tw*.26,{pose:'walk',face:c1.x>c0.x?-1:1,phase:ph*9}); }
+      if(w>1){ const sp=(ph*.15+b.x*.3)%1, ang=sp*Math.PI*2, dx=x+m+Math.cos(ang)*(w*.3), dy=y+m+Math.sin(ang)*(w*.3), c0=iso(dx,dy), c1=iso(dx+Math.cos(ang+.1)*.1,dy+Math.sin(ang+.1)*.1); drawDog(c0.x,c0.y,colOf(b.x*3+b.y),true,c1.x>c0.x?1:-1,null,b.x); }
       if(w>2){ bush(x+.4,y+m,.16); bush(x+w-.4,y+m,.16); bed(x+m,y+.45,.18); bed(x+m,y+w-.45,.18); }
       const fr=w>1?.16*w:.16; cyl(x+m,y+m,fr,0,.08,'#cfd6e6'); const wt=P3(x+m,y+m,.08); ellipse(wt.x,wt.y,fr*tw*.6,fr*tw*.3,'#8fd3ff'); cyl(x+m,y+m,fr*.25,.08,.18,'#e6e9ee');
       for(let k=0;k<4;k++){ const pp=(ph*1.2+k/4)%1, a=k*Math.PI/2+ph*.3, sp=P3(x+m+Math.cos(a)*fr*.5*pp,y+m+Math.sin(a)*fr*.5*pp,.26+Math.sin(pp*Math.PI)*.18); circle(sp.x,sp.y,tw*.025,'rgba(160,215,255,.9)'); }
@@ -1799,8 +1821,8 @@ function drawCityB(b,ox,oy){
       for(let k=0;k<7;k++){ const a=x+.12+1.76*k/7, b2=x+.12+1.76*(k+1)/7; poly([P3(a,y+.97,.48),P3(b2,y+.97,.48),P3(b2,y+1.17,.38),P3(a,y+1.17,.38)],k%2?'#fff7ea':'#e39a4a'); }
       const rf=P3(x+1,y+.55,.66); ellipse(rf.x,rf.y,tw*.2,tw*.07,'rgba(90,50,20,.22)'); drawFelt(rf.x,rf.y+tw*.03,tw*.82,'body',Math.sin(ph*1.3)*.04);
       [[.55,1.55],[1.35,1.6]].forEach(([a,c])=>{ cyl(x+a,y+c,.16,0,.22,'#8a5a36'); const u=P3(x+a,y+c,.22); ln(u,P3(x+a,y+c,.55),'#888',1.5); const t=P3(x+a,y+c,.55); ctx.beginPath(); ctx.moveTo(t.x-tw*.22,t.y+tw*.07); ctx.quadraticCurveTo(t.x,t.y-tw*.12,t.x+tw*.22,t.y+tw*.07); ctx.closePath(); ctx.fillStyle='#e39a4a'; ctx.fill(); emoji('☕',u.x+tw*.06,u.y-tw*.04,tw*.1); });
-      const l1=iso(x+.35,y+1.85); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
-      const rr=(ph*.25)%1, wx=x+.3+1.4*(rr<.5?rr*2:2-rr*2), wf=rr<.5?1:-1, wp=iso(wx,y+1.25); drawShiba(wp.x,wp.y,tw*.3,{pose:'walk',face:wf,phase:ph*8});
+      const l1=iso(x+.35,y+1.85); drawShibaSpr(l1.x,l1.y,dogH(),colOf(b.x+b.y+1),'sleep',-1,0);
+      const rr=(ph*.25)%1, wx=x+.3+1.4*(rr<.5?rr*2:2-rr*2), wf=rr<.5?1:-1, wp=iso(wx,y+1.25); drawDog(wp.x,wp.y,colOf(b.x+b.y+2),true,wf,null,b.y);
       const pw=P3(x+1.88,y+1.5,0), pt=P3(x+1.88,y+1.5,.5); ln(pw,pt,'#8a5a36',2); rrect(pt.x-tw*.12,pt.y-tw*.12,tw*.24,tw*.2,4,'#fff7ea','#8a5a36',1.5); emoji('🐾',pt.x,pt.y-tw*.02,tw*.13);
       top=P3(x+1,y+.55,1.25); break; }
     case 'ferris':{ poly([iso(x+.1,y+.1),iso(x+1.9,y+.1),iso(x+1.9,y+1.9),iso(x+.1,y+1.9)],'#cfd6e6'); const b0=P3(x+1,y+1,0), c=P3(x+1,y+1,1.25), R=tw*.85; ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b0.x-tw*.3,b0.y); ctx.lineTo(c.x,c.y); ctx.lineTo(b0.x+tw*.3,b0.y); ctx.stroke(); ctx.beginPath(); ctx.arc(c.x,c.y,R,0,Math.PI*2); ctx.strokeStyle='#e2574c'; ctx.lineWidth=2; ctx.stroke(); for(let k=0;k<8;k++){ const a=ph*.4+k*Math.PI/4, px=c.x+Math.cos(a)*R, py=c.y+Math.sin(a)*R; ctx.strokeStyle='rgba(150,160,180,.7)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(px,py); ctx.stroke(); rrect(px-tw*.07,py,tw*.14,tw*.12,3,['#f2c14e','#7cc6fe','#ff8fa3','#3fae7a'][k%4]); } circle(c.x,c.y,tw*.06,'#e2574c'); nlit(()=>{ for(let k=0;k<24;k++){ const a=ph*.4+k*Math.PI/12; circle(c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,Math.max(1.5,tw*.025),['#ff8fa3','#ffe066','#7cc6fe'][(k+Math.floor(ph*3))%3]); } for(let k=0;k<8;k++){ const a=ph*.4+k*Math.PI/4; rrect(c.x+Math.cos(a)*R-tw*.07,c.y+Math.sin(a)*R,tw*.14,tw*.12,3,'#fff1b8'); } }); top={x:c.x,y:c.y-R}; break; }
@@ -1902,7 +1924,8 @@ function dogPos(p){ const t=Math.max(0,Math.min(1,p.t-.18)), lane=.36*p.side+.14
 function drawPed(p){
   if(p.k==='robot') return drawRobot(p);
   const q=agentPos(p,.36*p.side); p.px=q.x; p.py=q.y; const L=p.look;
-  if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1; ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*tw*.08,c.y-tw*.15); ctx.stroke(); drawShiba(c.x,c.y,tw*.24,{pose:'walk',face:f,phase:p.phase*1.4}); p.dx=d.x; p.dy=d.y; }
+  if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1, mv=!p.wt, dh=dogH(); if(mv) p.dpose=null; else if(!p.dpose) p.dpose=pickIdle();
+    ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*dh*.3,c.y-dh*.5); ctx.stroke(); drawDog(c.x,c.y,p.dcol||'red',mv,f,{pose:p.dpose},p.seed); p.dx=d.x; p.dy=d.y; }
   drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:p.wt?0:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
 }
 let groundVer=0, vigG=null, vigK='';
@@ -1983,7 +2006,7 @@ function drawCity(){
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
   transit.buses.forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
-  FESTLIT.length=0; festDeco(list); incDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
+  FESTLIT.length=0; festDeco(list); incDeco(list); abuDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
   peds.forEach(p=>{ const q=agentPos(p,.36*p.side); list.push({d:dep(q.x,q.y)+.01,fn:()=>drawPed(p)}); });
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
   if(NIGHT>.02) drawNight(); if(NIGHT>.3) FESTLIT.forEach(f=>f());
@@ -2000,7 +2023,7 @@ function drawCity(){
     txt('市民滿意度',cx,cy-hh+fs*.62,fs*.62,'#7a6a58',800);
     for(let i=0;i<5;i++){ const sx=cx+(i-2)*fs*1.1, pop=i<p.stars?1+.25*Math.max(0,Math.sin(Math.min(Math.PI,(3.2-p.life)*6-i*.6))):1; txt(i<p.stars?'★':'☆',sx,cy-fs*.72,fs*1.05*pop,i<p.stars?'#f2b544':'#d8cdbd',900); }
     ctx.globalAlpha=1; });
-  drawIncidents(); festSky(); drawWeather(); drawVignette();
+  drawIncidents(); drawAbuSay(); festSky(); drawWeather(); drawVignette();
   floats.forEach(f=>{ if(!f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   peds.forEach(p=>{ if(p.thinkT>0&&p.px!==undefined) drawThink({x:p.px,y:p.py,look:p.look,think:p.think}); });
   if(false){ const h=null; if(h){ const c=P3(h.x+1,h.y+1,1.5); emoji('👆',c.x+tw*.1,c.y+Math.abs(Math.sin(clock*4))*tw*.15,Math.max(24,tw*.45)); } }
@@ -2149,7 +2172,7 @@ function drawBigGroup(g,u0,v0,U,V,e){ if(e){ u0-=e.u0; v0-=e.v0; U+=e.u0+e.u1; V
     for(let k=0;k<Math.floor(bu/.25);k++) poly([P3(X+k*.25,Y+bv,.48),P3(X+k*.25+.25,Y+bv,.48),P3(X+k*.25+.25,Y+bv+.2,.38),P3(X+k*.25,Y+bv+.2,.38)],k%2?'#fff7ea':'#e39a4a');
     const n=Math.max(2,Math.round(Lg*.6)); for(let k=0;k<n;k++){ const r=P3(longU?X+bu*(k+.5)/n:X+bu/2,longU?Y+bv*.5:Y+bv*(k+.5)/n,.66); ellipse(r.x,r.y,tw*.18,tw*.06,'rgba(90,50,20,.22)'); drawFelt(r.x,r.y+tw*.03,tw*.68,'body',Math.sin(ph*1.3+k*1.7)*.04); }
     const tn=Math.max(2,Math.round(Lg*1.2)); for(let k=0;k<tn;k++){ const a=longU?X+LU*(k+.5)/tn:X+LU*.75, c=longU?Y+LV*.78:Y+LV*(k+.5)/tn; cyl(a,c,.14,0,.22,'#8a5a36'); const tp=P3(a,c,.55); ln(P3(a,c,.22),tp,'#888',1.5); ctx.beginPath(); ctx.moveTo(tp.x-tw*.2,tp.y+tw*.06); ctx.quadraticCurveTo(tp.x,tp.y-tw*.11,tp.x+tw*.2,tp.y+tw*.06); ctx.closePath(); ctx.fillStyle=k%2?'#fff7ea':'#e39a4a'; ctx.fill(); }
-    const l1=P3(longU?X+LU*.2:X+LU*.85,longU?Y+LV*.95:Y+LV*.2,0); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
+    const l1=P3(longU?X+LU*.2:X+LU*.85,longU?Y+LV*.95:Y+LV*.2,0); drawShibaSpr(l1.x,l1.y,dogH(),colOf(g.base.x+g.base.y),'sleep',-1,0);
     return P3(X+LU/2,Y+LV/2,1.3); }
   return null; }
 function hitRect(x0,y0,x1,y1,top,d){ const pts=[iso(x0,y0),iso(x1,y0),iso(x1,y1),iso(x0,y1)]; let L=pts[0],R=pts[0],B=pts[0],T=pts[0]; pts.forEach(p=>{ if(p.x<L.x) L=p; if(p.x>R.x) R=p; if(p.y>B.y) B=p; if(p.y<T.y) T=p; }); const ty=Math.min(T.y,top?top.y:T.y); return {poly:[L,B,R,{x:R.x,y:Math.min(R.y,ty)},{x:T.x,y:ty},{x:L.x,y:Math.min(L.y,ty)}],d}; }
@@ -2166,6 +2189,7 @@ function cityTap(sx,sy){
   const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y);
   { const fb=S.city.b.find(q=>q.fire>0&&q._hit&&inPoly(sx,sy,q._hit.poly)); if(fb){ extinguish(fb); return; } }
   { const ic=incAtScreen(sx,sy); if(ic&&incTap(ic)) return; }
+  if(!(placing&&placing.city)&&abuTap(sx,sy)) return;
   if(placing&&placing.city){
     if(placing.city==='road'){ cityPlace('road',x,y); return; }
     if(placing.city==='bulldoze'){ const b=buildingAtScreen(sx,sy)||bAt(x,y); const tgt=b?{bull:1,b}:isRoad(x,y)?{bull:1,x,y}:null;
@@ -2431,7 +2455,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.10.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.11</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
