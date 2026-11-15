@@ -1222,22 +1222,36 @@ function bldg(x,y,w,h,wall,roof,o={}){
   return top;
 }
 // ---- 柴犬 ----
-function drawShiba(sx,sy,s,o={}){ const f=o.face||1, pose=o.pose||'walk', ph=o.phase||0, O='#e39a4a', W='#fff7ea', D='#7a4a22';
+function shibaTail(x,y,r,f,wag){ // 捲捲尾巴：粗粗的螺旋，內側米白
+  const pts=[]; for(let i=0;i<=26;i++){ const t=i/26, a=-Math.PI*.5+f*(t*Math.PI*1.75+wag), rr=r*(1-.55*t); pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr]); }
+  const path=()=>{ ctx.beginPath(); pts.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py)); };
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  path(); ctx.strokeStyle='#7a4a22'; ctx.lineWidth=r*.95+2; ctx.stroke();
+  path(); ctx.strokeStyle='#e8a253'; ctx.lineWidth=r*.95; ctx.stroke();
+  ctx.beginPath(); pts.slice(6).forEach(([px,py],i)=>{ const qx=x+(px-x)*.82, qy=y+(py-y)*.82; i?ctx.lineTo(qx,qy):ctx.moveTo(qx,qy); }); ctx.strokeStyle='#fff7ea'; ctx.lineWidth=r*.32; ctx.stroke();
+  ctx.lineCap='butt'; }
+function shibaHead(hx,hy,s,f,o){ const O='#e8a253', W='#fff7ea', L='#7a4a22', lw=Math.max(1,s*.025);
+  [[-1],[1]].forEach(([d])=>{ const ex=hx+d*s*.13; ctx.beginPath(); ctx.moveTo(ex-s*.09,hy-s*.12); ctx.quadraticCurveTo(ex+d*s*.02,hy-s*.38,ex+d*s*.03,hy-s*.36); ctx.lineTo(ex+s*.09,hy-s*.1); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ctx.beginPath(); ctx.moveTo(ex-s*.045,hy-s*.13); ctx.quadraticCurveTo(ex+d*s*.015,hy-s*.3,ex+d*s*.02,hy-s*.29); ctx.lineTo(ex+s*.05,hy-s*.12); ctx.closePath(); ctx.fillStyle='#ffd3c2'; ctx.fill(); });
+  ctx.beginPath(); ctx.ellipse(hx,hy,s*.25,s*.21,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(hx,hy+s*.08,s*.2,s*.12,0,0,Math.PI*2); ctx.fillStyle=W; ctx.fill();
+  ellipse(hx-s*.17,hy+s*.06,s*.06,s*.045,'#ffc4b0'); ellipse(hx+s*.17,hy+s*.06,s*.06,s*.045,'#ffc4b0');
+  const ey=hy-s*.02, blink=o.blink; [[-1],[1]].forEach(([d])=>{ const ex=hx+d*s*.09+f*s*.015; circle(ex,ey-s*.075,s*.022,W); if(blink){ ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=lw; ctx.beginPath(); ctx.arc(ex,ey,s*.03,Math.PI*1.1,Math.PI*1.9); ctx.stroke(); } else { circle(ex,ey,s*.034,'#2b2b2b'); circle(ex+s*.012,ey-s*.012,s*.011,'#fff'); } });
+  const nx=hx+f*s*.015, ny=hy+s*.045; ellipse(nx,ny,s*.035,s*.025,'#2b2b2b');
+  ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=lw; ctx.beginPath(); ctx.arc(nx-s*.03,ny+s*.03,s*.03,0,Math.PI); ctx.moveTo(nx+s*.06,ny+s*.03); ctx.arc(nx+s*.03,ny+s*.03,s*.03,0,Math.PI); ctx.stroke(); }
+function drawShiba(sx,sy,s,o={}){ const f=o.face||1, pose=o.pose||'walk', ph=o.phase||0, O='#e8a253', W='#fff7ea', L='#7a4a22', lw=Math.max(1,s*.025), wag=Math.sin(clock*4+(o.seed||0))*.18, blink=((clock+(o.seed||0)*3)%4)<.15;
   ellipse(sx,sy,s*.42,s*.12,'rgba(0,0,0,.18)');
-  if(pose==='lie'){ ellipse(sx,sy-s*.16,s*.46,s*.17,O); ellipse(sx+f*s*.05,sy-s*.1,s*.3,s*.08,W); const hx=sx+f*s*.38, hy=sy-s*.24; circle(hx,hy,s*.19,O); ellipse(hx+f*s*.08,hy+s*.06,s*.12,s*.08,W);
-    [[-.12,1],[.06,1]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.06,hy-s*.12); ctx.lineTo(hx+dx*s,hy-s*.3); ctx.lineTo(hx+dx*s+s*.07,hy-s*.12); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
-    ctx.strokeStyle=D; ctx.lineWidth=Math.max(1,s*.03); ctx.beginPath(); ctx.arc(hx+f*s*.02,hy-s*.02,s*.04,0,Math.PI); ctx.stroke(); circle(hx+f*s*.16,hy+s*.04,s*.03,'#222'); circle(sx-f*s*.42,sy-s*.26,s*.1,O); return; }
-  if(pose==='sit'){ ellipse(sx,sy-s*.28,s*.24,s*.3,O); ellipse(sx+f*s*.06,sy-s*.25,s*.13,s*.22,W); const hx=sx+f*s*.08, hy=sy-s*.66; circle(sx-f*s*.24,sy-s*.18,s*.1,O); circle(sx-f*s*.24,sy-s*.18,s*.05,W);
-    circle(hx,hy,s*.22,O); ellipse(hx+f*s*.07,hy+s*.07,s*.13,s*.09,W); circle(hx-s*.12,hy+s*.04,s*.05,'#ffd9c7'); circle(hx+s*.14,hy+s*.04,s*.05,'#ffd9c7');
-    [[-.1],[.1]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.07,hy-s*.13); ctx.lineTo(hx+dx*s,hy-s*.33); ctx.lineTo(hx+dx*s+s*.07,hy-s*.13); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
-    circle(hx-s*.05,hy-s*.02,s*.03,'#222'); circle(hx+s*.09,hy-s*.02,s*.03,'#222'); circle(hx+f*s*.12,hy+s*.06,s*.03,'#222'); return; }
+  if(pose==='lie'){ shibaTail(sx-f*s*.4,sy-s*.3,s*.11,-f,wag); ctx.beginPath(); ctx.ellipse(sx,sy-s*.16,s*.46,s*.17,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ellipse(sx+f*s*.05,sy-s*.09,s*.32,s*.08,W);
+    [[.22],[.34]].forEach(([dx])=>ellipse(sx+f*dx*s,sy-s*.02,s*.07,s*.04,W)); shibaHead(sx+f*s*.36,sy-s*.3,s*.85,f,{blink:true}); return; }
+  if(pose==='sit'){ shibaTail(sx-f*s*.27,sy-s*.42,s*.14,-f,wag);
+    ctx.beginPath(); ctx.ellipse(sx,sy-s*.27,s*.25,s*.29,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(sx+f*s*.04,sy-s*.24,s*.14,s*.23,0,0,Math.PI*2); ctx.fillStyle=W; ctx.fill();
+    [[-.09],[.09]].forEach(([dx])=>{ ctx.beginPath(); ctx.ellipse(sx+dx*s+f*s*.03,sy-s*.04,s*.065,s*.05,0,0,Math.PI*2); ctx.fillStyle=W; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); });
+    const tilt=Math.sin(clock*.9+(o.seed||0))>0.7?s*.02:0; shibaHead(sx+f*s*.03+tilt,sy-s*.64,s,f,{blink}); return; }
   const leg=Math.sin(ph)*s*.06;
-  [[-.25,leg],[-.12,-leg],[.15,-leg],[.28,leg]].forEach(([dx,l])=>{ ctx.fillStyle=O; ctx.fillRect(sx+f*dx*s-s*.035,sy-s*.2,s*.07,s*.2+l*.3); });
-  ellipse(sx,sy-s*.3,s*.36,s*.17,O); ellipse(sx+f*s*.05,sy-s*.22,s*.24,s*.08,W);
-  ctx.strokeStyle=O; ctx.lineWidth=s*.1; ctx.beginPath(); ctx.arc(sx-f*s*.3,sy-s*.48,s*.1,0,Math.PI*2); ctx.stroke(); circle(sx-f*s*.3,sy-s*.48,s*.04,W);
-  const hx=sx+f*s*.34, hy=sy-s*.5+Math.abs(Math.sin(ph))*s*.03; circle(hx,hy,s*.2,O); ellipse(hx+f*s*.08,hy+s*.07,s*.12,s*.08,W);
-  [[-.08],[.08]].forEach(([dx])=>{ ctx.beginPath(); ctx.moveTo(hx+dx*s-s*.06,hy-s*.12); ctx.lineTo(hx+dx*s,hy-s*.3); ctx.lineTo(hx+dx*s+s*.06,hy-s*.12); ctx.closePath(); ctx.fillStyle=O; ctx.fill(); });
-  circle(hx+f*s*.06,hy-s*.03,s*.028,'#222'); circle(hx+f*s*.17,hy+s*.05,s*.03,'#222');
+  [[-.25,leg],[-.12,-leg],[.15,-leg],[.28,leg]].forEach(([dx,l])=>{ ctx.fillStyle=O; ctx.fillRect(sx+f*dx*s-s*.04,sy-s*.2,s*.08,s*.2+l*.3); ctx.fillStyle=W; ctx.fillRect(sx+f*dx*s-s*.04,sy-s*.05+l*.3,s*.08,s*.05); });
+  ctx.beginPath(); ctx.ellipse(sx,sy-s*.3,s*.36,s*.18,0,0,Math.PI*2); ctx.fillStyle=O; ctx.fill(); ctx.strokeStyle=L; ctx.lineWidth=lw; ctx.stroke(); ellipse(sx+f*s*.06,sy-s*.21,s*.25,s*.08,W);
+  shibaTail(sx-f*s*.27,sy-s*.5,s*.12,-f,wag);
+  shibaHead(sx+f*s*.33,sy-s*.52+Math.abs(Math.sin(ph))*s*.03,s*.85,f,{blink});
 }
 // ---- 建築造型工具（v1.1：剪影差異） ----
 function ln(a,b,col,w){ ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
@@ -1406,7 +1420,7 @@ function drawCityB(b,ox,oy){
       box(x+.35,y+.4,.3,.1,.32,'#f4efe4',.6); const on=Math.floor(ph*3)%2; box(x+.38,y+.62,.1,.1,.08,on?'#ff4040':'#ffb3b3',.6); const t=P3(x+.75,y+.25,.85); emoji('🚒',t.x,t.y,tw*.22); top=P3(x+.5,y+.5,1.0); break; }
     case 'shiba':{ cPlate(x,y,w,'#e8dcc6',.04); box(x+.12,y+.12,1.76,.85,.6,'#f6e3c4'); bwinZ('L',x+.12,y+.972,1.76,.6,1,4,'rgba(255,226,170,.95)',0); bwinZ('R',x+1.882,y+.12,.85,.6,1,2,'rgba(240,210,160,.95)',0); box(x+.1,y+.1,1.8,.89,.05,'#8a5a36',.6);
       for(let k=0;k<7;k++){ const a=x+.12+1.76*k/7, b2=x+.12+1.76*(k+1)/7; poly([P3(a,y+.97,.48),P3(b2,y+.97,.48),P3(b2,y+1.17,.38),P3(a,y+1.17,.38)],k%2?'#fff7ea':'#e39a4a'); }
-      const rf=P3(x+1,y+.55,.66); drawShiba(rf.x,rf.y,tw*.55,{pose:'sit',face:1});
+      const rf=P3(x+1,y+.55,.66); drawShiba(rf.x,rf.y,tw*.68,{pose:'sit',face:1});
       [[.55,1.55],[1.35,1.6]].forEach(([a,c])=>{ cyl(x+a,y+c,.16,0,.22,'#8a5a36'); const u=P3(x+a,y+c,.22); ln(u,P3(x+a,y+c,.55),'#888',1.5); const t=P3(x+a,y+c,.55); ctx.beginPath(); ctx.moveTo(t.x-tw*.22,t.y+tw*.07); ctx.quadraticCurveTo(t.x,t.y-tw*.12,t.x+tw*.22,t.y+tw*.07); ctx.closePath(); ctx.fillStyle='#e39a4a'; ctx.fill(); emoji('☕',u.x+tw*.06,u.y-tw*.04,tw*.1); });
       const l1=iso(x+.35,y+1.85); drawShiba(l1.x,l1.y,tw*.32,{pose:'lie',face:-1});
       const rr=(ph*.25)%1, wx=x+.3+1.4*(rr<.5?rr*2:2-rr*2), wf=rr<.5?1:-1, wp=iso(wx,y+1.25); drawShiba(wp.x,wp.y,tw*.3,{pose:'walk',face:wf,phase:ph*8});
@@ -1925,7 +1939,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.6.2</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.6.3</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
