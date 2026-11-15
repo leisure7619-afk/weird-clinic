@@ -1,5 +1,5 @@
 // 怪病診所 service worker：連得上網就拿最新版，離線時用快取
-const CACHE = 'weird-clinic-v12';
+const CACHE = 'weird-clinic-v13';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

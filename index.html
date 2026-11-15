@@ -1459,31 +1459,31 @@ const CITY_STAGES=[
 ];
 const CB={
   road:   {cat:'traffic',name:'道路',icon:'🛣️',cost:20,w:1,stage:0,desc:'選好之後，用手指在地上拖曳就能連續鋪路。'},
-  bus:    {cat:'traffic',name:'公車站',icon:'🚏',cost:300,w:1,stage:0,trans:2,desc:'司機有時候是鴨子。交通 +2。'},
-  bike:   {sign:'單車站',cat:'traffic',name:'共享單車站',icon:'🚲',cost:250,w:1,stage:1,trans:1,green:1,desc:'騎去哪都行，就是不能騎回來。交通 +1。'},
-  mrt:    {cat:'traffic',name:'捷運站',icon:'🚇',cost:6000,w:2,stage:2,trans:8,desc:'列車很準時，有時準時到太早。交通 +8。'},
-  balloon:{sign:'熱氣球機場',cat:'traffic',name:'熱氣球機場',icon:'🎈',cost:25000,w:2,stage:3,trans:10,tour:6,pay:400,desc:'全世界唯一用熱氣球當航班的機場。'},
-  house:  {cat:'home',name:'透天厝',icon:'🏠',cost:200,w:1,stage:0,pop:6,pay:1.5,desc:'一樓是客廳，二樓是阿嬤的神秘房間。'},
-  apt:    {cat:'home',name:'公寓',icon:'🏢',cost:1200,w:1,stage:1,pop:24,pay:1.5,desc:'管理員是一隻貓，收包裹很專業。'},
-  treeh:  {sign:'樹屋',cat:'home',name:'樹屋社區',icon:'🌳',cost:2500,w:1,stage:1,pop:18,pay:2,green:2,happy:1,desc:'住在樹上，鳥是鄰居。綠意 +2。'},
-  tower:  {cat:'home',name:'住宅大樓',icon:'🏙️',cost:7000,w:2,stage:2,pop:100,pay:1.5,desc:'電梯有點慢，因為每層都有人在聊天。'},
-  conv:   {sign:'便利商店',cat:'shop',name:'怪怪便利商店',icon:'🏪',cost:500,w:1,stage:0,jobs:6,pay:25,desc:'24 小時營業，凌晨 3 點客人特別怪。'},
-  bubble: {sign:'飲料店',cat:'shop',name:'手搖飲料店',icon:'🧋',cost:400,w:1,stage:0,jobs:4,pay:18,desc:'招牌：全糖去冰加一隻鴨。'},
-  market: {sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:3000,w:2,stage:1,jobs:25,pay:90,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
-  mall:   {cat:'shop',name:'百貨公司',icon:'🛍️',cost:9000,w:2,stage:2,jobs:60,pay:220,desc:'週年慶時，鴨子也來排隊。'},
-  startup:{sign:'新創',cat:'tech',name:'科技新創',icon:'💡',cost:3000,w:1,stage:1,jobs:20,pay:70,desc:'正在開發「幫你決定午餐吃什麼」的 App。'},
-  solar:  {cat:'tech',name:'太陽能板',icon:'☀️',cost:1500,w:1,stage:1,pay:20,green:1,desc:'陰天時會自己唱歌打氣。'},
-  robot:  {sign:'機器人工廠',cat:'tech',name:'機器人工廠',icon:'🤖',cost:12000,w:2,stage:2,jobs:50,pay:280,desc:'做出來的機器人會上街掃地，偶爾迷路。'},
-  ai:     {sign:'AI 研究所',cat:'tech',name:'想太多 AI 研究所',icon:'🧠',cost:30000,w:2,stage:3,jobs:80,pay:650,desc:'AI 想了很久，結論是：要多喝水。'},
-  park:   {cat:'tour',name:'公園',icon:'🌳',cost:150,w:1,stage:0,happy:4,green:2,desc:'有長椅、有樹，還有一隻固定在這裡發呆的鴨子。'},
-  museum: {sign:'博物館',cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:4000,w:1,stage:1,tour:3,pay:60,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
-  onsen:  {sign:'溫泉',cat:'tour',name:'溫泉會館',icon:'♨️',cost:5000,w:1,stage:2,tour:3,pay:80,happy:2,desc:'泡完會變得很有耐心。'},
-  ferris: {cat:'tour',name:'摩天輪',icon:'🎡',cost:8000,w:2,stage:2,tour:5,pay:140,happy:3,desc:'轉一圈 20 分鐘，告白成功率 87%。'},
-  beach:  {cat:'tour',name:'海水浴場',icon:'🏖️',cost:600,w:1,stage:0,tour:3,pay:40,happy:2,sand:1,desc:'只能蓋在沙灘上。救生員是一隻很認真的鴨子。'},
-  lighthouse:{cat:'tour',name:'燈塔咖啡',icon:'🗼',cost:3500,w:1,stage:1,tour:4,pay:75,sand:1,sign:'燈塔',desc:'只能蓋在沙灘上。頂樓賣咖啡，晚上順便照亮海面。'},
-  duck:   {sign:'巨大鴨子',cat:'tour',name:'巨大鴨子地標',icon:'🦆',cost:40000,w:2,stage:3,tour:12,pay:500,happy:5,desc:'城市的精神象徵，晚上眼睛會發光。'},
-  school: {cat:'public',name:'學校',icon:'🏫',cost:2000,w:1,stage:1,happy:5,jobs:10,desc:'今天的課：如何跟鴨子溝通。'},
-  lost:   {sign:'協尋中心',cat:'public',name:'迷路協尋中心',icon:'🚓',cost:1500,w:1,stage:1,happy:3,jobs:8,desc:'專找迷路的人、迷路的貓，還有迷路的自信。'},
+  bus:    {svc:'move',cap:15,fee:1,cat:'traffic',name:'公車站',icon:'🚏',cost:300,w:1,stage:0,trans:2,desc:'司機有時候是鴨子。交通 +2。'},
+  bike:   {svc:'move',cap:8,fee:1,sign:'單車站',cat:'traffic',name:'共享單車站',icon:'🚲',cost:250,w:1,stage:1,trans:1,green:1,desc:'騎去哪都行，就是不能騎回來。交通 +1。'},
+  mrt:    {svc:'move',cap:120,fee:1.5,cat:'traffic',name:'捷運站',icon:'🚇',cost:6000,w:2,stage:2,trans:8,desc:'列車很準時，有時準時到太早。交通 +8。'},
+  balloon:{svc:'fun',cap:40,fee:10,sign:'熱氣球機場',cat:'traffic',name:'熱氣球機場',icon:'🎈',cost:25000,w:2,stage:3,trans:10,tour:6,desc:'全世界唯一用熱氣球當航班的機場。'},
+  house:  {rent:2,cat:'home',name:'透天厝',icon:'🏠',cost:200,w:1,stage:0,pop:6,desc:'一樓是客廳，二樓是阿嬤的神秘房間。'},
+  apt:    {rent:2,cat:'home',name:'公寓',icon:'🏢',cost:1200,w:1,stage:1,pop:24,desc:'管理員是一隻貓，收包裹很專業。'},
+  treeh:  {rent:2.5,sign:'樹屋',cat:'home',name:'樹屋社區',icon:'🌳',cost:2500,w:1,stage:1,pop:18,green:2,happy:1,desc:'住在樹上，鳥是鄰居。綠意 +2。'},
+  tower:  {rent:2,cat:'home',name:'住宅大樓',icon:'🏙️',cost:7000,w:2,stage:2,pop:100,desc:'電梯有點慢，因為每層都有人在聊天。'},
+  conv:   {svc:'shop',cap:12,fee:3,sign:'便利商店',cat:'shop',name:'怪怪便利商店',icon:'🏪',cost:500,w:1,stage:0,jobs:6,desc:'24 小時營業，凌晨 3 點客人特別怪。'},
+  bubble: {svc:'shop',cap:10,fee:2.5,sign:'飲料店',cat:'shop',name:'手搖飲料店',icon:'🧋',cost:400,w:1,stage:0,jobs:4,desc:'招牌：全糖去冰加一隻鴨。'},
+  market: {svc:'shop',cap:45,fee:3,sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:3000,w:2,stage:1,jobs:25,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
+  mall:   {svc:'shop',cap:100,fee:3.5,cat:'shop',name:'百貨公司',icon:'🛍️',cost:9000,w:2,stage:2,jobs:60,desc:'週年慶時，鴨子也來排隊。'},
+  startup:{exp:70,sign:'新創',cat:'tech',name:'科技新創',icon:'💡',cost:3000,w:1,stage:1,jobs:20,desc:'正在開發「幫你決定午餐吃什麼」的 App。'},
+  solar:  {exp:20,cat:'tech',name:'太陽能板',icon:'☀️',cost:1500,w:1,stage:1,green:1,desc:'陰天時會自己唱歌打氣。'},
+  robot:  {exp:280,sign:'機器人工廠',cat:'tech',name:'機器人工廠',icon:'🤖',cost:12000,w:2,stage:2,jobs:50,desc:'做出來的機器人會上街掃地，偶爾迷路。'},
+  ai:     {exp:650,sign:'AI 研究所',cat:'tech',name:'想太多 AI 研究所',icon:'🧠',cost:30000,w:2,stage:3,jobs:80,desc:'AI 想了很久，結論是：要多喝水。'},
+  park:   {svc:'fun',cap:10,fee:1,cat:'tour',name:'公園',icon:'🌳',cost:150,w:1,stage:0,happy:4,green:2,desc:'入園費 $1，長椅要投幣才坐得下去。有一隻固定在這裡發呆的鴨子。'},
+  museum: {svc:'fun',cap:20,fee:4,sign:'博物館',cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:4000,w:1,stage:1,tour:3,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
+  onsen:  {svc:'fun',cap:15,fee:7,sign:'溫泉',cat:'tour',name:'溫泉會館',icon:'♨️',cost:5000,w:1,stage:2,tour:3,happy:2,desc:'泡完會變得很有耐心。'},
+  ferris: {svc:'fun',cap:25,fee:7,cat:'tour',name:'摩天輪',icon:'🎡',cost:8000,w:2,stage:2,tour:5,happy:3,desc:'轉一圈 20 分鐘，告白成功率 87%。'},
+  beach:  {svc:'fun',cap:20,fee:2,cat:'tour',name:'海水浴場',icon:'🏖️',cost:600,w:1,stage:0,tour:3,happy:2,sand:1,desc:'只能蓋在沙灘上。救生員是一隻很認真的鴨子。'},
+  lighthouse:{svc:'fun',cap:18,fee:5,cat:'tour',name:'燈塔咖啡',icon:'🗼',cost:3500,w:1,stage:1,tour:4,sand:1,sign:'燈塔',desc:'只能蓋在沙灘上。頂樓賣咖啡，晚上順便照亮海面。'},
+  duck:   {svc:'fun',cap:60,fee:9,sign:'巨大鴨子',cat:'tour',name:'巨大鴨子地標',icon:'🦆',cost:40000,w:2,stage:3,tour:12,happy:5,desc:'城市的精神象徵，晚上眼睛會發光。'},
+  school: {svc:'edu',cap:15,fee:4,cat:'public',name:'學校',icon:'🏫',cost:2000,w:1,stage:1,happy:5,jobs:10,desc:'學費很便宜。今天的課：如何跟鴨子溝通。'},
+  lost:   {svc:'help',cap:6,fee:5,sign:'協尋中心',cat:'public',name:'迷路協尋中心',icon:'🚓',cost:1500,w:1,stage:1,happy:3,jobs:8,desc:'找人收手續費。專找迷路的人、迷路的貓，還有迷路的自信。'},
   hospital:{cat:'public',name:'怪病醫院',icon:'🏥',cost:0,w:2,stage:0,happy:6,fixed:1,desc:'點進去就能經營醫院。'}
 };
 const CCATS=[['traffic','🛣️ 交通'],['home','🏠 住宅'],['shop','🏪 商業'],['tech','🔬 科技'],['tour','🎡 觀光'],['public','🏛️ 公共']];
@@ -1514,7 +1514,7 @@ const CITY_EVENTS=[
     {label:'拍！',fn:()=>({text:'影片爆紅，觀光客湧入，大家都想看看這座怪城市。',money:big(350),buff:['cityhappy',60]})},
     {label:'市長很害羞',fn:()=>({text:'網紅改拍「鴨子的一天」，結果也爆紅了。'})}]}
 ];
-let CS={pop:0,cap:0,jobs:0,trans:0,tour:0,green:0,happy:50,unemp:false,cnt:{}};
+let CS={pop:0,cap:0,jobs:0,emp:0,un:0,er:1,staff:1,trans:0,tour:0,tourists:0,green:0,happy:50,unemp:false,cnt:{},dem:{},sup:{},sat:{},inc:{}};
 let mode='city', ROADS=new Set(), cars=[], peds=[], cityAliens=0, cityEvT=100, cityStatT=0, cityDirty=true, cityPayT=0;
 const camState={city:null,hospital:null};
 function initCity(){
@@ -1567,25 +1567,46 @@ function cityRebuild(){ terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; 
 function bAt(x,y){ return S.city.b.find(b=>{ const w=CB[b.t].w; return x>=b.x&&x<b.x+w&&y>=b.y&&y<b.y+w; }); }
 function footFree(x,y,w){ const n=citySize(); for(let a=0;a<w;a++) for(let c=0;c<w;c++){ const X=x+a, Y=y+c; if(X<0||Y<0||X>=n||Y>=n||isRoad(X,Y)||bAt(X,Y)||blocked(X,Y)) return false; } return true; }
 function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const edge=(a===-1||a===w)!==(c===-1||c===w); if(edge&&isRoad(x+a,y+c)) return true; } return false; }
+const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋']};
 function cityCalc(){
   if(cityDirty){ S.city.b.forEach(b=>{ b.ok=nearRoad(b.x,b.y,CB[b.t].w); b.view=viewOf(b); }); cityDirty=false; }
-  let pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0; const cnt={};
+  let pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0; const cnt={}, sup={shop:0,move:0,fun:0,edu:0,help:0};
   S.city.b.forEach(b=>{ const D=CB[b.t]; cnt[b.t]=(cnt[b.t]||0)+1; if(!b.ok) return; pop+=b.occ||0; cap+=D.pop||0; jobs+=D.jobs||0; trans+=D.trans||0; tour+=D.tour||0; hb+=D.happy||0; green+=D.green||0; if(b.view&&(D.pop||D.cat==='tour')) views++; });
-  const unemp=pop>jobs*1.5+30, parks=cnt.park||0;
-  let h=44+Math.min(22,hb)+Math.min(10,trans*1.2)+Math.min(8,green)+S.tier*3+Math.min(6,tour)+Math.min(6,views*.6)-(unemp?12:0)+(buffOn('cityhappy')?10:0);
-  CS={pop:Math.floor(pop),cap,jobs,trans,tour,green,happy:Math.max(0,Math.min(100,Math.round(h))),unemp,cnt,parks,roads:ROADS.size};
+  const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
+  const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1));
+  S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=D.cap*(D.jobs?staff:1); sup[D.svc]+=b.cap; });
+  const dem={shop:emp*1+un*.3+tourists*1.2, move:emp*.6+un*.2+tourists*.8, fun:emp*.5+un*.3+tourists*1.5, edu:pop*.15, help:pop*.04+tourists*.15};
+  const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,exp:0};
+  Object.keys(dem).forEach(k=>sat[k]=dem[k]<1?1:Math.min(1,sup[k]/dem[k]));
+  S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; if(!b.ok) return;
+    if(D.rent){ b.rev=(b.occ||0)*er*D.rent*viewMult(b); inc.rent+=b.rev; }
+    else if(D.svc){ const sh=sup[D.svc]?Math.min(dem[D.svc],sup[D.svc])/sup[D.svc]:0; b.served=b.cap*sh; b.busy=dem[D.svc]>sup[D.svc]*1.02; b.rev=b.served*D.fee*viewMult(b); inc[D.svc]+=b.rev; }
+    else if(D.exp){ b.rev=D.exp*(D.jobs?staff:1)*viewMult(b); inc.exp+=b.rev; } });
+  const pk=pop>40?1:0;
+  let h=40+Math.min(20,hb)+Math.min(8,green)+S.tier*3+Math.min(6,views*.6)+14*er+4*sat.shop+3*sat.move+4*sat.fun+2*(pk?sat.edu:1)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0);
+  CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc};
 }
-function cityVoices(){
-  const v=[];
-  if(CS.unemp) v.push(['😟','找不到工作','多蓋商店或科技公司']);
-  if(!CS.parks) v.push(['🌳','想要公園','蓋一座公園吧']);
-  if(CS.trans<2&&CS.pop>60) v.push(['🚏','交通不方便','蓋公車站或單車站']);
-  if(CS.cap&&CS.pop>=CS.cap*.95) v.push(['🏠','房子都住滿了','再蓋一些住宅']);
-  if(S.city.b.some(b=>!b.ok)) v.push(['🛣️','有建築沒接到路','建築要蓋在路旁邊才會運作']);
-  if((CS.cnt.conv||0)+(CS.cnt.bubble||0)+(CS.cnt.market||0)+(CS.cnt.mall||0)===0) v.push(['🏪','沒地方買東西','開一間便利商店']);
-  if(!v.length) v.push(['😄','市民很滿意','繼續發展吧！']);
-  return v;
+function cityNeeds(){
+  const v=[], d=CS.dem||{}, s=CS.sat||{};
+  if(CS.unemp) v.push({k:'job',w:CS.un/(CS.pop||1)*2,i:'💼',t:`找不到工作（失業 ${CS.un} 人）`,h:'蓋商店、科技公司或學校，市民有薪水才會消費',say:'想要工作…'});
+  if(CS.staff<.9&&CS.jobs>10) v.push({k:'staff',w:(1-CS.staff)*1.5,i:'🧑‍🍳',t:`店家缺人手（缺 ${Math.ceil(CS.jobs-CS.pop)} 人）`,h:'蓋住宅讓更多人搬進來',say:'老闆在找員工！'});
+  if(d.shop>3&&s.shop<.85) v.push({k:'shop',w:1-s.shop,i:'🛒',t:'買東西要排隊',h:'多開幾間店（便利商店、飲料店、夜市）',say:'店裡排好長…'});
+  if(d.move>5&&s.move<.85) v.push({k:'move',w:1-s.move,i:'🚏',t:'公車擠不上去',h:'蓋公車站、單車站或捷運',say:'公車又客滿了'});
+  if(d.fun>3&&s.fun<.85) v.push({k:'fun',w:1-s.fun,i:'🌳',t:'假日沒地方去',h:'蓋公園或觀光設施',say:'好想去公園'});
+  if(CS.pop>40&&s.edu<.85) v.push({k:'edu',w:(1-s.edu)*.8,i:'🏫',t:'小孩沒學校讀',h:S.city.stage<1?'升格成小鎮後可以蓋學校':'蓋一間學校',say:'小孩要上學'});
+  if(CS.pop>60&&s.help<.6) v.push({k:'help',w:(1-s.help)*.4,i:'🚓',t:'迷路的人變多了',h:S.city.stage<1?'升格成小鎮後可以蓋協尋中心':'蓋迷路協尋中心',say:'這裡是哪裡？'});
+  if(CS.cap&&CS.pop>=CS.cap*.95&&CS.happy>35) v.push({k:'home',w:.6,i:'🏠',t:'房子都住滿了',h:'再蓋一些住宅',say:'想搬來住'});
+  if(S.city.b.some(b=>!b.ok)) v.push({k:'road',w:.9,i:'🛣️',t:'有建築沒接到路',h:'建築要蓋在路旁邊才會營業',say:'路在哪？'});
+  return v.sort((a,b)=>((b.k==='road')-(a.k==='road'))||(needGain(b)-needGain(a))||(b.w-a.w));
 }
+const AVG_FEE={shop:3,move:1.2,fun:4,edu:4,help:5}, NEED_TAB={job:'shop',staff:'home',shop:'shop',move:'traffic',fun:'tour',edu:'public',help:'public',home:'home',road:'traffic'};
+function needGain(n){ const m=60/10*(1+S.city.stage*.1);
+  if(AVG_FEE[n.k]) return Math.max(0,(CS.dem[n.k]-CS.sup[n.k]))*AVG_FEE[n.k]*m;
+  if(n.k==='job') return CS.un*(1.2*3+.4*1.2+.2*4+2)*m*.6;
+  if(n.k==='staff') return Math.max(0,CS.jobs-CS.pop)*(2+3)*m*.5;
+  if(n.k==='home') return 6*2*m;
+  return 0; }
+function cityVoices(){ const v=cityNeeds().map(n=>[n.i,n.t,n.h]); if(!v.length) v.push(['😄','市民很滿意','繼續發展吧！']); return v; }
 function stageChecks(si){
   const q=CITY_STAGES[si].req, out=[];
   out.push({t:'人口',ok:CS.pop>=q.pop,v:`${CS.pop} / ${q.pop}`});
@@ -1603,22 +1624,14 @@ function stageUp(){
   saveLocal();
 }
 // ---- 收入、成長 ----
-function payOf(b){ return payBase(b)*viewMult(b); }
-function payBase(b){
-  const D=CB[b.t]; if(!b.ok||!D.pay) return 0;
-  if(D.pop) return (b.occ||0)*D.pay;
-  if(D.cat==='shop'){ const shopJobs=S.city.b.filter(x=>CB[x.t].cat==='shop'&&x.ok).reduce((a,x)=>a+CB[x.t].jobs,0); return D.pay*Math.max(.3,Math.min(1.3,(CS.pop+40)/(shopJobs*4+1))); }
-  if(D.cat==='tech') return D.pay*(D.jobs?Math.max(.3,Math.min(1,CS.pop/Math.max(1,CS.jobs))):1);
-  if(D.cat==='tour'||b.t==='balloon') return D.pay*(1+CS.trans*.05);
-  return D.pay;
-}
+function payOf(b){ return b.rev||0; }
 const cityRate=()=>S.city.b.reduce((a,b)=>a+payOf(b),0)/10*(1+S.city.stage*.1);
 function cityUpdate(dt){
   cityStatT-=dt; if(cityStatT<=0){ cityStatT=.5; cityCalc(); if(stageReady()&&stageNotified!==S.city.stage){ stageNotified=S.city.stage; toast('🏛️','城市可以升格了！','到 📊 市政 看看'); } }
   const grow=CS.happy>35, fac=Math.min(1,CS.happy/100+.35);
   S.city.b.forEach(b=>{ const D=CB[b.t];
     if(D.pop){ const target=b.ok?D.pop*fac:0; if((b.occ||0)<target&&grow) b.occ=Math.min(target,(b.occ||0)+dt*.35*(1+D.pop/30)); else if((b.occ||0)>target) b.occ=Math.max(target,(b.occ||0)-dt*.2); }
-    if(D.pay&&b.ok){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round(payOf(b)*(1+S.city.stage*.1)); if(m>0){ S.money+=m; S.stats.earned+=m; if(mode==='city'){ const c=P3(b.x+D.w/2,b.y+D.w/2,D.w>1?1.4:.9); floats.push({c:1,text:'+$'+fmt(m),x:c.x,y:c.y,life:1.1,color:'#e09a12'}); } } } }
+    if(b.ok&&b.rev>0){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round(payOf(b)*(1+S.city.stage*.1)); if(m>0){ S.money+=m; S.stats.earned+=m; if(mode==='city'){ const c=P3(b.x+D.w/2,b.y+D.w/2,D.w>1?1.4:.9); floats.push({c:1,text:'+$'+fmt(m),x:c.x,y:c.y,life:1.1,color:'#e09a12'}); } } } }
   });
   if(mode==='city'){ updateCars(dt); updatePeds(dt); cityEvT-=dt; if(cityEvT<=0&&!modalOpen){ cityEvT=110+Math.random()*80; const ev=pick(CITY_EVENTS); sfx.pop(); queueModal({icon:ev.icon,title:ev.title,body:`<p>${ev.text}</p>`,buttons:ev.choices.map((c,i)=>({label:c.label,ghost:i===1,fn:()=>applyOutcome(ev,c.fn())}))}); } }
 }
@@ -1637,10 +1650,17 @@ function updateCars(dt){
 function updatePeds(dt){
   const want=Math.min(30,3+Math.floor(CS.pop/14)), wantT=Math.min(14,Math.floor(CS.tour*1.4)), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
-  const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; a.sick=k==='res'&&Math.random()<.12?pick(pool().length?pool():DISEASES.slice(0,2)).icon:null; a.phase=0; peds.push(a); return true; };
+  const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res') persona(a); a.sick=k==='res'&&Math.random()<.12?pick(pool().length?pool():DISEASES.slice(0,2)).icon:null; a.phase=0; peds.push(a); return true; };
   while(count('res')<want){ if(!add('res')) break; } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
   peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
   peds=peds.filter(p=>!p.dead);
+  needBubT-=dt; if(needBubT<=0){ needBubT=4+Math.random()*3; const ns=cityNeeds(); if(ns.length&&!peds.some(p=>p.thinkT>0)){ const n=Math.random()<.6?ns[0]:pick(ns); const c=peds.filter(p=>p.k==='res'&&p.px!==undefined&&(n.k!=='job'||!p.job)); if(c.length){ const p=pick(c); p.think=n.i+' '+n.say; p.thinkT=2.8; } } }
+}
+let needBubT=3;
+function persona(a){
+  const homes=S.city.b.filter(b=>b.ok&&CB[b.t].pop), works=S.city.b.filter(b=>b.ok&&CB[b.t].jobs&&b.t!=='hospital');
+  a.home=homes.length?CB[pick(homes).t].name:'公園長椅';
+  if(works.length&&Math.random()<CS.er){ let r=Math.random()*works.reduce((x,b)=>x+CB[b.t].jobs,0); for(const b of works){ r-=CB[b.t].jobs; if(r<=0){ a.job=b.t; break; } } a.job=a.job||works[0].t; } else a.job=null;
 }
 function agentPos(a,lane){ const t=Math.min(1,a.t), x=a.x+(a.nx-a.x)*t+.5, y=a.y+(a.ny-a.y)*t+.5, dx=a.nx-a.x, dy=a.ny-a.y; return {x:x+(-dy)*lane, y:y+dx*lane, dx, dy}; }
 // ---- 繪圖 ----
@@ -1881,21 +1901,41 @@ function cityTap(sx,sy){
   const b=bAt(x,y)||bAt(Math.floor(w.x+.4),Math.floor(w.y+.4));
   if(b){ if(b.t==='hospital'){ S.city.intro2=1; switchMode('hospital'); return; } citySel=b; openSheet(cityBHTML); }
 }
+const WORK_OS={
+  conv:['凌晨三點有人來買一顆茶葉蛋配一把傘。','微波爐今天又爆了一顆蛋。'],bubble:['今天搖了 300 杯，手臂變得很壯。','有客人點「全糖去冰去珍珠去茶」，所以是一杯水？'],
+  market:['臭豆腐配冰淇淋今天又賣光了！','有觀光客說我們的魷魚是他看過最帥的。'],mall:['週年慶的時候，鴨子也來排隊。','我負責在電梯裡說「歡迎光臨」，一天說兩千次。'],
+  startup:['我們在開發「幫你決定午餐吃什麼」的 App，開發三年了還沒決定。','老闆說明年上市，去年也這麼說。'],robot:['今天做了 50 台掃地機器人，跑掉了 3 台。','機器人學會說「下班了」，比我還早下班。'],
+  ai:['AI 想了一整天，結論是要多喝水。','我的工作是跟 AI 聊天，牠今天心情不好。'],school:['今天的課：如何跟鴨子溝通。學生都學會了，我還沒。'],lost:['今天找到三個人、兩隻貓，還有一個人的自信。'],
+  mrt:['列車很準時，有時準時到太早。']
+};
+const SPEND={conv:['茶葉蛋',3],bubble:['珍奶',2.5],market:['臭豆腐',3],mall:['新衣服',3.5],bus:['公車',1],bike:['單車',1],mrt:['捷運',1.5],park:['公園長椅投幣',1],museum:['博物館門票',4],onsen:['泡溫泉',7],ferris:['摩天輪',7],beach:['海邊陽傘',2],lighthouse:['燈塔咖啡',5],duck:['跟鴨子合照',9]};
+const NEED_OS={shop:'下班想買東西，結果排到店門外…市長多開幾間店啦！',move:'公車又客滿，我已經走了三條街。',fun:'週末想出去走走，可是沒地方去，只好在家看鴨子。',edu:'我家小孩沒學校讀，每天在家教鴨子算數。',help:'我又迷路了…這城市有沒有人專門帶路的？',staff:'我們店缺人手，我一個人做三個人的工作！',home:'我朋友想搬來，可是房子都住滿了。',road:'那間新開的店怎麼沒有路可以走進去？'};
+function spendLine(){ const have=[...new Set(S.city.b.filter(b=>b.ok&&SPEND[b.t]).map(b=>b.t))]; if(!have.length) return null; const it=have.sort(()=>Math.random()-.5).slice(0,3); const tot=it.reduce((a,k)=>a+SPEND[k][1],0); return `今天花了 $${tot}：${it.map(k=>SPEND[k][0]).join('、')}。不用繳稅，用多少付多少！`; }
 function cityOS(p){
   if(p.k==='alien') return '👽 '+pick(['這顆星球的珍珠奶茶太好喝了。','我們家的飛碟停在停車場，有收費嗎？','地球人好有趣，連鴨子都有專用道。']);
   if(p.sick) return '🤒 '+pick(['我要去怪病醫院，聽說醫生是貓。','身體怪怪的，可能要掛號了。']);
-  if(p.k==='tour') return '📷 '+pick(CITY_OS.tour);
-  if(CS.unemp&&Math.random()<.4) return '😟 '+pick(CITY_OS.jobless);
-  if(!CS.parks&&Math.random()<.4) return '🌳 '+pick(CITY_OS.nopark);
-  if(CS.trans<2&&CS.pop>60&&Math.random()<.3) return '🚏 '+pick(CITY_OS.traffic);
-  if(Math.random()<.4) return '🏙️ '+pick(CITY_OS.city);
+  const sat=CS.sat||{};
+  if(p.k==='tour'){ if(sat.fun<.85&&Math.random()<.5) return '📷 景點都在排隊，排到我的鴨子鑰匙圈都融化了。'; if(sat.move<.85&&Math.random()<.4) return '📷 從車站走過來好遠，公車都客滿。'; if(Math.random()<.4){ const l=spendLine(); if(l) return '💸 '+l.replace('不用繳稅，用多少付多少！','錢包很痛，但是好好玩！'); } return '📷 '+pick(CITY_OS.tour); }
+  const ns=cityNeeds();
+  if(!p.job&&(CS.unemp||Math.random()<.5)) return '😟 '+pick([`住在${p.home}，找不到工作，房租快付不出來了。`,'履歷投了十間，只有鴨子回信。','市長！我想上班！商店或公司都可以！','沒工作就沒錢，連公園長椅都坐不起。']);
+  const r=Math.random();
+  if(ns.length&&r<.45){ const n=Math.random()<.6?ns[0]:pick(ns); if(NEED_OS[n.k]) return n.i+' '+NEED_OS[n.k]; }
+  if(p.job&&r<.7) return '💼 '+`我在「${CB[p.job].name}」上班。`+(WORK_OS[p.job]?pick(WORK_OS[p.job]):'薪水準時發，市長讚！');
+  if(r<.85){ const l=spendLine(); if(l) return '💸 '+l; }
+  if(Math.random()<.5) return '🏙️ '+pick(CITY_OS.city);
   const L=p.look||{}, cat=L.age==='kid'?'kid':L.age==='senior'&&Math.random()<.5?'senior':pick(['work','home','love','sad','funny','food','gossip']);
   return OS_ICON[cat]+' '+pick(OS[cat]);
 }
 let citySel=null, cityTab='home';
 function cityBHTML(){
   const b=citySel; if(!b||!S.city.b.includes(b)) return '<div class="sub">建築不見了。</div>'; const D=CB[b.t];
-  const kv=[]; if(D.pop) kv.push(['住戶',`${Math.floor(b.occ||0)} / ${D.pop} 人`]); if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]); if(D.pay) kv.push(['每 10 秒收入',`$${fmt(payOf(b)*(1+S.city.stage*.1))}`]); if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewMult(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewMult(b)-1)*100)}%`]);
+  const kv=[], M=6*(1+S.city.stage*.1);
+  if(D.pop){ kv.push(['住戶',`${Math.floor(b.occ||0)} / ${D.pop} 人`]); kv.push(['有工作的住戶',`${Math.round(CS.er*100)}%`]); kv.push(['房租',`$${D.rent} / 人（沒工作付不出來）`]); }
+  if(D.svc){ kv.push(['客人',`${Math.round(b.served||0)} / ${Math.round(D.cap)} 人`]); kv.push(['單價',`$${D.fee}`]); kv.push(['狀況',!b.ok?'未營業':b.busy?'🔥 大排長龍':(b.served||0)<D.cap*.5?'😴 有點冷清':'🙂 生意不錯']); }
+  if(D.exp) kv.push(['產品外銷',D.jobs&&CS.staff<1?`員工只來 ${Math.round(CS.staff*100)}%`:'全力生產']);
+  if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]);
+  if(b.rev||D.svc||D.rent||D.exp) kv.push(['每分鐘收入',`$${fmt((b.rev||0)*M)}`]);
+  if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewMult(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewMult(b)-1)*100)}%`]);
   return `<h2>${D.icon} ${D.name}</h2><div class="sub">${D.desc}</div>${b.ok?'':'<div class="note" style="color:var(--bad);margin-bottom:8px">⚠️ 沒有接到道路，還不能運作。</div>'}<div class="kv">${kv.map(([a,v])=>`<div>${a}<b>${v}</b></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" data-act="cityDemolish">拆除（退 $${fmt(D.cost*.5)}）</button></div>`;
 }
@@ -1903,25 +1943,35 @@ function cityDemolish(){ const b=citySel; if(!b) return; cityBulldoze(b.x,b.y); 
 function cityBuildHTML(){
   const st=S.city.stage, seg=`<div class="seg" style="flex-wrap:wrap">${CCATS.map(([k,l])=>`<button style="flex:1 1 30%" class="${cityTab===k?'on':''}" data-act="setCityTab" data-arg="${k}">${l}</button>`).join('')}</div>`;
   const items=Object.entries(CB).filter(([k,D])=>D.cat===cityTab&&!D.fixed).map(([k,D])=>{ const lock=D.stage>st;
-    const tags=[D.pop?`👥${D.pop}`:'',D.jobs?`💼${D.jobs}`:'',D.trans?`🚏+${D.trans}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.w>1?'2×2':''].filter(Boolean).join('　');
+    const tags=[D.pop?`👥${D.pop}　租$${D.rent}`:'',D.svc?`🧾$${D.fee}×${D.cap}人`:'',D.exp?`📦外銷$${D.exp}`:'',D.jobs?`💼${D.jobs}`:'',D.trans?`🚏+${D.trans}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.w>1?'2×2':''].filter(Boolean).join('　');
     return `<div class="item ${lock?'locked':''}"><div class="ic" style="background:#eef5fd">${D.icon}</div><div class="txt"><div class="nm">${D.name}</div><div class="ds">${D.desc}</div><div class="ds" style="color:var(--ink);margin-top:3px">${tags}</div></div>
       ${lock?`<div class="ds" style="text-align:right">🔒<br>${CITY_STAGES[D.stage].name.replace('搞怪','')}</div>`:`<button class="btn" ${S.money<D.cost?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(D.cost)}</button>`}</div>`; }).join('');
-  return `<h2>🏗️ 城市建設</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・建築要蓋在路旁邊</div>${items}`;
+  return `<h2>🏗️ 城市建設</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・建築要蓋在路旁邊・🧾 單價×每 10 秒客人</div>${items}`;
 }
 function setCityTab(k){ cityTab=k; refreshSheet(); }
 function pickCity(k){ closeSheet(); setPlacing({city:k}); }
+function goBuild(tab){ cityTab=tab; openSheet(cityBuildHTML); }
 function cityGovHTML(){
-  const st=CITY_STAGES[S.city.stage], nx=CITY_STAGES[S.city.stage+1];
-  const v=cityVoices().map(([i,t,h])=>`<div class="item" style="padding:8px 10px"><div style="font-size:22px">${i}</div><div class="txt"><div class="nm" style="font-size:14px">${t}</div><div class="ds">${h}</div></div></div>`).join('');
+  const st=CITY_STAGES[S.city.stage], nx=CITY_STAGES[S.city.stage+1], M=6*(1+S.city.stage*.1);
+  const needs=cityNeeds();
+  const v=needs.length?needs.map(n=>{ const g=needGain(n); return `<div class="item" style="padding:8px 10px"><div style="font-size:22px">${n.i}</div><div class="txt"><div class="nm" style="font-size:14px">${n.t}</div><div class="ds">${n.h}</div>${g>=1?`<div class="ds" style="color:#c27a00;font-weight:800">💡 商機：每分鐘多賺約 $${fmt(g)}</div>`:''}</div><button class="btn" data-act="goBuild" data-arg="${NEED_TAB[n.k]}">去蓋</button></div>`; }).join('')
+    :`<div class="item" style="padding:8px 10px"><div style="font-size:22px">😄</div><div class="txt"><div class="nm" style="font-size:14px">市民很滿意</div><div class="ds">想賺更多？蓋觀光設施吸引外地人來花錢</div></div><button class="btn" data-act="goBuild" data-arg="tour">去蓋</button></div>`;
+  const inc=CS.inc||{}, rows=[['🏠 房租',inc.rent],['🛒 商店',inc.shop],['🚏 交通票價',inc.move],['🎡 觀光門票',inc.fun],['🏫 學費',inc.edu],['🚓 協尋手續費',inc.help],['📦 科技外銷',inc.exp]].filter(r=>r[1]>0);
+  const tot=rows.reduce((a,r)=>a+r[1],0)||1;
+  const incH=rows.map(([t,x])=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:92px">${t}</span><div style="flex:1;height:8px;background:#f1e7d6;border-radius:4px"><div style="width:${Math.round(x/tot*100)}%;height:100%;background:#f2b544;border-radius:4px"></div></div><b style="width:64px;text-align:right">$${fmt(x*M)}</b></div>`).join('');
+  const sat=CS.sat||{}, need=Object.keys(SVC).filter(k=>(CS.dem[k]||0)>=1).map(k=>{ const p=Math.round(sat[k]*100); return `<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:62px">${SVC[k][0]} ${SVC[k][1]}</span><div style="flex:1;height:8px;background:#f1e7d6;border-radius:4px"><div style="width:${p}%;height:100%;background:${p>=85?'#3fae7a':p>=50?'#f2b544':'#e2574c'};border-radius:4px"></div></div><b style="width:40px;text-align:right">${p}%</b></div>`; }).join('');
   let up='';
   if(nx){ const cs=stageChecks(S.city.stage+1), ok=cs.every(c=>c.ok);
-    up=`<div class="item" style="display:block"><div class="nm" style="font-weight:900">🏛️ ${st.name} → ${nx.name}</div><div class="ds" style="margin:4px 0 8px">升格後土地變大（${nx.size}×${nx.size}），解鎖新建築</div>
+    up=`<div class="item" style="display:block"><div class="nm" style="font-weight:900">🏛️ ${st.name} → ${nx.name}</div><div class="ds" style="margin:4px 0 8px">升格後土地變大（${nx.size}×${nx.size}），解鎖新建築，所有收入再 +10%</div>
     ${cs.map(c=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px dashed #efe3d2"><span>${c.ok?'✅':'⬜'} ${c.t}</span><b style="color:${c.ok?'var(--good)':'var(--soft)'}">${c.v}</b></div>`).join('')}
     <div class="row"><button class="btn" ${ok?'':'disabled'} data-act="stageUp">申請升格</button></div></div>`; }
   else up=`<div class="item done"><div class="ic">🏆</div><div class="txt"><div class="nm">${st.name}</div><div class="ds">已經是最高等級的城市了！</div></div></div>`;
-  return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}</div>
-    <div class="kv"><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>工作機會<b>💼 ${fmt(CS.jobs)}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div><div>每分鐘收入<b>$${fmt(cityRate()*60)}</b></div><div>交通<b>🚏 ${CS.trans}</b></div><div>觀光<b>📷 ${CS.tour}</b></div></div>
-    ${up}<h4>🗣️ 市民心聲</h4>${v}`;
+  return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}・本市免稅，一切使用者付費</div>
+    <div class="kv"><div>城市每分鐘收入<b>💰 $${fmt(cityRate()*60)}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div></div>
+    <h4>🗣️ 市民心聲＝商機</h4>${v}
+    <h4>💰 錢從哪裡來（每分鐘）</h4><div class="item" style="display:block;padding:8px 12px">${incH||'<div class="ds">還沒有收入，先蓋房子和商店吧</div>'}</div>
+    <h4>📈 市民需求滿足度</h4><div class="item" style="display:block;padding:8px 12px">${need||'<div class="ds">市民還沒有需求</div>'}<div class="ds" style="margin-top:4px">需求沒被滿足＝錢沒賺到。綠色才是賺飽。</div></div>
+    ${up}`;
 }
 // ---- 模式切換 ----
 function switchMode(m){
@@ -1942,7 +1992,7 @@ function cityHud(){
 }
 function cityIntro(){
   if(S.city.intro) return; S.city.intro=1;
-  queueModal({icon:'🏙️',title:'恭喜當選村長！',body:'<p>醫院做得太成功，大家推你當村長。<br>從這個小村開始，把它發展成全世界最怪的城市吧！</p><div class="note">🏥 醫院還在，點它就能進去經營<br>🛣️ 建築要蓋在路旁邊</div>',buttons:[{label:'上任！'}]});
+  queueModal({icon:'🏙️',title:'恭喜當選村長！',body:'<p>醫院做得太成功，大家推你當村長。<br>從這個小村開始，把它發展成全世界最怪的城市吧！</p><div class="note">💰 本市免稅，所有設施使用者付費<br>🗣️ 市民缺什麼，就是你的商機<br>🏥 醫院還在，點它就能進去經營</div>',buttons:[{label:'上任！'}]});
 }
 
 
@@ -2040,7 +2090,7 @@ $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
 (function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs&&!isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
 $('zHome').onclick=()=>{ if(mode==='city'){ zoom=cityZoom(); applyZoom(); camX=citySize()/2; camY=citySize()/2; return; } zoom=1; applyZoom(); camX=HOME.x; camY=HOME.y; };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={cityDemolish,setCityTab,pickCity,stageUp,applyTier,buyDeco,upDeco,pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={cityDemolish,goBuild,setCityTab,pickCity,stageUp,applyTier,buyDeco,upDeco,pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 function treatsChips(type){ return DISEASES.filter(d=>d.room===type).map(d=>`<span class="chip">${S.dex[d.id]||S.seen[d.id]?d.icon+' '+d.name:'❔ ???'}</span>`).join(''); }
 let buildTarget=null, buildTab='rooms';
@@ -2142,7 +2192,7 @@ function officeHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    <div class="sub" style="margin-top:14px">怪病診所 v1.2（搞怪城市）</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v1.3（搞怪城市）</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
