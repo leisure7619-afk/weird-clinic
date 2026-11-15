@@ -1,7 +1,7 @@
 {
-  "name": "怪病診所",
-  "short_name": "怪病診所",
-  "description": "輕鬆搞笑的醫院經營小遊戲：收治各種怪病，蓋出最奇怪的診所。",
+  "name": "搞怪城市",
+  "short_name": "搞怪城市",
+  "description": "輕鬆搞笑的城市經營小遊戲：當個愛賺錢的市長，打造柴犬友善的搞怪城市。",
   "lang": "zh-Hant",
   "start_url": "./",
   "scope": "./",
