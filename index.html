@@ -17,11 +17,11 @@
 :root{--bg:#fdf6e9;--ink:#3b2f2a;--card:#fffdf8;--accent:#ff7a59;--line:#ead9c3;--soft:#8a7768;--good:#3fae7a;--bad:#e2574c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;background:#7fb85e}
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:640px;margin:0 auto;position:relative}
+#app{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;right:0;max-width:640px;margin:0 auto}
 header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:5px;pointer-events:none}
-.top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .brand{background:rgba(255,253,248,.92);border:2px solid var(--line);border-radius:14px;padding:4px 9px;font-weight:900;font-size:15px;line-height:1.15;white-space:nowrap;flex:none}
-.brand{pointer-events:auto;cursor:pointer}.brand .ed{font-size:11px;opacity:.45;margin-left:3px}#scaleChip{display:flex;align-items:center;gap:4px}#scaleChip .pb{display:inline-block;width:26px;height:5px;border-radius:3px;background:#efe3d2;overflow:hidden}#scaleChip .pb i{display:block;height:100%;background:#3fae7a}
+.tl{display:flex;align-items:center;gap:4px;min-width:0}.brand{pointer-events:auto;cursor:pointer}.brand .ed{font-size:11px;opacity:.45;margin-left:3px}#scaleChip{display:flex;align-items:center;gap:4px}#scaleChip .pb{display:inline-block;width:22px;height:5px;border-radius:3px;background:#efe3d2;overflow:hidden}#scaleChip .pb i{display:block;height:100%;background:#3fae7a}
 .brand small{display:block;font-size:10px;font-weight:700;color:var(--soft)}
 .stats{display:flex;gap:4px;flex-wrap:nowrap;justify-content:flex-end;min-width:0}
 .pill{background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:3px 7px;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .15s}
@@ -38,7 +38,7 @@ header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(s
 #depTxt{flex:1;min-width:0}
 #stage.dep #toast{top:calc(150px + env(safe-area-inset-top))}
 .chipbtn{pointer-events:auto;background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:2px 9px;font-weight:800;font-size:12px;white-space:nowrap}
-#satChip{display:flex;align-items:center;gap:5px;padding:2px 9px 2px 8px}#satChip .lb{font-size:11px;color:var(--soft)}#satChip .stars{position:relative;display:inline-block;font-size:16px;line-height:1;letter-spacing:1px}#satChip .bg{color:#e2d6c4}#satChip .fg{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f2b544;width:50%}#satChip.warn{background:#ffe3dc;border-color:#f3a593}#satChip.warn .fg{color:#e2574c}
+#satChip{display:flex;align-items:center;gap:5px;padding:2px 9px 2px 8px}#satChip .lb{font-size:11px;color:var(--soft)}#satChip .stars{position:relative;display:inline-block;font-size:14px;line-height:1;letter-spacing:1px}#satChip .bg{color:#e2d6c4}#satChip .fg{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f2b544;width:50%}#satChip.warn{background:#ffe3dc;border-color:#f3a593}#satChip.warn .fg{color:#e2574c}
 #voteChip.ok{background:#eefaf3;border-color:#3fae7a}#voteChip.mid{background:#fff3df;border-color:#f2b544}#voteChip.bad{background:#ffe3dc;border-color:#e2574c;animation:pulse .8s infinite alternate}
 @keyframes pulse{to{transform:scale(1.05)}}
 .buff{font-size:11px;font-weight:700;background:#fff1c7;border:1px solid #f1d27a;border-radius:8px;padding:2px 6px}
@@ -61,7 +61,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #zoom button{width:38px;height:38px;border-radius:12px;border:2px solid var(--line);background:rgba(255,253,248,.95);font-size:18px;font-weight:900;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 #ticker{margin:6px 10px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:7px 12px;font-size:13px;min-height:36px;line-height:1.45;transition:background .3s}
 #ticker.flash{background:#fff4d6}
-nav{display:flex;gap:5px;padding:0 8px calc(10px + env(safe-area-inset-bottom))}
+nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
@@ -127,12 +127,12 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
     <canvas id="cv"></canvas>
     <header>
       <div class="top">
-        <div class="brand" id="brandName">搞怪城市</div>
+        <div class="tl"><div class="brand" id="brandName">搞怪城市</div><button class="chipbtn sat" id="satChip"><span class="stars"><span class="bg">★★★★★</span><span class="fg" id="satFg">★★★★★</span></span></button></div>
         <div class="stats">
           <div class="pill" id="money">💰 0</div>
         </div>
       </div>
-      <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn sat" id="satChip"><span class="stars"><span class="bg">★★★★★</span><span class="fg" id="satFg">★★★★★</span></span></button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span></div>
+      <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -2431,7 +2431,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.10</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.10.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
