@@ -514,7 +514,7 @@ const CB={
   road:   {cat:'traffic',name:'道路',icon:'🛣️',cost:40,w:1,stage:0,desc:'選好之後，用手指在地上拖曳就能連續鋪路。'},
   bus:    {svc:'move',cap:15,fee:1,cat:'traffic',name:'公車站',icon:'🚏',cost:900,w:1,stage:0,trans:2,desc:'司機有時候是鴨子。交通 +2。'},
   bike:   {svc:'move',cap:8,fee:1,sign:'單車站',cat:'traffic',name:'共享單車站',icon:'🚲',cost:700,w:1,stage:1,trans:1,green:1,desc:'騎去哪都行，就是不能騎回來。交通 +1。'},
-  mrt:    {svc:'move',cap:120,fee:1.5,cat:'traffic',name:'捷運站',icon:'🚇',cost:18000,w:2,stage:2,trans:8,desc:'列車很準時，有時準時到太早。交通 +8。'},
+  mrt:    {svc:'move',cap:120,fee:1.5,cat:'traffic',name:'捷運站',icon:'🚇',cost:18000,w:2,stage:2,trans:8,desc:'2 站以上自動拉高架軌道（每格 $600、維護 $3/分），站越多乘客越多。車站 3 格內的商店、景點是捷運商圈，收入 +30%。'},
   balloon:{svc:'fun',cap:40,fee:10,sign:'熱氣球機場',cat:'traffic',name:'熱氣球機場',icon:'🎈',cost:70000,w:2,stage:3,trans:10,tour:6,desc:'全世界唯一用熱氣球當航班的機場。'},
   house:  {rent:2,cat:'home',name:'透天厝',icon:'🏠',cost:600,w:1,stage:0,pop:6,desc:'一樓是客廳，二樓是阿嬤的神秘房間。'},
   apt:    {rent:2,cat:'home',name:'公寓',icon:'🏢',cost:3000,w:1,stage:1,pop:24,desc:'管理員是一隻貓，收包裹很專業。'},
@@ -641,7 +641,8 @@ function cityCalc(){
   jobs+=fxSum('jobs');
   const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
   const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1)*(T==='tour'?1.3:1)*fxMul('tour'));
-  const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:NK>.35?3*NK:0):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; sup[D.svc]+=b.cap; });
+  const MS=mrtOk(), line=MS.length>=2, mrtMul=line?Math.min(1.6,.6+.2*MS.length):.3, tiles=line&&transit.mrt?transit.mrt.tiles:0;
+  const mo=matchOn(); let fans=0; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=(b.t==='mrt'?mrtMul:1)*D.cap*(D.jobs?staff:1)*(b.t==='stadium'&&mo?2:1)*(b.t==='market'?(S.noNight?1:NK>.35?3*NK:0):1)*fxMul('sup',D.svc); if(b.t==='stadium'&&mo) fans+=b.cap*.8; sup[D.svc]+=b.cap; });
   const dem={shop:emp*1+un*.3+tourists*1.2, move:(emp*.6+un*.2+tourists*.8)*(T==='lazy'?1.3:1), fun:emp*.5+un*.3+tourists*1.5+fans, edu:pop*.15, help:pop*.04+tourists*.15, trash:pop+tourists*.3, water:pop};
   Object.keys(dem).forEach(k=>dem[k]*=fxMul('dem',k));
   const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0,exp:0,power:0};
@@ -649,8 +650,8 @@ function cityCalc(){
   const wsum={}; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.near=LOCAL_SVC[D.svc]?nearPop(b.x,b.y,BW(b),4):0; b.wgt=LOCAL_SVC[D.svc]?.5+Math.min(1,b.near/30):1; wsum[D.svc]=(wsum[D.svc]||0)+b.cap*b.wgt; });
   let covS=0,covF=0; S.city.b.forEach(h=>{ if(!CB[h.t].pop||!h.ok||!(h.occ>0)) return; const w=BW(h); if(svcNear(h.x,h.y,w,'shop',4)) covS+=h.occ; if(svcNear(h.x,h.y,w,'fun',4)) covF+=h.occ; }); covS=pop?covS/pop:1; covF=pop?covF/pop:1;
   const sur=Math.max(0,pcap-puse);
-  S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); if(!b.ok) return;
-    let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf;
+  S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); b.mrtB=0; if(b.t==='mrt'&&MS.includes(b)&&line) b.up+=tiles*TRACK_UP/MS.length; if(!b.ok) return;
+    let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf; if(line&&(D.cat==='shop'||D.cat==='tour')&&D.svc&&MS.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,2)<=3)){ m*=1.3; b.mrtB=1; }
     if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK);
     if(D.rent){ const r=(b.occ||0)*er*D.rent*viewMult(b)*m; b.rev+=r; inc.rent+=r; }
     if(D.svc){ const tot=Math.min(dem[D.svc],sup[D.svc]); b.served=wsum[D.svc]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[D.svc]):0; b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m; b.rev+=r; inc[D.svc]+=r; }
@@ -1066,17 +1067,25 @@ function roadNear(b){ const w=BW(b); for(let i=-1;i<=w;i++) for(let j=-1;j<=w;j+
 function bfsPath(a,b){ const k=(x,y)=>x+','+y, prev=new Map([[k(a[0],a[1]),null]]), q=[a]; let h=0; while(h<q.length){ const [x,y]=q[h++]; if(x===b[0]&&y===b[1]){ const out=[]; let c=k(x,y); while(c){ out.push(c.split(',').map(Number)); c=prev.get(c); } return out.reverse(); } for(const [dx,dy] of DIRS){ const nx=x+dx, ny=y+dy, kk=k(nx,ny); if(!prev.has(kk)&&isRoad(nx,ny)){ prev.set(kk,k(x,y)); q.push([nx,ny]); } } } return null; }
 function polyLen(P){ let L=0; for(let i=1;i<P.length;i++) L+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); return L; }
 function polyAt(P,s){ for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); if(s<=d||i===P.length-1){ const t=d?Math.min(1,s/d):0; return [P[i-1][0]+(P[i][0]-P[i-1][0])*t,P[i-1][1]+(P[i][1]-P[i-1][1])*t]; } s-=d; } return P[P.length-1]; }
+const TRACK_COST=600, TRACK_UP=.5;
+function mrtRoute(list){ if(list.length<2) return null; let best=null;
+  list.forEach((s0,i)=>{ const ord=[s0], rest=list.filter((_,j)=>j!==i); while(rest.length){ const l=bctr(ord[ord.length-1]); let bi=0,bd=1e9; rest.forEach((q,j)=>{ const c=bctr(q), d=Math.abs(c[0]-l[0])+Math.abs(c[1]-l[1]); if(d<bd){ bd=d; bi=j; } }); ord.push(rest.splice(bi,1)[0]); }
+    const C=ord.map(bctr), P=[C[0]], idx=[0]; C.slice(1).forEach(c=>{ const l=P[P.length-1]; if(l[0]!==c[0]&&l[1]!==c[1]) P.push([c[0],l[1]]); P.push(c); idx.push(P.length-1); }); const L=polyLen(P); if(!best||L<best.L) best={P,idx,L,C}; });
+  const C=best.C, f=C[0], l=C[C.length-1], close=Math.abs(f[0]-l[0])+Math.abs(f[1]-l[1]); let ring=false;
+  if(C.length>=4&&close<=best.L*.4){ ring=true; if(l[0]!==f[0]&&l[1]!==f[1]) best.P.push([f[0],l[1]]); best.P.push(f); best.idx.push(best.P.length-1); best.L=polyLen(best.P); }
+  return {P:best.P,stopIdx:best.idx,L:best.L,ring,n:C.length}; }
+const mrtOk=()=>S.city.b.filter(b=>b.t==='mrt'&&b.ok&&!b.burnt);
+function trackAdd(x,y){ const cur=mrtOk(), r0=mrtRoute(cur), r1=mrtRoute(cur.concat([{t:'mrt',x,y,w:2}])); return Math.max(0,Math.round((r1?r1.L:0)-(r0?r0.L:0))); }
 function rebuildTransit(){
   const key=S.city.b.filter(b=>['mrt','bus','balloon','airport'].includes(b.t)&&b.ok).map(b=>b.t+b.x+','+b.y).join('|')+'#'+ROADS.size;
   if(key===transit.key) return; transit.key=key;
   // 捷運：2 站以上自動拉高架軌道
-  const st=nnOrder(S.city.b.filter(b=>b.t==='mrt'&&b.ok)); transit.mrt=null;
-  if(st.length>=2){ const C=st.map(bctr), P=[C[0]], stopIdx=[0]; const seq=st.length>=3?[...C.slice(1),C[0]]:[C[1],C[0]];
-    seq.forEach(c=>{ const l=P[P.length-1]; if(l[0]!==c[0]&&l[1]!==c[1]) P.push([c[0],l[1]]); P.push(c); stopIdx.push(P.length-1); });
-    const L=polyLen(P), stopS=stopIdx.map(i=>polyLen(P.slice(0,i+1))); transit.mrt={P,L,stopS};
-    const n=Math.min(3,st.length-1); if(transit.trains.length!==n) transit.trains=Array.from({length:n},(_,i)=>({s:L*i/n,dwell:0,last:-1}));
-    transit.trains.forEach(t=>t.s%=L);
-    if(!S.city.mrtLine){ S.city.mrtLine=1; toast('🚇','捷運通車了！','兩站之間自動蓋好高架軌道'); }
+  const mr=mrtRoute(mrtOk()); transit.mrt=null;
+  if(mr){ const P=mr.P, L=mr.L, stopS=mr.stopIdx.map(i=>polyLen(P.slice(0,i+1))); transit.mrt={P,L,stopS,ring:mr.ring,tiles:Math.round(L),n:mr.n};
+    const n=Math.min(3,mr.n-1); if(transit.trains.length!==n) transit.trains=Array.from({length:n},(_,i)=>({s:L*i/n,dwell:0,last:-1,dir:i%2?-1:1}));
+    transit.trains.forEach(t=>{ t.s=mr.ring?t.s%L:Math.max(0,Math.min(L,t.s)); });
+    if(!S.city.mrtLine){ S.city.mrtLine=1; S.city.trk=1; toast('🚇','捷運通車了！','兩站之間自動蓋好高架軌道'); }
+    else if(!S.city.trk){ S.city.trk=1; toast('🛤️','捷運新制上路',`路線改成最短的走法，軌道 ${Math.round(L)} 格，每格維護 $3/分`); }
   } else transit.trains=[];
   // 公車：照站牌順序繞一圈
   const stops=nnOrder(S.city.b.filter(b=>b.t==='bus'&&b.ok)), rt=stops.map(roadNear).filter(Boolean); transit.route=null;
@@ -1088,7 +1097,7 @@ function rebuildTransit(){
 }
 function updateTransit(dt){ transit.buses.forEach(a=>{ if(!a.col) a.col=['#3fae7a','#f2b544','#4d7cc7'][transit.buses.indexOf(a)%3]; a.kind='bus'; });
   rebuildTransit(); const m=transit.mrt;
-  if(m) transit.trains.forEach(t=>{ if(t.dwell>0){ t.dwell-=dt; return; } const ns=t.s+dt*2.2; m.stopS.forEach((ss,i)=>{ if(t.s<ss&&ns>=ss&&t.last!==i){ t.dwell=1.8; t.last=i; } }); t.s=ns; if(t.s>=m.L){ t.s-=m.L; t.last=-1; } });
+  if(m) transit.trains.forEach(t=>{ if(!t.dir) t.dir=1; if(t.dwell>0){ t.dwell-=dt; return; } let ns=t.s+dt*2.2*t.dir; if(!m.ring) ns=Math.max(0,Math.min(m.L,ns)); m.stopS.forEach((ss,i)=>{ if(((t.s<ss&&ns>=ss)||(t.s>ss&&ns<=ss))&&t.last!==i){ t.dwell=1.8; t.last=i; } }); t.s=ns; if(m.ring){ if(t.s>=m.L){ t.s-=m.L; t.last=-1; } } else if(t.s>=m.L) t.dir=-1; else if(t.s<=0) t.dir=1; });
   const r=transit.route; if(r) transit.buses.forEach(a=>{ const P=r.P; if(a.i>=P.length-1) a.i=0; if(a.wait>0){ a.wait-=dt; } else { a.t+=dt*1.05; if(a.t>=1){ a.t=0; a.i++; if(a.i>=P.length-1) a.i=0; if(r.stops.has(P[a.i].join(','))){ a.wait=2.2; } } } const c=P[a.i], n=P[Math.min(P.length-1,a.i+1)]; a.x=c[0]; a.y=c[1]; a.nx=n[0]; a.ny=n[1]; });
 }
 function drawMrtPillars(list){ const m=transit.mrt; if(!m) return; const P=m.P; let acc=0; for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); for(let s=(1.5-acc%1.5);s<d;s+=1.5){ const t=s/d, x=P[i-1][0]+(P[i][0]-P[i-1][0])*t, y=P[i-1][1]+(P[i][1]-P[i-1][1])*t; if(bAt(Math.floor(x),Math.floor(y))) continue; list.push({d:dep(x,y)+.3,fn:()=>{ const q=R2(x,y); RAW=true; const g=iso(q[0],q[1]); ellipse(g.x,g.y,tw*.14,tw*.06,'rgba(0,0,0,.18)'); box(q[0]-.1,q[1]-.1,.2,.2,.78,'#c3c8cf'); box(q[0]-.2,q[1]-.2,.4,.4,.14,'#cdd1d7',.78); RAW=false; }}); } acc+=d; } }
@@ -1103,7 +1112,7 @@ function drawMrtTop(){ const m=transit.mrt; if(!m) return; RAW=true;
     if(tw>=22){ ctx.strokeStyle='#8b8378'; ctx.lineWidth=Math.max(1,tw*.03); ctx.beginPath(); for(let u=c.u0+.06;u<c.u0+c.len;u+=.14){ const a=PT(c,u,c.v0+.11,zt), b=PT(c,u,c.v0+Wd-.11,zt); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); } ctx.stroke(); }
     [.17,.33].forEach(r=>{ const a=PT(c,c.u0,c.v0+r,zt+.01), b=PT(c,c.u0+c.len,c.v0+r,zt+.01); ln(a,b,'#e7ebf0',Math.max(1.2,tw*.025)); });
     vbox(c.u0,c.v0,c.len,.06,.06,'#dfe2e6',zt,c.h); });
-  const cars=[]; transit.trains.forEach(t=>{ for(let i=0;i<3;i++){ let sc=t.s-.38-i*.76; while(sc<0) sc+=m.L; const q=polyAt(m.P,sc), a=polyAt(m.P,(sc+.08)%m.L), b=polyAt(m.P,(sc-.08+m.L)%m.L), v=R2(q[0],q[1]), va=R2(a[0],a[1]), vb=R2(b[0],b[1]), hh=Math.abs(va[0]-vb[0])>=Math.abs(va[1]-vb[1]); cars.push({u:v[0],v:v[1],h:hh,front:i===0,sg:Math.sign(hh?va[0]-vb[0]:va[1]-vb[1])||1}); } });
+  const cars=[], W2=s0=>m.ring?((s0%m.L)+m.L)%m.L:Math.max(0,Math.min(m.L,s0)); transit.trains.forEach(t=>{ const dr=t.dir||1; for(let i=0;i<3;i++){ const sc=W2(t.s-dr*(.38+i*.76)), q=polyAt(m.P,sc), a=polyAt(m.P,W2(sc+.08*dr)), b=polyAt(m.P,W2(sc-.08*dr)), v=R2(q[0],q[1]), va=R2(a[0],a[1]), vb=R2(b[0],b[1]), hh=Math.abs(va[0]-vb[0])>=Math.abs(va[1]-vb[1]); cars.push({u:v[0],v:v[1],h:hh,front:i===0,sg:Math.sign(hh?va[0]-vb[0]:va[1]-vb[1])||1}); } });
   cars.sort((a,b)=>(a.u+a.v)-(b.u+b.v));
   cars.forEach(c=>{ const L=.7, CW=.3, z=zt+.03, u0=(c.h?c.u:c.v)-L/2, v0=(c.h?c.v:c.u)-CW/2;
     vbox(u0,v0,L,CW,.09,'#e39a4a',z,c.h); vbox(u0,v0,L,CW,.02,'#fff7ea',z+.09,c.h); vbox(u0,v0,L,CW,.1,'#3b2f2a',z+.11,c.h); vbox(u0,v0,L,CW,.05,'#fff7ea',z+.21,c.h); vbox(u0+.05,v0+.05,L-.1,CW-.1,.02,'#f3d9b5',z+.26,c.h);
@@ -1129,8 +1138,9 @@ function drawQueues(list){ S.city.b.forEach(b=>{ let n=queueLen(b), ex=null;
 function updatePeds(dt){
   const ck=crowdK(), want=Math.round(Math.min(30,3+Math.floor(CS.pop/14))*ck), wantT=Math.round(Math.min(14,Math.floor(CS.tour*1.4))*ck), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
-  const add=k=>{ const a=spawnAgent(); if(!a) return false; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<(S.city.trait==='shiba'?.55:.3); } a.phase=0; peds.push(a); return true; };
-  while(count('res')<want){ if(!add('res')) break; } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
+  const MS=mrtOk(), wantM=MS.length>=2?Math.min(12,MS.length*3):0;
+  const add=(k,near)=>{ let a=null; if(near&&MS.length){ const r=roadNear(pick(MS)); if(r){ const nb=roadNbrs(r[0],r[1]); if(nb.length){ const n=pick(nb); a={x:r[0],y:r[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; } } } if(!a) a=spawnAgent(); if(!a) return false; if(near) a.mrt=1; a.k=k; a.side=Math.random()<.5?-1:1; a.look=k==='robot'?null:genLook(); if(k==='alien'){ a.look.skin='#9fd39a'; } a.sp=k==='robot'?.45:.5+Math.random()*.25; if(k==='res'){ persona(a); a.dog=Math.random()<(S.city.trait==='shiba'?.55:.3); } a.phase=0; peds.push(a); return true; };
+  while(count('res')<want){ if(!add('res')) break; } { let nm=peds.filter(p=>p.mrt).length; while(nm<Math.round(wantM*ck)){ if(!add(Math.random()<.4?'tour':'res',1)) break; nm++; } } while(count('tour')<wantT){ if(!add('tour')) break; } while(count('robot')<wantR){ if(!add('robot')) break; } while(count('alien')<cityAliens){ if(!add('alien')) break; }
   const over={res:count('res')-want,tour:count('tour')-wantT};
   peds.forEach(p=>{ if(p.thinkT>0) p.thinkT-=dt; p.t+=dt*p.sp; p.phase+=dt*6; if(p.t>=1){ if(over[p.k]>0&&!(p.thinkT>0)&&Math.random()<.25){ over[p.k]--; p.dead=1; } stepAgent(p); if(p.sick){ const h=S.city.b.find(b=>b.t==='hospital'); if(h&&nearRoad(h.x,h.y,2)&&Math.abs(p.x-(h.x+1))+Math.abs(p.y-(h.y+1))<=2.5){ p.dead=1; const c=P3(p.x+.5,p.y+.5,.9); floats.push({c:1,text:'🏥 去看醫生',x:c.x,y:c.y,life:1.2,color:'#e2574c'}); } } } });
   peds=peds.filter(p=>!p.dead);
@@ -1589,9 +1599,9 @@ function rateBuild(k,x,y){
     place=.3+(sN?.35:0)+(fN?.35:0); if(smellNear){ place*=.4; } if(S.city.b.some(q=>CB[q.t].noise&&gapOf(x,y,w,q.x,q.y,BW(q))<=1)) place*=.6;
     why=CS.unemp?'失業的人還很多，先開店或開公司比較好':smellNear?'旁邊有垃圾場或污水廠，住起來很臭':(sN&&fN)?'附近有商店又有公園，住起來超方便':sN?'附近有商店，但沒有公園可以散步':fN?'附近有公園，但買東西要走很遠':'附近沒有商店和公園，住戶有點不方便'; }
   else if(LOCAL_SVC[D.svc]){ const ls=Math.min(1,lack(D.svc)/D.cap); let unc=0; if(D.svc==='shop'||D.svc==='fun') S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok&&gapOf(x,y,w,h.x,h.y,BW(h))<=4&&!svcNear(h.x,h.y,BW(h),D.svc,4)) unc+=h.occ||0; }); const cn=Math.min(1,unc/DIV); need=Math.max(ls,cn,jobNeed*.8); if(D.tour) need=Math.max(need,.45); if(D.svc==='edu'&&CS.pop<40) need=Math.min(need,.2);
-    place=.25+.75*nearN; if(D.cat==='tour'&&viewOf({t:k,x,y,w})) place=Math.min(1,place+.25); if(D.tour&&!LOCAL_SVC[D.svc]) place=1; if(smellNear) place*=.6;
+    place=.25+.75*nearN; if(D.cat==='tour'&&viewOf({t:k,x,y,w})) place=Math.min(1,place+.25); const nearMrt=(D.cat==='shop'||D.cat==='tour')&&mrtOk().length>=2&&mrtOk().some(q=>gapOf(x,y,w,q.x,q.y,2)<=3); if(nearMrt) place=Math.min(1,place+.3); if(D.tour&&!LOCAL_SVC[D.svc]) place=1; if(smellNear) place*=.6;
     why=need<.15?`${SVC[D.svc][1]}已經夠了，市民沒那麼需要`:cn>.5&&near>=5?`附近 ${Math.round(unc)} 位居民本來沒地方${D.svc==='shop'?'買東西':'休閒'}，現在有了`:nearN<.2&&!D.tour?'附近幾乎沒有住戶，生意會很冷清':nearN<.6?`附近住戶不多（${Math.round(near)} 人），生意普通`:`附近有 ${Math.round(near)} 位居民，${ls>.3?`正缺${SVC[D.svc][1]}`:'會常來光顧'}`;
-    if(need>=.15&&jobNeed>ls&&jobNeed>.3) why+='，還能創造工作'; }
+    if(need>=.15&&jobNeed>ls&&jobNeed>.3) why+='，還能創造工作'; if(nearMrt) why='捷運站旁人潮多（收入 +30%）・'+why; }
   else if(D.svc==='trash'||D.svc==='water'){ const thr=D.svc==='trash'?40:80, ls=Math.min(1,lack(D.svc)/D.cap*1.2); need=CS.pop<thr*.6?.15:ls; if(D.smell&&homes2) place=.25;
     why=(D.smell&&homes2)?'離住宅太近，附近會很臭':need<=.15?(CS.pop<thr*.6?'人口還少，現在還用不到':`${SVC[D.svc][1]}處理量已經夠了`):(D.smell&&homes2)?'離住宅太近，附近會很臭':'正好解決市民的煩惱，位置也不錯'; }
   else if(D.svc==='help'){ need=Math.min(1,lack('help')/D.cap); place=.6+.4*nearN; why=need<.15?'迷路的人不多，暫時用不到':'迷路的人終於有地方求救了'; }
@@ -1612,10 +1622,10 @@ function cityPlace(k,x,y,o){ o=o||{};
   if(!footFree(x,y,D.w)){ ticker(blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
   if(!nearRoad(x,y,D.w)){ ticker('🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   const rate=rateBuild(k,x,y);
-  const cost=o.cost||costOf(k); if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
+  const tk=k==='mrt'?trackAdd(x,y):0, cost=(o.cost||costOf(k))+tk*TRACK_COST; if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
   S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars}; S.city.b.push(nb); groundVer++; cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
-  const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,`${o.ai?'🤖 AI 代蓋：':''}${D.name}完工・市民滿意度 ${st}`,rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
+  const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,`${o.ai?'🤖 AI 代蓋：':''}${D.name}完工・市民滿意度 ${st}`,tk?`高架軌道 +${tk} 格（$${fmt(tk*TRACK_COST)}）・${rate.why}`:rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
   saveLocal(); return true;
 }
 function cityBulldoze(x,y,o){ groundVer++; o=o||{};
@@ -1629,7 +1639,7 @@ var ghost=null;
 function placeCheck(k,x,y,noMoney){ const D=CB[k];
   if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘';
   if(!footFree(x,y,D.w)){ for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++) if(blocked(x+a,y+d)) return '🌊 有水或山坡，蓋不了'; return '這裡空間不夠'; }
-  if(!nearRoad(x,y,D.w)) return '🛣️ 要貼著道路'; if(noMoney) return ''; if(S.money<costOf(k)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠'; return ''; }
+  if(!nearRoad(x,y,D.w)) return '🛣️ 要貼著道路'; if(noMoney) return ''; if(S.money<costOf(k)+(k==='mrt'?trackAdd(x,y)*TRACK_COST:0)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠（含軌道）'; return ''; }
 function bestAnchor(k,wx,wy){ const w=CB[k].w, tx=Math.floor(wx), ty=Math.floor(wy), cx=Math.round(wx-w/2), cy=Math.round(wy-w/2); let best=null;
   for(let ax=tx-w+1;ax<=tx;ax++) for(let ay=ty-w+1;ay<=ty;ay++){ const m=placeCheck(k,ax,ay), sc=(m?100:0)+Math.hypot(ax-cx,ay-cy); if(!best||sc<best.sc) best={k,x:ax,y:ay,msg:m,sc}; }
   return best; }
@@ -1637,7 +1647,7 @@ const inFoot=(g,x,y,w)=>x>=g.x&&x<g.x+w&&y>=g.y&&y<g.y+w;
 function ghostBanner(){ const t=$('bannerTxt'), ok=$('bannerOK');
   if(!ghost){ ok.classList.add('hidden'); return; }
   if(ghost.bull){ const nm=ghost.b?`${CB[ghost.b.t].icon} ${CB[ghost.b.t].name}（退 $${fmt(ghost.b.burnt?0:(ghost.b.paid||CB[ghost.b.t].cost)*.5)}）`:'🛣️ 這段道路（退 $10）'; t.textContent='拆除 '+nm+'？'; ok.textContent='✓ 拆除'; ok.classList.remove('hidden'); return; }
-  const D=CB[ghost.k]; if(ghost.msg){ t.textContent=`${D.icon} ${ghost.msg}`; ok.classList.add('hidden'); } else { const pw=D.pw||0, warn=CS.pw&&pw>0&&!D.pwr&&CS.pw.use+pw>CS.pw.cap&&!CS.pw.grace?'・⚡蓋了會停電':''; t.textContent=`${D.icon} ${D.name} $${fmt(costOf(ghost.k))}・維護 $${fmt(upOf({t:ghost.k})*6)}/分${warn}`; ok.textContent='✓ 蓋這裡'; ok.classList.remove('hidden'); } }
+  const D=CB[ghost.k]; if(ghost.msg){ t.textContent=`${D.icon} ${ghost.msg}`; ok.classList.add('hidden'); } else { const pw=D.pw||0, warn=CS.pw&&pw>0&&!D.pwr&&CS.pw.use+pw>CS.pw.cap&&!CS.pw.grace?'・⚡蓋了會停電':''; const tk=ghost.k==='mrt'?trackAdd(ghost.x,ghost.y):0; t.textContent=`${D.icon} ${D.name} $${fmt(costOf(ghost.k)+tk*TRACK_COST)}${tk?`（含軌道 ${tk} 格 $${fmt(tk*TRACK_COST)}，維護 +$${fmt(tk*TRACK_UP*6)}/分）`:''}・維護 $${fmt(upOf({t:ghost.k})*6)}/分${warn}`; ok.textContent='✓ 蓋這裡'; ok.classList.remove('hidden'); } }
 function confirmGhost(){ if(!ghost) return;
   if(ghost.bull){ if(ghost.b) cityBulldoze(ghost.b.x,ghost.b.y); else cityBulldoze(ghost.x,ghost.y); saveLocal(); ghost=null; setPlacing(placing); return; }
   const k=ghost.k; if(ghost.msg){ sfx.bad(); return; } if(cityPlace(k,ghost.x,ghost.y)){ ghost=null; if(CB[k].w>1) setPlacing(null); else setPlacing(placing); } }
@@ -1713,6 +1723,8 @@ function cityBHTML(){
   if(!D.fixed){ const inc=(b.rev||0)*M*(protest?.8:1), up=(b.up||upOf(b))*6, net=inc-up; kv.push(['每分鐘收入',`$${fmt(inc)}`]); kv.push(['🔧 維護費',`-$${fmt(up)} / 分`]); kv.push(['淨利',Math.abs(net)<1?'打平 $0 / 分':`<span style="color:${net>=0?'var(--good)':'var(--bad)'}">${net>=0?'+':'-'}$${fmt(Math.abs(net))} / 分</span>`]); }
   if(D.pwr) kv.push(['⚡ 發電',`${Math.round(pwrOf(b)*(1+.2*upL('green')))}${b.t==='wind'&&pwrOf(b)>D.pwr?'（風大 +50%）':''}`]); else if(D.pw) kv.push(['⚡ 用電',`${D.pw}`]);
   if(b.cb&&b.cb.length) kv.push(['🔗 組合',`${b.cb.map(id=>COMBO_BY[id].icon+' '+COMBO_BY[id].name).join('、')}・收入 +${Math.round((b.cm-1)*100)}%`]);
+  if(b.t==='mrt'){ const m=transit.mrt, ms=mrtOk(); kv.push(['🛤️ 路線',m?`${m.ring?'環線':'直線來回'}・${ms.length} 站・軌道 ${m.tiles} 格`:'只有 1 站，還沒通車（客人很少）']); if(m) kv.push(['軌道維護（全線）',`$${fmt(m.tiles*TRACK_UP*6)} / 分，各站分攤`]); kv.push(['乘客倍率',`×${(ms.length>=2?Math.min(1.6,.6+.2*ms.length):.3).toFixed(1)}（站越多越高）`]); }
+  if(b.mrtB) kv.push(['🚇 捷運商圈','收入 +30%']);
   if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewBase(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewBase(b)-1)*100)}%`]); if(b.smell) kv.push(['🪰 臭味','收入 -25%']); if(b.noise) kv.push(['🔊 飛機噪音','收入 -20%']); if(b.t==='stadium') kv.push(['今天',matchOn()?'⚽ 比賽中！客人加倍':'休賽中，等下一場']);
   if(b.burnt){ const c=Math.round(D.cost*.4/10)*10; return `<h2>🏚️ ${D.name}（燒毀）</h2><div class="sub">只剩焦黑的骨架，不能營業，但維護費照付。</div><div class="row"><button class="btn" ${S.money<c?'disabled':''} data-act="cityRepair">重建（$${fmt(c)}）</button><button class="btn ghost" data-act="cityDemolish">清掉（不退錢）</button></div>`; }
   return `<h2>${D.icon} ${D.name}</h2><div class="sub">${D.desc}</div>${b.ok?'':'<div class="note" style="color:var(--bad);margin-bottom:8px">⚠️ 沒有接到道路，還不能運作。</div>'}<div class="kv">${kv.map(([a,v])=>`<div>${a}<b>${v}</b></div>`).join('')}</div>
@@ -1760,6 +1772,7 @@ function deputyAdvice(){
   if(lose.length>=2){ const k=lose[0].t; L.push({lv:1,t:`有 <b>${lose.length} 棟在賠錢</b>（像${CB[k].name}），客人不夠就別再蓋同一種`,go:()=>openSheet(cityGovHTML)}); }
   const nx=CITY_STAGES[S.city.stage+1]; if(nx&&!stageReady()){ const c=stageChecks(S.city.stage+1).find(c=>!c.ok); if(c) L.push({lv:0,t:`主線：升格「${nx.name}」還差 <b>${c.t}</b>（${c.v}）。`,go:()=>openSheet(cityGovHTML)}); }
   const ruin=S.city.b.find(b=>b.burnt); if(ruin) L.push({lv:0,t:`${CB[ruin.t].name}燒毀後還沒處理，點它可以重建或清掉。`,go:()=>{ camX=ruin.x+.5; camY=ruin.y+.5; clampCam(); }});
+  { const ms=mrtOk(); if(ms.length>=2&&transit.mrt){ const net=ms.reduce((a,b)=>a+(b.rev||0)*PAYM()-(b.up||0),0)*6; if(net<-30) L.push({lv:1,t:`🚇 捷運線每分鐘<b>虧 $${fmt(-net)}</b>（軌道 ${transit.mrt.tiles} 格），在車站旁多蓋住宅和商店，或拆掉偏遠的站讓軌道變短`,go:()=>openSheet(cityGovHTML)}); } }
   if(CS.pw&&CS.pw.ratio>=1&&CS.pw.use>CS.pw.cap*.85&&CS.pw.use>10) L.push({lv:1,t:`電快不夠了（${Math.round(CS.pw.use)}／${Math.round(CS.pw.cap)}），新建築一蓋就可能<b>停電</b>`,go:()=>goBuild('power')});
   { const lk=Object.keys(CB).filter(k=>!CB[k].fixed&&k!=='hospital'&&!unlocked(k)&&!((CB[k].sand||CB[k].coast)&&!hasSea())&&lockOf(k)).sort((a,b)=>CB[a].cost-CB[b].cost)[0]; if(lk) L.push({lv:0,t:`下一個新建築：${CB[lk].icon} <b>${CB[lk].name}</b>，條件：${lockOf(lk).join('、')}`,go:()=>goBuild(CB[lk].cat)}); }
   if(CMB.length===0&&S.city.b.length>=8&&Object.keys(S.meta.dex).length<2) L.push({lv:0,t:'小秘密：某些建築<b>蓋在彼此 2 格內</b>會觸發隱藏組合，收入大增。市政頁有圖鑑提示',go:()=>openSheet(dexHTML)});
@@ -1900,7 +1913,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.6</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.6.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
