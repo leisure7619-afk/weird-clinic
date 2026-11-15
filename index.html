@@ -514,7 +514,7 @@ const sfx = {
 };
 
 // ================= 鏡頭 =================
-const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), stage=document.getElementById('stage');
+const cv=document.getElementById('cv'), stage=document.getElementById('stage'); let ctx=cv.getContext('2d');
 const HOME={x:10.6,y:10.4};
 let W=0,H=0,tw=40,th=20,zoom=1,camX=HOME.x,camY=HOME.y,baseTw=40;
 function layout(){
@@ -537,10 +537,15 @@ function clampCam(){ if(typeof mode!=='undefined'&&mode==='city'&&S&&S.city){ co
 function zoomAt(f,sx,sy){ const before=toWorld(sx,sy); zoom*=f; applyZoom(); const after=toWorld(sx,sy); camX+=before.x-after.x; camY+=before.y-after.y; clampCam(); }
 
 // ================= 繪圖工具 =================
-function shade(hex,amt){ if(hex[0]!=='#') return hex; let hh=hex.slice(1); if(hh.length===3) hh=hh.split('').map(c=>c+c).join(''); const c=parseInt(hh.slice(0,6),16); const ch=[c>>16,c>>8&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)))); return `rgb(${ch[0]},${ch[1]},${ch[2]})`; }
+const SHADE_C=new Map();
+function shade(hex,amt){ const sk=hex+amt; const sc=SHADE_C.get(sk); if(sc) return sc; const r=shade0(hex,amt); if(SHADE_C.size>4000) SHADE_C.clear(); SHADE_C.set(sk,r); return r; }
+function shade0(hex,amt){ if(hex[0]!=='#') return hex; let hh=hex.slice(1); if(hh.length===3) hh=hh.split('').map(c=>c+c).join(''); const c=parseInt(hh.slice(0,6),16); const ch=[c>>16,c>>8&255,c&255].map(v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)))); return `rgb(${ch[0]},${ch[1]},${ch[2]})`; }
 function poly(pts,fill,stroke,lw){ ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();} }
 const EMOJI_FONT='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-function emoji(ch,x,y,size){ if(!ch) return; ctx.font=`${Math.round(size)}px ${EMOJI_FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ch,x,y); }
+const EMO_C=new Map();
+function emoji(ch,x,y,size){ if(!ch||size<3) return; const bi=Math.round(Math.log(size)/.077), bs=Math.exp(bi*.077), key=ch+'|'+bi; let c=EMO_C.get(key);
+  if(!c){ if(EMO_C.size>600) EMO_C.clear(); c=document.createElement('canvas'); const r=2, pp=Math.ceil(bs*1.4)+2; c.width=pp*r; c.height=pp*r; const g=c.getContext('2d'); g.scale(r,r); g.font=`${Math.round(bs)}px ${EMOJI_FONT}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(ch,pp/2,pp/2); c._p=pp/bs; EMO_C.set(key,c); }
+  const d=c._p*size; ctx.drawImage(c,x-d/2,y-d/2,d,d); }
 function txt(t,x,y,size,col,weight=800,stroke){ ctx.font=`${weight} ${Math.round(size)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; if(stroke){ ctx.lineWidth=3; ctx.strokeStyle=stroke; ctx.strokeText(t,x,y); } ctx.fillStyle=col; ctx.fillText(t,x,y); }
 function rrect(x,y,w,h,r,fill,stroke,lw){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1.5;ctx.stroke();} }
 function circle(x,y,r,fill){ ctx.beginPath(); ctx.arc(x,y,Math.max(.5,r),0,Math.PI*2); ctx.fillStyle=fill; ctx.fill(); }
@@ -552,6 +557,9 @@ function box(x,y,w,d,h,col,z=0,alpha){
   poly([P3(x,y+d,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x,y+d,z+h)],shade(col,-.06));
   poly([P3(x+w,y,z),P3(x+w,y+d,z),P3(x+w,y+d,z+h),P3(x+w,y,z+h)],shade(col,-.22));
   poly(top,shade(col,.12),'rgba(60,40,20,.12)');
+  if(tw>=28&&h>=.1&&col[0]==='#'){ const ao=Math.min(h,.16), a=P3(x,y+d,z), b=P3(x+w,y+d,z), c=P3(x+w,y,z), b2=P3(x+w,y+d,z+ao);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineTo(c.x,c.y); ctx.lineTo(c.x,c.y-ao*tw); ctx.lineTo(b2.x,b2.y); ctx.lineTo(a.x,a.y-ao*tw); ctx.closePath(); ctx.fillStyle='rgba(0,0,0,.08)'; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.42)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(top[3].x,top[3].y); ctx.lineTo(top[2].x,top[2].y); ctx.lineTo(top[1].x,top[1].y); ctx.moveTo(top[2].x,top[2].y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
   ctx.globalAlpha=1; return P3(x+w/2,y+d/2,z+h);
 }
 function wallX(X,y0,y1,h,col,stripe,win){
@@ -571,7 +579,16 @@ function wallY(Y,x0,x1,h,col,stripe,win){
   poly([P3(x1,Y-t,0),P3(x1,Y+t,0),P3(x1,Y+t,h),P3(x1,Y-t,h)],shade(col,-.22));
 }
 function drawPlant(x,y){ box(x-.13,y-.13,.26,.26,.18,'#c8734a'); const c=P3(x,y,.3); circle(c.x,c.y,tw*.13,'#4f9a4a'); circle(c.x-tw*.07,c.y+tw*.03,tw*.09,'#5fb35a'); circle(c.x+tw*.07,c.y-tw*.03,tw*.08,'#3f8a3c'); }
+const SPR_C=new Map();
+function sprite(key,T,wf,hf,ax,ay,fn){ const bi=Math.round(Math.log(Math.max(4,T))/.06), bt=Math.exp(bi*.06), k2=key+'|'+bi; let c=SPR_C.get(k2);
+  if(!c){ if(SPR_C.size>400) SPR_C.clear(); c=document.createElement('canvas'); const r=2, cw=Math.ceil(bt*wf), ch=Math.ceil(bt*hf); c.width=cw*r; c.height=ch*r; const g=c.getContext('2d'); g.scale(r,r); const sv=ctx; ctx=g; try{ fn(cw*ax,ch*ay,bt); } finally{ ctx=sv; } c._w=cw/bt; c._h=ch/bt; c._ax=ax; c._ay=ay; SPR_C.set(k2,c); }
+  return c; }
+function treeShape(bx,by,T,se,o){ const pal=CANOPY[se]; ellipse(bx,by,T*.32,T*.13,'rgba(30,60,20,.25)'); ctx.fillStyle='#8a5a36'; ctx.fillRect(bx-T*.04,by-T*.45,T*.08,T*.45); ctx.fillStyle='rgba(0,0,0,.15)'; ctx.fillRect(bx,by-T*.45,T*.04,T*.45);
+  circle(bx,by-T*.62,T*.3,pal[0]); circle(bx-T*.16,by-T*.5,T*.2,pal[1]); circle(bx+T*.15,by-T*.55,T*.2,pal[2]); circle(bx+T*.02,by-T*.82,T*.18,pal[2]);
+  circle(bx-T*.09,by-T*.74,T*.1,'rgba(255,255,255,.18)'); circle(bx+T*.12,by-T*.45,T*.14,'rgba(0,0,0,.08)');
+  if(se==='winter'){ ellipse(bx,by-T*.9,T*.17,T*.06,'#fff'); ellipse(bx-T*.17,by-T*.66,T*.12,T*.04,'#fff'); ellipse(bx+T*.16,by-T*.71,T*.12,T*.04,'#fff'); } }
 function drawTree(x,y,o={}){
+  if(!o.pal&&!o.dry&&!o.fruits&&!o.coins&&!o.bird){ const b=iso(x,y), T=tw*(o.scale||1), se=seasonOf(monthNo()); const c=sprite('tree'+se,T,.9,1.15,.5,.92,(bx,by,TT)=>treeShape(bx,by,TT,se,{})); const sw=Math.sin(clock*1.5+x+y)*T*.01; ctx.drawImage(c,b.x-c._w*T*c._ax+sw,b.y-c._h*T*c._ay,c._w*T,c._h*T); return; }
   const b=iso(x,y), k=o.scale||1, T=tw*k, se=seasonOf(monthNo());
   let pal=o.pal||CANOPY[se]; if(o.dry) pal=['#9a8f5a','#a99c62','#b5a86e'];
   const sway=Math.sin(clock*1.5+x+y)*T*.015;
@@ -1601,14 +1618,17 @@ function drawWater(x,y,col){
   ctx.beginPath(); ctx.moveTo(c.x-tw*.16+o,c.y-tw*.02); ctx.quadraticCurveTo(c.x-tw*.08+o,c.y-tw*.06,c.x+o,c.y-tw*.02); ctx.stroke();
 }
 function tile4(x,y,col){ poly([iso(x,y),iso(x+1,y),iso(x+1,y+1),iso(x,y+1)],col); }
-function drawPine(x,y,k=1,z=0){ const b=P3(x,y,z), T=tw*k; ellipse(b.x,b.y,T*.18,T*.07,'rgba(30,60,20,.25)'); ctx.fillStyle='#7a4f2e'; ctx.fillRect(b.x-T*.03,b.y-T*.2,T*.06,T*.2);
+function pineShape(bx,by,T){ ellipse(bx,by,T*.18,T*.07,'rgba(30,60,20,.25)'); ctx.fillStyle='#7a4f2e'; ctx.fillRect(bx-T*.03,by-T*.2,T*.06,T*.2);
+  [['#2f7a45',.55,.2],['#3a8f52',.42,.38],['#47a35f',.3,.54]].forEach(([c,wd,h])=>{ ctx.beginPath(); ctx.moveTo(bx-T*wd/2,by-T*h); ctx.lineTo(bx+T*wd/2,by-T*h); ctx.lineTo(bx,by-T*(h+.32)); ctx.closePath(); ctx.fillStyle=c; ctx.fill(); ctx.beginPath(); ctx.moveTo(bx,by-T*h); ctx.lineTo(bx+T*wd/2,by-T*h); ctx.lineTo(bx,by-T*(h+.32)); ctx.closePath(); ctx.fillStyle='rgba(0,0,0,.12)'; ctx.fill(); }); }
+function drawPine(x,y,k=1,z=0){ const b0=P3(x,y,z), T0=tw*k; { const c=sprite('pine',T0,.7,1.0,.5,.9,(bx,by,TT)=>pineShape(bx,by,TT)); ctx.drawImage(c,b0.x-c._w*T0*c._ax,b0.y-c._h*T0*c._ay,c._w*T0,c._h*T0); return; }
+  const b=b0, T=T0; ellipse(b.x,b.y,T*.18,T*.07,'rgba(30,60,20,.25)'); ctx.fillStyle='#7a4f2e'; ctx.fillRect(b.x-T*.03,b.y-T*.2,T*.06,T*.2);
   [['#2f7a45',.55,.2],['#3a8f52',.42,.38],['#47a35f',.3,.54]].forEach(([c,wd,h])=>{ ctx.beginPath(); ctx.moveTo(b.x-T*wd/2,b.y-T*h); ctx.lineTo(b.x+T*wd/2,b.y-T*h); ctx.lineTo(b.x,b.y-T*(h+.32)); ctx.closePath(); ctx.fillStyle=c; ctx.fill(); }); }
 function drawHill(wx,wy){ const d2=(wx-24.5)**2+(wy-24.5)**2, k=Math.max(0,1-d2/30), j=((wx*7+wy*5)%4)*.07, h=.18+k*k*1.5+j; const snow=k>.88; const [x,y]=rotAnchor(wx,wy,1); RAW=true; box(x,y,1,1,h,snow?'#f2f5f7':h>.75?'#8f9a84':'#6aa85a'); if(snow){ const c=P3(x+.5,y+.5,h); ellipse(c.x,c.y,tw*.12,tw*.05,'#dfe6ea'); } else if(h<.75&&(wx*5+wy*3)%4) drawPine(x+.5,y+.5,.9,h); else { const c=P3(x+.5,y+.5,h); ellipse(c.x,c.y,tw*.14,tw*.06,'#9aa29a'); } RAW=false; }
 const citySize=()=>CITY_STAGES[S.city.stage].size;
 const cityZoom=()=>Math.max(.6,Math.min(1.3,14/citySize()));
 const isRoad=(x,y)=>ROADS.has(x+','+y);
 const OLDW={park:1,school:1,museum:1,onsen:1,solar:1};
-function cityRebuild(){ rot=S.city.rot||0; S.city.b.forEach(b=>{ if(b.t==='hospital') b.t='cityhall'; }); S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; }
+function cityRebuild(){ groundVer++; rot=S.city.rot||0; S.city.b.forEach(b=>{ if(b.t==='hospital') b.t='cityhall'; }); S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; }
 const BW=b=>b.w||CB[b.t].w;
 const gapOf=(ax,ay,aw,bx,by,bw)=>Math.max(0,bx-(ax+aw),ax-(bx+bw),by-(ay+aw),ay-(by+bw));
 function nearPop(x,y,w,R){ let n=0; S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok!==false&&!h.burnt&&gapOf(x,y,w,h.x,h.y,BW(h))<=R) n+=h.occ||0; }); return n; }
@@ -1684,7 +1704,7 @@ function stageChecks(si){
 const stageReady=()=>S.city.stage<CITY_STAGES.length-1&&stageChecks(S.city.stage+1).every(c=>c.ok);
 let stageNotified=-1;
 function stageUp(){
-  if(!stageReady()) return; S.city.stage++; const st=CITY_STAGES[S.city.stage]; sfx.fan(); closeSheet();
+  if(!stageReady()) return; S.city.stage++; groundVer++; const st=CITY_STAGES[S.city.stage]; sfx.fan(); closeSheet();
   queueModal({icon:'🎊',title:`升格為「${st.name}」！`,body:`<p>市民在街上放鞭炮，鴨子們排成一列遊行。<br>你現在是<b>${st.mayor}</b>了。</p><div class="note">✅ 城市土地變大了，新的地形出現了<br>✅ 解鎖新的建築</div>`,buttons:[{label:'繼續發展'}]});
   saveLocal();
 }
@@ -1723,7 +1743,7 @@ function fireTick(dt){
   S.city.b.forEach(b=>{ if(!(b.fire>0)) return; b.fire-=dt;
     const cx=b.x+BW(b)/2, cy=b.y+BW(b)/2;
     if(b.fire<21&&st.some(f=>Math.max(Math.abs(f.x+.5-cx),Math.abs(f.y+.5-cy))<=6.5)){ b.fire=0; sfx.fan(); ticker(`🚒 消防隊趕到，${CB[b.t].name}的火撲滅了！消防員順便吹了幾個泡泡。`); return; }
-    if(b.fire<=0){ b.fire=0; b.burnt=1; cityDirty=true; sfx.bad(); toast('🏚️',`${CB[b.t].name}燒毀了…`,'點它可以花錢重建'); saveLocal(); } });
+    if(b.fire<=0){ b.fire=0; b.burnt=1; cityDirty=true; groundVer++; sfx.bad(); toast('🏚️',`${CB[b.t].name}燒毀了…`,'點它可以花錢重建'); saveLocal(); } });
 }
 function protestTick(dt){
   if(CS.happy<40) lowHappyT+=dt; else if(CS.happy>=50) lowHappyT=0;
@@ -1760,7 +1780,7 @@ function gameOver(){ S.city.over=1; S.city.crisis=null; saveLocal(); showGameOve
 function showGameOver(){ const v=voteState(); sfx.bad();
   queueModal({icon:'🪧',title:'你下台了…',body:`<p>市民投票決定換人當市長。<br>新市長的第一個政策是：「全市改種仙人掌」。</p><div class="note">🏛️ 當了 ${v.terms+1} 任市長（${yearNo()} 年）<br>👥 最後人口 ${fmt(CS.pop)}<br>💰 累計收入 $${fmt(S.stats.earned)}<br>🎯 完成任務 ${S.city.misDone||0} 個</div>`,buttons:[{label:'重新出來選，打造新城市',fn:()=>{ S=newState(); S.day=today(); S.tut=1; resetRuntime(); saveLocal(); cloudSave(true); closeSheet(); mode='city'; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); cityIntro(); ticker('🏙️ 新的城市開始了！這次一定要讓市民開心。'); }}]}); }
 function extinguish(b){ b.fire=0; sfx.fan(); S.buffs.cityhappy=Date.now()+20000; const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,1); floats.push({c:1,text:'💦 滅火成功！',x:c.x,y:c.y,life:1.4,color:'#4d7cc7'}); ticker(pick(['💦 市長親自拿水桶滅火！市民歡呼。','💦 火滅了！市長的西裝濕透了，但很帥。'])); }
-function cityRepair(){ const b=citySel; if(!b||!b.burnt) return; const c=Math.round(CB[b.t].cost*.4/10)*10; if(S.money<c){ sfx.bad(); toast('💸','錢不夠重建',`需要 $${fmt(c)}`); return; } S.money-=c; b.burnt=0; b.occ=0; cityDirty=true; sfx.build(); closeSheet(); ticker(`🏗️ ${CB[b.t].name}重建完成，比以前更堅固（大概）。`); saveLocal(); }
+function cityRepair(){ const b=citySel; if(!b||!b.burnt) return; const c=Math.round(CB[b.t].cost*.4/10)*10; if(S.money<c){ sfx.bad(); toast('💸','錢不夠重建',`需要 $${fmt(c)}`); return; } S.money-=c; b.burnt=0; b.occ=0; cityDirty=true; groundVer++; sfx.build(); closeSheet(); ticker(`🏗️ ${CB[b.t].name}重建完成，比以前更堅固（大概）。`); saveLocal(); }
 let lastMatch=false;
 function cityUpdate(dt){
   const mo=matchOn(); if(mo&&!lastMatch&&CS.cnt&&CS.cnt.stadium&&mode==='city') ticker('🏟️ 比賽開始！球迷從外地湧進來，體育場門票收入加倍！'); lastMatch=mo;
@@ -1864,9 +1884,13 @@ function drawRoadTile(x,y){
   const c=iso(x+.5,y+.5); ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=Math.max(1,tw*.025); ctx.setLineDash([tw*.08,tw*.08]);
   DIRS.forEach(([a,b])=>{ if(isRoad(x+a,y+b)){ const e=iso(x+.5+a*.5,y+.5+b*.5); ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(e.x,e.y); ctx.stroke(); } });
   ctx.setLineDash([]);
-  const n=roadNbrs(x,y).length; if(n>=3){ circle(c.x,c.y,tw*.05,'#f2c14e'); }
+  const nb=roadNbrs(x,y).length; if(nb>=3){ circle(c.x,c.y,tw*.05,'#f2c14e'); }
+  if(tw>=22){ const E=[[0,-1,[x,y],[x+1,y]],[1,0,[x+1,y],[x+1,y+1]],[0,1,[x,y+1],[x+1,y+1]],[-1,0,[x,y],[x,y+1]]];
+    E.forEach(([dx,dy,A,B])=>{ if(isRoad(x+dx,y+dy)) return; const ix=dx===0?0:-dx*.1, iy=dy===0?0:-dy*.1; poly([iso(A[0],A[1]),iso(B[0],B[1]),iso(B[0]+ix,B[1]+iy),iso(A[0]+ix,A[1]+iy)],'#c9ccd2'); ln(iso(A[0]+ix,A[1]+iy),iso(B[0]+ix,B[1]+iy),'rgba(0,0,0,.12)',1); });
+    if(nb>=3) E.forEach(([dx,dy])=>{ if(!isRoad(x+dx,y+dy)) return; for(let k=0;k<4;k++){ const t=.2+k*.2, px=dx===0?x+t:x+.5+dx*.32, py=dy===0?y+t:y+.5+dy*.32, ex=dx===0?0:dx*.1, ey=dy===0?0:dy*.1, a=iso(px-ex*.0,py-ey*.0), b=iso(px+ex,py+ey); ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=Math.max(1.5,tw*.035); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } }); }
 }
 function bwin(face,x0,y0,len,h,rows,cols,col){ // face 'L'(+y 面) 'R'(+x 面)
+  if(tw<26) return;
   for(let r=0;r<rows;r++) for(let k=0;k<cols;k++){
     const a=(k+.25)/cols, b=(k+.75)/cols, z0=h*(r+.3)/rows, z1=h*(r+.75)/rows;
     const P=(u,z)=>face==='L'?P3(x0+len*u,y0,z):P3(x0,y0+len*u,z);
@@ -1909,10 +1933,11 @@ function body(x,y,w,h,wall,o={}){
   return {X,Y,L};
 }
 function bwinZ(face,x0,y0,len,h,rows,cols,col,z0){
+  if(tw<26) return; const hi=tw>=40;
   for(let r=0;r<rows;r++) for(let k=0;k<cols;k++){
     const a=(k+.25)/cols,b=(k+.75)/cols,za=z0+h*(r+.3)/rows,zb=z0+h*(r+.75)/rows;
     const P=(u,z)=>face==='L'?P3(x0+len*u,y0,z):P3(x0,y0+len*u,z);
-    poly([P(a,za),P(b,za),P(b,zb),P(a,zb)],col);
+    poly([P(a,za),P(b,za),P(b,zb),P(a,zb)],col); if(hi){ const zm=zb-(zb-za)*.38; poly([P(a,zm),P((a+b)/2,zb),P(a,zb)],'rgba(255,255,255,.38)'); }
   }
 }
 function gableX(x,y,w,d,z,hr,col){
@@ -2137,24 +2162,57 @@ function drawPed(p){
   if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1; ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*tw*.08,c.y-tw*.15); ctx.stroke(); drawShiba(c.x,c.y,tw*.24,{pose:'walk',face:f,phase:p.phase*1.4}); p.dx=d.x; p.dy=d.y; }
   drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
 }
-function drawCityGround(){
+let groundVer=0, vigG=null, vigK='';
+const gC={cv:document.createElement('canvas'),key:'',cx:0,cy:0,tw:0,W:0,H:0};
+const HEST={house:.8,apt:1.6,tower:3.0,treeh:1.3,conv:1,bubble:1.2,market:.8,mall:1.9,startup:1.0,solar:.3,robot:1.4,ai:1.4,park:.15,bigpark:.15,museum:1.0,onsen:.9,ferris:2.0,beach:.4,lighthouse:1.6,duck:1.8,school:1.2,lost:1,garbage:.5,sewage:.5,recycle:1,stadium:.8,port:1.4,airport:1.0,mrt:1.1,balloon:.9,bus:.7,bike:.3,cityhall:1.6,shiba:1.1,fire:1};
+const hsh=(x,y)=>{ let h=(x*374761393+y*668265263)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+function groundKey(){ return [ROTV,citySize(),seasonOf(monthNo()),groundVer,Math.round(baseTw),W,H].join('|'); }
+function drawGroundStatic(){
   const n=citySize(), se=seasonOf(monthNo()), M=30;
   ctx.fillStyle=GROUND[se]; ctx.fillRect(0,0,W,H);
-  // 海
   const tl=toWorld(0,0), tr=toWorld(W,0), bl=toWorld(0,H), br=toWorld(W,H);
   const x0=Math.floor(Math.min(tl.x,bl.x,tr.x,br.x))-1, x1=Math.ceil(Math.max(tl.x,bl.x,tr.x,br.x))+1, y0=Math.floor(Math.min(tl.y,tr.y,bl.y,br.y))-1, y1=Math.ceil(Math.max(tl.y,tr.y,bl.y,br.y))+1;
-  for(let y=Math.max(y0,-40);y<0;y++) for(let x=Math.max(x0,-40);x<Math.min(x1,M+40);x++) drawWater(x,y,y<-2?'#4fa6d8':'#5fb4e0');
-  for(let x=Math.max(x0,-40);x<Math.min(x1,M+40);x++){ const a=iso(x,0), b=iso(x+1,0), o=Math.sin(clock*1.3+x*.8)*tw*.03; ctx.strokeStyle='rgba(255,255,255,.8)'; ctx.lineWidth=Math.max(2,tw*.05); ctx.beginPath(); ctx.moveTo(a.x,a.y-tw*.04+o); ctx.lineTo(b.x,b.y-tw*.04+o); ctx.stroke(); }
+  const sx0=Math.max(x0,-60), sx1=Math.min(x1,M+60);
+  if(y0<0){ poly([iso(sx0,Math.max(y0,-60)),iso(sx1,Math.max(y0,-60)),iso(sx1,0),iso(sx0,0)],'#4fa6d8'); poly([iso(sx0,-3),iso(sx1,-3),iso(sx1,0),iso(sx0,0)],'#5fb4e0'); poly([iso(sx0,-1),iso(sx1,-1),iso(sx1,0),iso(sx0,0)],'#6cc0e6');
+    if(tw>=20) for(let y=Math.max(y0,-30);y<0;y++) for(let x=sx0;x<sx1;x++){ if(hsh(x,y)>.45) continue; const c=iso(x+.5,y+.5); ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=Math.max(1,tw*.025); ctx.beginPath(); ctx.moveTo(c.x-tw*.14,c.y); ctx.quadraticCurveTo(c.x-tw*.07,c.y-tw*.05,c.x,c.y); ctx.stroke(); }
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=Math.max(2,tw*.05); ctx.beginPath(); const a=iso(sx0,0), b=iso(sx1,0); ctx.moveTo(a.x,a.y-tw*.04); ctx.lineTo(b.x,b.y-tw*.04); ctx.stroke(); }
+  const fl=['#ff8fb1','#fff','#f2c14e','#b39ddb'];
   for(let y=Math.max(0,y0);y<Math.min(M+4,y1);y++) for(let x=Math.max(-4,x0);x<Math.min(M+4,x1);x++){
     const inb=x<n&&y<n&&x>=0, t=terr(x,y);
     if(!inb){ if(x>=0&&x<M&&y<M){ if(t==='w') drawWater(x,y,'#7fbfda'); else if(t==='s') tile4(x,y,'#e6d6aa'); else if(t==='h') tile4(x,y,'#5f9450'); } tile4(x,y,'rgba(40,70,30,.2)'); continue; }
-    if(t==='w') drawWater(x,y,'#6fc3e8'); else if(t==='s') tile4(x,y,'#f0dca8');
+    if(t==='w'){ drawWater(x,y,'#6fc3e8'); }
+    else if(t==='s'){ tile4(x,y,'#f0dca8'); if(tw>=24) for(let k=0;k<4;k++){ const c=iso(x+hsh(x*3+k,y)*.9+.05,y+hsh(x,y*3+k)*.9+.05); circle(c.x,c.y,tw*.012,'rgba(160,130,80,.35)'); } }
     if(isRoad(x,y)){ drawRoadTile(x,y); if(t==='w'){ const h=roadNbrs(x,y).some(([a])=>a!==x); const A=h?[[x,y,x+1,y],[x,y+1,x+1,y+1]]:[[x,y,x,y+1],[x+1,y,x+1,y+1]]; A.forEach(([a,b,c,d])=>{ const p=iso(a,b), q=iso(c,d); ctx.strokeStyle='#a0703f'; ctx.lineWidth=Math.max(2,tw*.05); ctx.beginPath(); ctx.moveTo(p.x,p.y-tw*.08); ctx.lineTo(q.x,q.y-tw*.08); ctx.stroke(); }); } }
-    else if(placing&&placing.city&&placing.city!=='road'&&placing.city!=='bulldoze'){ const w=CB[placing.city].w; if(footFree(x,y,w)&&nearRoad(x,y,w)&&(!CB[placing.city].sand||terr(x,y)==='s')&&(!CB[placing.city].coast||y===0)) tile4(x,y,`rgba(140,215,150,${.45+.25*Math.sin(clock*5)})`); }
-    else if(t==='g'&&(x+y)%2) tile4(x,y,'rgba(255,255,255,.05)');
+    else if(t==='g'||t==='f'){ if((x+y)%2) tile4(x,y,'rgba(255,255,255,.04)');
+      if(tw>=24&&!bAt(x,y)){ for(let k=0;k<3;k++){ const r=hsh(x+k*17,y+k*31), c=iso(x+.1+hsh(x*7+k,y)*.8,y+.1+hsh(x,y*7+k)*.8); ellipse(c.x,c.y,tw*.04,tw*.015,r<.5?'rgba(40,90,30,.22)':'rgba(255,255,255,.14)'); }
+        if(se!=='winter'&&hsh(x,y)<.12){ const c=iso(x+.3+hsh(y,x)*.4,y+.3+hsh(x+1,y)*.4); for(let k=0;k<3;k++) circle(c.x+(k-1)*tw*.035,c.y-(k%2)*tw*.02,tw*.016,fl[(x+y+k)%4]); } } }
   }
+  drawShadows();
   ctx.setLineDash([6,5]); poly([iso(0,0),iso(n,0),iso(n,n),iso(0,n)],null,'rgba(255,255,255,.55)',2); ctx.setLineDash([]);
 }
+function drawShadows(){ ctx.beginPath(); const sv=RAW; RAW=true;
+  S.city.b.forEach(b=>{ const w=BW(b), h=(HEST[b.t]||.8)*(b.burnt?.3:1)*(w>1&&HEST[b.t]<1.2?1.2:1), d=Math.min(2.4,h*.75); if(d<.12) return; const [u0,v0]=rotAnchor(b.x,b.y,w), i=.1, u1=u0+w-i, v1=v0+w-i, a=u0+i, c=v0+i, dx=d, dy=d*.3;
+    const P=[iso(a,c),iso(u1,c),iso(u1+dx,c+dy),iso(u1+dx,v1+dy),iso(a+dx,v1+dy),iso(a,v1)]; P.forEach((q,k)=>k?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); });
+  RAW=sv; ctx.fillStyle='rgba(20,45,20,.2)'; ctx.fill(); }
+function renderGround(key){
+  const dpr=Math.min(2,window.devicePixelRatio||1), Wc=Math.ceil(W*1.7), Hc=Math.ceil(H*1.5), c=gC.cv;
+  if(c.width!==Math.round(Wc*dpr)||c.height!==Math.round(Hc*dpr)){ c.width=Math.round(Wc*dpr); c.height=Math.round(Hc*dpr); }
+  const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
+  const sv=[ctx,W,H]; ctx=g; W=Wc; H=Hc; try{ drawGroundStatic(); } finally{ ctx=sv[0]; W=sv[1]; H=sv[2]; }
+  gC.key=key; gC.cx=camX; gC.cy=camY; gC.tw=tw; gC.W=Wc; gC.H=Hc;
+}
+function drawCityGround(){
+  const key=groundKey(), se=seasonOf(monthNo()), gest=typeof ptrs!=='undefined'&&ptrs.size>=2;
+  let need=gC.key!==key, k=tw/(gC.tw||tw);
+  if(!need){ const p=iso(gC.cx,gC.cy), ox=p.x-(gC.W/2)*k, oy=p.y-(gC.H/2+10)*k; if(ox>1||oy>1||ox+gC.W*k<W-1||oy+gC.H*k<H-1) need=true; else if(!gest&&Math.abs(k-1)>.015) need=true; else if(k<.6||k>1.7) need=true; }
+  if(need){ renderGround(key); k=1; }
+  ctx.fillStyle=GROUND[se]; ctx.fillRect(0,0,W,H);
+  const p=iso(gC.cx,gC.cy); ctx.drawImage(gC.cv,p.x-(gC.W/2)*k,p.y-(gC.H/2+10)*k,gC.W*k,gC.H*k);
+  if(placing&&placing.city&&placing.city!=='road'&&placing.city!=='bulldoze'){ const n=citySize(), D=CB[placing.city], w=D.w, a=.45+.25*Math.sin(clock*5); const tl=toWorld(0,0), tr=toWorld(W,0), bl=toWorld(0,H), br=toWorld(W,H);
+    const xa=Math.max(0,Math.floor(Math.min(tl.x,bl.x,tr.x,br.x))), xb=Math.min(n,Math.ceil(Math.max(tl.x,bl.x,tr.x,br.x))), ya=Math.max(0,Math.floor(Math.min(tl.y,tr.y,bl.y,br.y))), yb=Math.min(n,Math.ceil(Math.max(tl.y,tr.y,bl.y,br.y)));
+    for(let y=ya;y<yb;y++) for(let x=xa;x<xb;x++){ if(!isRoad(x,y)&&footFree(x,y,w)&&nearRoad(x,y,w)&&(!D.sand||terr(x,y)==='s')&&(!D.coast||y===0)) tile4(x,y,`rgba(140,215,150,${a})`); } }
+}
+function drawVignette(){ const k=W+'x'+H; if(vigK!==k){ vigK=k; vigG=ctx.createRadialGradient(W/2,H*.45,Math.min(W,H)*.45,W/2,H*.45,Math.max(W,H)*.75); vigG.addColorStop(0,'rgba(0,0,0,0)'); vigG.addColorStop(1,'rgba(20,40,30,.18)'); } ctx.fillStyle=vigG; ctx.fillRect(0,0,W,H); }
 function drawCity(){
   drawCityGround();
   const n=citySize(), list=[];
@@ -2179,13 +2237,13 @@ function drawCity(){
   if(protest) peds.forEach(p=>{ if(p.k==='res'&&p.px!==undefined&&((p.seed*7)|0)%3===0){ const c=iso(p.px,p.py); emoji('✊',c.x+tw*.12,c.y-tw*.75+Math.sin(clock*6+p.seed)*tw*.04,tw*.18); } });
   if(ghost&&ghost.bull&&ghost.b&&ghost.b._hit){ ctx.globalAlpha=.3+.15*Math.sin(clock*6); poly(ghost.b._hit.poly,'#e2574c'); ctx.globalAlpha=1; poly(ghost.b._hit.poly,null,'#c0392b',2); }
   drawMrtTop(); drawAir();
-  citySigns(tops);
+  if(!(ptrs.size>=2)) citySigns(tops);
   cityPops.forEach(p=>{ if(!p.b._hit) return; const P=p.b._hit.poly, cx=(P[0].x+P[2].x)/2, a=Math.min(1,p.life*2), up=(3.2-p.life)*tw*.15, cy=P[4].y-tw*.35-up; ctx.globalAlpha=a;
     const fs=Math.max(14,tw*.24), wdt=fs*6.4, hh=fs*2.5; rrect(cx-wdt/2,cy-hh,wdt,hh,fs*.5,'#fffdf8',p.stars>=4?'#3fae7a':p.stars<=1?'#c9b9a0':'#f2b544',2.5);
     txt('市民滿意度',cx,cy-hh+fs*.62,fs*.62,'#7a6a58',800);
     for(let i=0;i<5;i++){ const sx=cx+(i-2)*fs*1.1, pop=i<p.stars?1+.25*Math.max(0,Math.sin(Math.min(Math.PI,(3.2-p.life)*6-i*.6))):1; txt(i<p.stars?'★':'☆',sx,cy-fs*.72,fs*1.05*pop,i<p.stars?'#f2b544':'#d8cdbd',900); }
     ctx.globalAlpha=1; });
-  drawWeather();
+  drawWeather(); drawVignette();
   floats.forEach(f=>{ if(!f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   peds.forEach(p=>{ if(p.thinkT>0&&p.px!==undefined) drawThink({x:p.px,y:p.py,look:p.look,think:p.think}); });
   if(false){ const h=null; if(h){ const c=P3(h.x+1,h.y+1,1.5); emoji('👆',c.x+tw*.1,c.y+Math.abs(Math.sin(clock*4))*tw*.15,Math.max(24,tw*.45)); } }
@@ -2216,19 +2274,19 @@ function rateBuild(k,x,y){
 let cityPops=[];
 function cityPlace(k,x,y){
   const D=CB[k];
-  if(k==='road'){ if(x<0||y<0||x>=citySize()||y>=citySize()||isRoad(x,y)||bAt(x,y)) return false; const tt=terr(x,y); if(tt==='h'){ ticker('⛰️ 山坡太陡，路鋪不上去。'); return false; } const cost=tt==='w'?300:D.cost; if(S.money<cost){ ticker('💸 錢不夠鋪路了。'); return false; } S.money-=cost; if(tt==='w'&&!S.city.bridge){ S.city.bridge=1; ticker('🌉 第一座橋完工！鴨子們從橋下游過去表示祝賀。'); } S.city.r.push(x+','+y); ROADS.add(x+','+y); cityDirty=true; sfx.pop(); return true; }
+  if(k==='road'){ if(x<0||y<0||x>=citySize()||y>=citySize()||isRoad(x,y)||bAt(x,y)) return false; const tt=terr(x,y); if(tt==='h'){ ticker('⛰️ 山坡太陡，路鋪不上去。'); return false; } const cost=tt==='w'?300:D.cost; if(S.money<cost){ ticker('💸 錢不夠鋪路了。'); return false; } S.money-=cost; if(tt==='w'&&!S.city.bridge){ S.city.bridge=1; ticker('🌉 第一座橋完工！鴨子們從橋下游過去表示祝賀。'); } S.city.r.push(x+','+y); ROADS.add(x+','+y); cityDirty=true; groundVer++; sfx.pop(); return true; }
   if(D.sand&&terr(x,y)!=='s'){ ticker('🏖️ 這個要蓋在最上面的沙灘上。'); sfx.bad(); return false; }
   if(D.coast&&y!==0){ ticker('⚓ 港口要蓋在最上面的海邊，靠著海才能停船。'); sfx.bad(); return false; }
   if(!footFree(x,y,D.w)){ ticker(blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
   if(!nearRoad(x,y,D.w)){ ticker('🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   const rate=rateBuild(k,x,y);
   const cost=costOf(k); if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
-  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars}; S.city.b.push(nb); cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
+  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars}; S.city.b.push(nb); groundVer++; cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
   const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,`${D.name}完工・市民滿意度 ${st}`,rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
   saveLocal(); return true;
 }
-function cityBulldoze(x,y){
+function cityBulldoze(x,y){ groundVer++;
   const b=bAt(x,y);
   if(b){ if(CB[b.t].fixed){ ticker('🏥 醫院是城市的寶，不能拆。'); return; } S.city.b=S.city.b.filter(q=>q!==b); S.money+=b.burnt?0:Math.round((b.paid||CB[b.t].cost)*.5); cityDirty=true; sfx.pop(); return; }
   if(isRoad(x,y)){ S.city.r=S.city.r.filter(k=>k!==x+','+y); ROADS.delete(x+','+y); S.money+=10; cityDirty=true; sfx.pop(); cars=cars.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); peds=peds.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); }
@@ -2535,7 +2593,7 @@ $('zIn').onclick=()=>zoomAt(1.25,W/2,H/2);
 $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
 (function(){ const de=document.documentElement, fs=de.requestFullscreen||de.webkitRequestFullscreen; if(fs&&!isStandalone()){ $('zFull').classList.remove('hidden'); $('zFull').onclick=()=>{ try{ if(document.fullscreenElement||document.webkitFullscreenElement){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); } else { const r=fs.call(de); if(r&&r.catch) r.catch(()=>ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。')); } }catch(e){ ticker('這個瀏覽器不支援全螢幕，試試「加入主畫面」。'); } setTimeout(layout,300); }; } })();
-function rotateView(d){ rot=(rot+d+4)%4; S.city.rot=rot; ROTV=mode==='city'?rot:0; sfx.pop(); ticker(pick(['🔄 換個角度看城市。','🔄 市長轉了一圈，看到新的風景。','🔄 從這邊看，鴨子也比較帥。'])); }
+function rotateView(d){ groundVer++; rot=(rot+d+4)%4; S.city.rot=rot; ROTV=mode==='city'?rot:0; sfx.pop(); ticker(pick(['🔄 換個角度看城市。','🔄 市長轉了一圈，看到新的風景。','🔄 從這邊看，鴨子也比較帥。'])); }
 $('zRot').onclick=()=>{ ensureAudio(); if(mode==='city') rotateView(-1); };
 $('zHome').onclick=()=>{ if(mode==='city'){ zoom=cityZoom(); applyZoom(); camX=citySize()/2; camY=citySize()/2; return; } zoom=1; applyZoom(); camX=HOME.x; camY=HOME.y; };
 $('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,applyTier,buyDeco,upDeco,pickBuild,upgrade,askDel,toggleMute,askReset,buyLobby,buyRes,buyWing,setTab,pickPlant,digPlant,openLand:()=>openLand(),openGoals:()=>openSheet(goalsHTML)}[b.dataset.act]; if(f) f(b.dataset.arg); });
@@ -2638,7 +2696,7 @@ function citySetHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開始？城市會全部清除':'重新開始一座新城市'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.3</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.4</div>`;
 }
 function officeHTML(){
   return `<h2>🏥 院長室</h2><div class="sub">${TIERS[S.tier].name}・人氣：${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>${tierHTML()}
