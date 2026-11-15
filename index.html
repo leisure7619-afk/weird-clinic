@@ -898,16 +898,10 @@ const P10=n=>Math.round(n/10)*10;
 // ---- 日夜 ----
 const DAYLEN=120; let NIGHT=0, NWIN=[], wasNight=false, LAMPS=null, lampKey='', GLOW=null;
 function nightK(){ const t=((S&&S.time||0)%DAYLEN)/DAYLEN; return t<.55?0:t<.65?(t-.55)/.1:t<.9?1:1-(t-.9)/.1; }
-function glowSprite(){ if(GLOW) return GLOW; const c=document.createElement('canvas'); c.width=128; c.height=64; const g=c.getContext('2d'), r=g.createRadialGradient(64,32,2,64,32,62); r.addColorStop(0,'rgba(255,214,130,.9)'); r.addColorStop(.4,'rgba(255,190,90,.35)'); r.addColorStop(1,'rgba(255,170,60,0)'); g.fillStyle=r; g.save(); g.scale(1,.5); g.beginPath(); g.arc(64,64,62,0,Math.PI*2); g.restore(); g.fillRect(0,0,128,64); GLOW=c; return c; }
 function drawNight(){ const k=NIGHT;
   ctx.fillStyle=`rgba(14,20,62,${(.52*k).toFixed(3)})`; ctx.fillRect(0,0,W,H);
   if(NWIN.length){ ctx.globalAlpha=Math.min(1,k*1.15); ctx.fillStyle=(CS.pw&&CS.pw.ratio<.7)?'#5a5a6a':'#ffd77a'; ctx.beginPath(); NWIN.forEach(q=>{ ctx.moveTo(q[0].x,q[0].y); ctx.lineTo(q[1].x,q[1].y); ctx.lineTo(q[2].x,q[2].y); ctx.lineTo(q[3].x,q[3].y); ctx.closePath(); }); ctx.fill(); ctx.globalAlpha=1; }
-  if(lampKey!==groundVer+'|'+ROADS.size){ lampKey=groundVer+'|'+ROADS.size; LAMPS=[...ROADS].map(s=>s.split(',').map(Number)).filter(([x,y])=>hsh(x,y)<.38); }
-  const g=glowSprite(), s=tw*1.5, blk=CS.pw&&CS.pw.ratio<.7; ctx.globalCompositeOperation='lighter';
-  if(!blk){ ctx.globalAlpha=.5*k; LAMPS.forEach(([x,y])=>{ const c=iso(x+.5,y+.5); if(c.x<-s||c.x>W+s||c.y<-s||c.y>H+s) return; ctx.drawImage(g,c.x-s/2,c.y-s/4,s,s/2); }); }
-  ctx.globalAlpha=.6*k; cars.concat(transit.buses).forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2), c=iso(p.x,p.y); ctx.drawImage(g,c.x-tw*.35,c.y-tw*.12,tw*.7,tw*.35); });
-  ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
-  if(!blk&&tw>=22) LAMPS.forEach(([x,y])=>{ const c=P3(x+.12,y+.12,.42); if(c.x<-20||c.x>W+20||c.y<-20||c.y>H+20) return; circle(c.x,c.y,Math.max(1.5,tw*.03),'#fff3c4'); });
+
 }
 
 // ---- 市政決策卡 ----
@@ -1766,7 +1760,7 @@ cv.addEventListener('pointermove',e=>{
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===1&&!gest.pinch){
     if(Math.hypot(e.clientX-gest.sx,e.clientY-gest.sy)>8) gest.moved=true;
-    if(gest.moved){ const rr=cv.getBoundingClientRect(); if(!(mode==='city'&&cityDrag(e.clientX-rr.left,e.clientY-rr.top))){ if(gest.mouse){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly, a=dx/(tw/2), b=dy/(th/2); panView(-(a+b)/2,-(b-a)/2); } else if(!gest.hinted){ gest.hinted=1; const now=Date.now(); if(now-panHintT>15000){ panHintT=now; ticker('✌️ 用兩隻手指按著滑，就能移動地圖。'); } } } }
+    if(gest.moved){ const rr=cv.getBoundingClientRect(); if(!(mode==='city'&&cityDrag(e.clientX-rr.left,e.clientY-rr.top))){ if(gest.mouse||!placing){ const dx=e.clientX-gest.lx, dy=e.clientY-gest.ly, a=dx/(tw/2), b=dy/(th/2); panView(-(a+b)/2,-(b-a)/2); } else if(!gest.hinted){ gest.hinted=1; const now=Date.now(); if(now-panHintT>15000){ panHintT=now; ticker('✌️ 用兩隻手指按著滑，就能移動地圖。'); } } } }
     gest.lx=e.clientX; gest.ly=e.clientY;
   } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()], d=Math.hypot(a.x-b.x,a.y-b.y), r=cv.getBoundingClientRect(), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
     if(gest.mx!==undefined){ const ddx=mx-gest.mx, ddy=my-gest.my, pa=ddx/(tw/2), pb=ddy/(th/2); panView(-(pa+pb)/2,-(pb-pa)/2); } gest.mx=mx; gest.my=my;
@@ -1836,7 +1830,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.5</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.5.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } confirmReset=false; S=newState(); S.day=today(); S.tut=1; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; resetRuntime(); camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); saveLocal(); cloudSave(true); closeSheet(); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
@@ -1896,7 +1890,7 @@ let last=performance.now();
 function cityTime(dt){
   clock+=dt; floats.forEach(f=>{ f.life-=dt; f.y-=dt*30; }); floats=floats.filter(f=>f.life>0);
   if(modalOpen||!booted) return; S.time+=dt;
-  { const nt=nightK()>.5; if(nt!==wasNight){ wasNight=nt; if(nt) ticker(pick(['🌙 天黑了，夜市開張，路燈一盞一盞亮起來。','🌙 晚上了，柴犬們在路燈下排隊散步。','🌙 夜深了，便利商店的燈是全城最亮的。'])); else ticker(pick(['☀️ 天亮了，早餐店的蛋餅香味飄滿整條街。','☀️ 早安！公車司機（鴨子）準時發車。'])); } }
+  { const nt=nightK()>.5; if(nt!==wasNight){ wasNight=nt; if(nt) ticker(pick(['🌙 天黑了，夜市開張，家家戶戶亮起燈。','🌙 晚上了，柴犬們排隊散步回家。','🌙 夜深了，便利商店的燈是全城最亮的。'])); else ticker(pick(['☀️ 天亮了，早餐店的蛋餅香味飄滿整條街。','☀️ 早安！公車司機（鴨子）準時發車。'])); } }
   if(weather.t>0){ weather.t-=dt; if(weather.t<=0) weather={type:'clear',t:0}; }
   else { weatherT-=dt; if(weatherT<=0){ weatherT=150+Math.random()*120; const se=seasonOf(monthNo()); if(se==='winter'){ weather={type:'snow',t:40}; ticker(pick(['❄️ 下雪了！市民在市政府門口堆了一個柴犬雪人。','❄️ 下雪了，鴨子們穿上了小圍巾（想像的）。'])); } else { weather={type:'rain',t:25}; ticker(pick(['🌧️ 下雨了，柴犬們拒絕出門散步。','🌧️ 一陣雨，雨傘店老闆偷偷笑了。','🌧️ 下雨了，公園的花都喝飽了。'])); } } }
 }
