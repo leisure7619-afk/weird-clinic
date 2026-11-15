@@ -37,9 +37,8 @@ header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(s
 #depTxt{flex:1;min-width:0}
 #stage.dep #toast{top:calc(150px + env(safe-area-inset-top))}
 .chipbtn{pointer-events:auto;background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:2px 9px;font-weight:800;font-size:12px;white-space:nowrap}
-#misChip{background:#fff3df;border-color:#f2b544;max-width:62vw;overflow:hidden;text-overflow:ellipsis}
+#satChip{display:flex;align-items:center;gap:5px;padding:2px 9px 2px 8px}#satChip .lb{font-size:11px;color:var(--soft)}#satChip .stars{position:relative;display:inline-block;font-size:16px;line-height:1;letter-spacing:1px}#satChip .bg{color:#e2d6c4}#satChip .fg{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f2b544;width:50%}#satChip.warn{background:#ffe3dc;border-color:#f3a593}#satChip.warn .fg{color:#e2574c}
 #voteChip.ok{background:#eefaf3;border-color:#3fae7a}#voteChip.mid{background:#fff3df;border-color:#f2b544}#voteChip.bad{background:#ffe3dc;border-color:#e2574c;animation:pulse .8s infinite alternate}
-#misChip.warn{background:#ffe3dc;border-color:#e2574c;animation:pulse .8s infinite alternate}
 @keyframes pulse{to{transform:scale(1.05)}}
 .buff{font-size:11px;font-weight:700;background:#fff1c7;border:1px solid #f1d27a;border-radius:8px;padding:2px 6px}
 .buff.em{background:#ffdcd6;border-color:#f08a7a;animation:blink 1s infinite}
@@ -127,14 +126,13 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
     <canvas id="cv"></canvas>
     <header>
       <div class="top">
-        <div class="brand"><span id="brandName">搞怪城市</span> <small id="title">村長</small></div>
+        <div class="brand" id="brandName">搞怪城市</div>
         <div class="stats">
           <div class="pill" id="money">💰 0</div>
-          <div class="pill" id="rep">⭐ 0</div>
-          <div class="pill" id="clean">✨ 100%</div>
+          <div class="pill" id="rep">👥 0</div>
         </div>
       </div>
-      <div class="row2"><button class="chipbtn" id="dateChip">📅 第1年 1月</button><button class="chipbtn hidden" id="voteChip">🗳️</button><button class="chipbtn hidden" id="misChip">🎯</button><span id="buffs" class="row2"></span></div>
+      <div class="row2"><button class="chipbtn sat" id="satChip"><span class="lb">市民滿意度</span><span class="stars"><span class="bg">★★★★★</span><span class="fg" id="satFg">★★★★★</span></span></button><button class="chipbtn" id="voteChip">🗳️</button></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -1658,6 +1656,7 @@ function setCityTab(k){ cityTab=k; refreshSheet(); }
 function pickCity(k){ closeSheet(); setPlacing({city:k}); }
 function voteHTML(){ const v=voteState(), c=S.city.crisis, ap=approval(), l=c?c.left:v.next-S.time, mm=`${Math.floor(Math.max(0,l)/60)}:${String(Math.floor(Math.max(0,l)%60)).padStart(2,'0')}`;
   return `<div class="item" style="display:block;padding:10px 12px;border-color:${c||ap<50?'#e2574c':ap<55?'#f2b544':'#3fae7a'}"><div class="nm" style="font-weight:900">${c?'🚨 罷免危機':'🗳️ 市長選舉'}・${c?`剩 ${mm}`:`${mm} 後開票`}</div><div class="bar" style="margin:6px 0"><i style="width:${c?Math.min(100,CS.happy/55*100):ap}%;background:${c||ap<50?'#e2574c':ap<55?'#f2b544':'#3fae7a'}"></i></div><div class="ds">${c?`幸福度 ${CS.happy} / 55，達標維持 5 秒就逆轉勝，否則下台`:`支持率 ${ap}%（要 50% 才能連任）・任期 ${Math.min(TERM,v.terms)}/${TERM} 年・政績加減分 ${(v.bonus||0)>=0?'+':''}${Math.max(-15,Math.min(15,v.bonus||0))}（任務、決策、火災、組合都會算）`}</div></div>`; }
+function fxHTML(){ const now=Date.now(), L=[]; if(CS.pw&&CS.pw.ratio<1) L.push('⚡ 停電中'); (S.city.fx||[]).filter(f=>f.lb&&f.until>S.time).forEach(f=>L.push(`${f.lb} 剩 ${Math.ceil(f.until-S.time)} 秒`)); Object.entries(S.buffs).filter(([k,v])=>v>now&&BUFFNAME[k]).forEach(([k,v])=>L.push(`${BUFFNAME[k]} 剩 ${Math.ceil((v-now)/1000)} 秒`)); return L.length?`<div class="item" style="display:block;padding:8px 12px"><div class="nm" style="font-size:14px">⏱️ 進行中的效果</div><div class="ds">${L.join('・')}</div></div>`:''; }
 function misHTML(){ const m=S.city.mis; if(!m) return `<div class="item" style="padding:8px 10px"><div style="font-size:22px">🎯</div><div class="txt"><div class="nm" style="font-size:14px">下一個市長任務準備中…</div><div class="ds">已完成 ${S.city.misDone||0} 個任務</div></div></div>`;
   const p=Math.min(1,misProg(m)); return `<div class="item" style="display:block;padding:10px 12px;border-color:#f2b544"><div class="nm" style="font-weight:900">🎯 市長任務：${misText(m)}</div><div class="bar" style="margin:6px 0"><i style="width:${Math.round(p*100)}%"></i></div><div class="ds">剩 ${Math.floor(m.left/60)}:${String(Math.floor(m.left%60)).padStart(2,'0')}・獎金 $${fmt(m.reward)}・失敗的話市民會失望 60 秒</div></div>`; }
 function losers(){ const L=S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&((b.rev||0)*PAYM()-(b.up||0))<-.5); if(!L.length) return ''; const by={}; L.forEach(b=>by[b.t]=(by[b.t]||0)+1); return `<div class="ds" style="color:var(--bad);margin-top:4px">賠錢中：${Object.entries(by).map(([k,n])=>`${CB[k].icon}${CB[k].name}×${n}`).join('、')}</div>`; }
@@ -1721,9 +1720,9 @@ function cityGovHTML(){
     <div class="row"><button class="btn" ${ok?'':'disabled'} data-act="stageUp">申請升格</button></div></div>`; }
   else up=`<div class="item done"><div class="ic">🏆</div><div class="txt"><div class="nm">${st.name}</div><div class="ds">已經是最高等級的城市了！</div></div></div>`;
   return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}・本市免稅，一切使用者付費</div>
-    <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div><div>⚡ 用電 / 發電<b style="color:${CS.pw.ratio<1?'var(--bad)':'var(--ink)'}">${Math.round(CS.pw.use)} / ${Math.round(CS.pw.cap)}${CS.pw.grace?' 🔌借電中':''}</b></div><div>🔗 運作中的組合<b>${CMB.length} 組</b></div></div>
+    <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>市民滿意度<b style="color:#f2b544">${'★'.repeat(Math.round(CS.happy/20))}<span style="color:#e2d6c4">${'☆'.repeat(5-Math.round(CS.happy/20))}</span></b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div><div>⚡ 用電 / 發電<b style="color:${CS.pw.ratio<1?'var(--bad)':'var(--ink)'}">${Math.round(CS.pw.use)} / ${Math.round(CS.pw.cap)}${CS.pw.grace?' 🔌借電中':''}</b></div><div>🔗 運作中的組合<b>${CMB.length} 組</b></div></div>
     <div class="row" style="margin:0 0 8px"><button class="btn ghost" data-act="openDex">📖 組合圖鑑 ${COMBOS.filter(c=>S.meta.dex[c.id]).length}/${COMBOS.length}</button><button class="btn ghost" data-act="openFame">🏅 名人堂 ${S.meta.md}</button></div>
-    ${voteHTML()}${misHTML()}
+    ${voteHTML()}${misHTML()}${fxHTML()}
     <div class="item" style="display:block;padding:8px 12px"><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>💰 收入</span><b>+$${fmt(cityGross()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>🔧 維護費＋薪水</span><b style="color:var(--bad)">-$${fmt(cityUpkeep()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0 0;border-top:1px dashed #efe3d2;margin-top:4px"><span>📈 淨利</span><b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">${cityRate()>=0?'+':'-'}$${fmt(Math.abs(cityRate()*60))} / 分</b></div>${losers()}</div>
     <h4>🗣️ 市民心聲＝商機</h4>${v}
     <h4>💰 錢從哪裡來（每分鐘）</h4><div class="item" style="display:block;padding:8px 12px">${incH||'<div class="ds">還沒有收入，先蓋房子和商店吧</div>'}</div>
@@ -1733,10 +1732,9 @@ function cityGovHTML(){
 // ---- 模式切換 ----
 let lastCityKey='';
 function cityHud(){
-  { const t=`${SEASON_ICON[seasonOf(monthNo())]} 第${yearNo()}年 ${monthNo()}月${NIGHT>.5?' 🌙':''}`; if($('dateChip').textContent!==t) $('dateChip').textContent=t; }
   const k=`${CS.pop}|${CS.happy}|${S.city.stage}`; if(k===lastCityKey) return; lastCityKey=k;
-  $('rep').textContent='👥 '+fmt(CS.pop); $('clean').textContent='😊 '+CS.happy; $('clean').classList.toggle('warn',CS.happy<45);
-  $('brandName').textContent=CITY_STAGES[S.city.stage].name; $('title').textContent=CITY_STAGES[S.city.stage].mayor;
+  $('rep').textContent='👥 '+fmt(CS.pop); $('satFg').style.width=Math.max(0,Math.min(100,CS.happy))+'%'; $('satChip').classList.toggle('warn',CS.happy<45);
+  $('brandName').textContent=CITY_STAGES[S.city.stage].name;
 }
 function cityIntro(){
   if(!S.city.intro){ S.city.intro=1; S.city.noHosp=1; S.city.v25=1; const T=TRAITS[S.city.trait], M=MCX();
@@ -1782,13 +1780,10 @@ let lastMoney=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
-  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免危機 ${f(c.left)}｜幸福度 ${CS.happy}/55`:`🗳️ 選舉 ${f(v.next-S.time)}｜支持率 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
-  { const mc=$('misChip'), m=S.city&&S.city.mis; const show=mode==='city'&&!!m; mc.classList.toggle('hidden',!show); if(show){ const t=`🎯 ${misText(m)}｜${Math.floor(m.left/60)}:${String(Math.floor(m.left%60)).padStart(2,'0')}`; if(mc.textContent!==t) mc.textContent=t; mc.classList.toggle('warn',m.left<30); } }
+  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免危機 ${f(c.left)}｜滿意度 ${CS.happy}/55`:`${NIGHT>.5?'🌙':SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月｜🗳️ ${f(v.next-S.time)} 支持 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   const m=Math.floor(S.money);
   if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
   cityHud();
-  const now=Date.now(); let bs=(CS.pw&&CS.pw.ratio<1?'<span class="buff em">⚡ 停電中</span>':'')+(S.city.fx||[]).filter(f=>f.lb&&f.until>S.time).map(f=>`<span class="buff">${f.lb} ${Math.ceil(f.until-S.time)}s</span>`).join('')+Object.entries(S.buffs).filter(([k,v])=>v>now&&BUFFNAME[k]).map(([k,v])=>`<span class="buff">${BUFFNAME[k]} ${Math.ceil((v-now)/1000)}s</span>`).join('');
-  if($('buffs').innerHTML!==bs) $('buffs').innerHTML=bs;
 }
 let tickTimer=null;
 let HSIM=false;
@@ -1805,14 +1800,13 @@ $('sheetBg').onclick=closeSheet;
 $('bannerX').onclick=()=>setPlacing(null);
 $('deputy').onclick=()=>{ ensureAudio(); const a=depList[Math.min(depIdx,depList.length-1)]; if(a&&a.go) a.go(); sfx.pop(); };
 $('voteChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
-$('misChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
+$('satChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(cityGovHTML); };
 $('bannerOK').onclick=()=>{ ensureAudio(); confirmGhost(); };
 $('cBuild').onclick=()=>{ ensureAudio(); openSheet(cityBuildHTML); };
 $('cRoad').onclick=()=>{ ensureAudio(); setPlacing({city:'road'}); };
 $('cBull').onclick=()=>{ ensureAudio(); setPlacing({city:'bulldoze'}); };
 $('cGov').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(cityGovHTML); };
 $('cSet').onclick=()=>{ ensureAudio(); confirmReset=false; openSheet(citySetHTML); };
-$('dateChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
 $('zIn').onclick=()=>zoomAt(1.25,W/2,H/2);
 $('zOut').onclick=()=>zoomAt(1/1.25,W/2,H/2);
 const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
@@ -1830,7 +1824,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.5.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.5.2</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } confirmReset=false; S=newState(); S.day=today(); S.tut=1; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; resetRuntime(); camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); saveLocal(); cloudSave(true); closeSheet(); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
