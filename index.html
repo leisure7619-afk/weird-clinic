@@ -38,6 +38,7 @@ header{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(s
 #stage.dep #toast{top:calc(150px + env(safe-area-inset-top))}
 .chipbtn{pointer-events:auto;background:rgba(255,253,248,.95);border:2px solid var(--line);border-radius:999px;padding:2px 9px;font-weight:800;font-size:12px;white-space:nowrap}
 #misChip{background:#fff3df;border-color:#f2b544;max-width:62vw;overflow:hidden;text-overflow:ellipsis}
+#voteChip.ok{background:#eefaf3;border-color:#3fae7a}#voteChip.mid{background:#fff3df;border-color:#f2b544}#voteChip.bad{background:#ffe3dc;border-color:#e2574c;animation:pulse .8s infinite alternate}
 #misChip.warn{background:#ffe3dc;border-color:#e2574c;animation:pulse .8s infinite alternate}
 @keyframes pulse{to{transform:scale(1.05)}}
 .buff{font-size:11px;font-weight:700;background:#fff1c7;border:1px solid #f1d27a;border-radius:8px;padding:2px 6px}
@@ -133,7 +134,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
           <div class="pill" id="clean">✨ 100%</div>
         </div>
       </div>
-      <div class="row2"><button class="chipbtn hidden" id="toCity">🏙️ 回城市</button><button class="chipbtn" id="dateChip">📅 第1年 1月</button><button class="chipbtn hidden" id="misChip">🎯</button><span id="buffs" class="row2"></span></div>
+      <div class="row2"><button class="chipbtn hidden" id="toCity">🏙️ 回城市</button><button class="chipbtn" id="dateChip">📅 第1年 1月</button><button class="chipbtn hidden" id="voteChip">🗳️</button><button class="chipbtn hidden" id="misChip">🎯</button><span id="buffs" class="row2"></span></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -1729,6 +1730,35 @@ function protestTick(dt){
   const was=protest; protest=lowHappyT>20; if(protest&&!was&&mode==='city'){ sfx.bad(); toast('✊','市民上街抗議！','收入 -20%，幸福度回到 50 以上才會散場'); }
   if(!protest&&was) ticker('✌️ 抗議群眾散場了，大家去喝珍奶。');
 }
+// ---- 市長選舉 ----
+const RIVALS=['鴨子黨・呱呱','柴犬黨・旺財','珍奶黨・波霸','機器人黨・嗶嗶','外星人黨・咻咻','睡覺黨・阿呆'];
+function voteState(){ if(!S.city.vote) S.city.vote={next:Math.ceil((S.time+90)/YEAR)*YEAR,apS:0,apN:0,terms:0}; return S.city.vote; }
+function approval(){ const v=voteState(), avg=v.apN?v.apS/v.apN:CS.happy; return Math.max(5,Math.min(95,Math.round(.6*avg+.4*CS.happy-(S.money<0?10:0)-(protest?10:0)))); }
+let voteAcc=0, voteWarned=0;
+function electionTick(dt){
+  if(S.city.over) return; const v=voteState();
+  voteAcc+=dt; if(voteAcc>=1){ voteAcc=0; v.apS+=CS.happy; v.apN++; }
+  const c=S.city.crisis;
+  if(c){ c.left-=dt; c.ok=CS.happy>=55?(c.ok||0)+dt:0;
+    if(c.ok>=5){ S.city.crisis=null; v.terms++; sfx.fan(); S.buffs.cityhappy=Date.now()+60000; queueModal({icon:'🎉',title:'逆轉勝！',body:`<p>重新計票之後，你以些微差距連任了！<br>市民說：「好啦，再給你一次機會。」</p><div class="note">🏛️ 第 ${v.terms+1} 任開始<br>😊 市民開心 60 秒</div>`,buttons:[{label:'繼續當市長'}]}); saveLocal(); }
+    else if(c.left<=0){ gameOver(); }
+    return; }
+  const left=v.next-S.time;
+  if(left<=60&&voteWarned!==v.next){ voteWarned=v.next; toast('🗳️','一分鐘後市長選舉開票！',`目前支持率 ${approval()}%，要 50% 以上才能連任`); }
+  if(left<=0) runElection();
+}
+function runElection(){
+  const v=voteState(), X=approval(), rival=pick(RIVALS); v.next+=YEAR; v.apS=0; v.apN=0;
+  const bar=`<div style="display:flex;height:22px;border-radius:11px;overflow:hidden;margin:10px 0;font-size:12px;font-weight:800;color:#fff"><div style="width:${X}%;background:#3fae7a;display:flex;align-items:center;padding-left:8px">你 ${X}%</div><div style="flex:1;background:#9aa0aa;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">${100-X}%</div></div>`;
+  if(X>=50){ v.terms++; const bonus=Math.round(Math.max(1000,cityRate()*60*4)/10)*10; S.money+=bonus; sfx.fan(); S.buffs.cityhappy=Date.now()+45000;
+    queueModal({icon:'🗳️',title:X>=65?'高票連任！':'連任成功！',body:`<p>第 ${v.terms+1} 任市長，還是你！對手「${rival}」黯然下台。</p>${bar}<div class="note">💰 連任紅包 +$${fmt(bonus)}<br>😊 市民開心 45 秒<br>🗳️ 下一次選舉：明年年底</div>`,buttons:[{label:'謝謝市民！'}]}); }
+  else { S.city.crisis={left:120,ok:0}; sfx.bad();
+    queueModal({icon:'🚨',title:'選舉落後！罷免危機',body:`<p>開票結果你只拿到 ${X}%，「${rival}」領先！<br>選委會決定 2 分鐘後重新計票。</p>${bar}<div class="note">⏱️ 2 分鐘內把幸福度拉到 <b>55 以上</b>並維持 5 秒，就能逆轉勝<br>❌ 做不到的話，你就要下台了（遊戲結束）<br>🧑‍💼 照副市長的提醒做最快</div>`,buttons:[{label:'拼了！'}]}); }
+  saveLocal();
+}
+function gameOver(){ S.city.over=1; S.city.crisis=null; saveLocal(); showGameOver(); }
+function showGameOver(){ const v=voteState(); sfx.bad();
+  queueModal({icon:'🪧',title:'你下台了…',body:`<p>市民投票決定換人當市長。<br>新市長的第一個政策是：「全市改種仙人掌」。</p><div class="note">🏛️ 當了 ${v.terms+1} 任市長（${yearNo()} 年）<br>👥 最後人口 ${fmt(CS.pop)}<br>💰 累計收入 $${fmt(S.stats.earned)}<br>🎯 完成任務 ${S.city.misDone||0} 個</div>`,buttons:[{label:'重新出來選，打造新城市',fn:()=>{ S=newState(); S.day=today(); S.tut=1; resetRuntime(); saveLocal(); cloudSave(true); closeSheet(); mode='city'; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); cityIntro(); ticker('🏙️ 新的城市開始了！這次一定要讓市民開心。'); }}]}); }
 function extinguish(b){ b.fire=0; sfx.fan(); S.buffs.cityhappy=Date.now()+20000; const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,1); floats.push({c:1,text:'💦 滅火成功！',x:c.x,y:c.y,life:1.4,color:'#4d7cc7'}); ticker(pick(['💦 市長親自拿水桶滅火！市民歡呼。','💦 火滅了！市長的西裝濕透了，但很帥。'])); }
 function cityRepair(){ const b=citySel; if(!b||!b.burnt) return; const c=Math.round(CB[b.t].cost*.4/10)*10; if(S.money<c){ sfx.bad(); toast('💸','錢不夠重建',`需要 $${fmt(c)}`); return; } S.money-=c; b.burnt=0; b.occ=0; cityDirty=true; sfx.build(); closeSheet(); ticker(`🏗️ ${CB[b.t].name}重建完成，比以前更堅固（大概）。`); saveLocal(); }
 let lastMatch=false;
@@ -1741,8 +1771,8 @@ function cityUpdate(dt){
     if(!D.fixed){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round((b.ok?payOf(b)*PAYM()*(protest?.8:1):0)-(b.up||0)); if(m){ S.money+=m; if(m>0) S.stats.earned+=m; if(mode==='city'&&(m>0||m<=-2)){ const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,BW(b)>1?1.4:.9); floats.push({c:1,text:(m>0?'+$':'-$')+fmt(Math.abs(m)),x:c.x,y:c.y,life:1.1,color:m>0?'#e09a12':'#e2574c'}); } } } }
   });
   cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
-  if(mode==='city'&&!modalOpen) misTick(dt); fireTick(dt); protestTick(dt); deputyTick(dt);
-  if(mode==='city'){ updateCars(dt); updatePeds(dt); cityEvT-=dt; if(cityEvT<=0&&!modalOpen){ cityEvT=110+Math.random()*80; const ev=pick(CITY_EVENTS); sfx.pop(); queueModal({icon:ev.icon,title:ev.title,body:`<p>${ev.text}</p>`,buttons:ev.choices.map((c,i)=>({label:c.label,ghost:i===1,fn:()=>applyOutcome(ev,c.fn())}))}); } }
+  if(mode==='city'&&!modalOpen){ misTick(dt); electionTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
+  if(mode==='city'){ updateCars(dt); updatePeds(dt); updateTransit(dt); cityEvT-=dt; if(cityEvT<=0&&!modalOpen){ cityEvT=110+Math.random()*80; const ev=pick(CITY_EVENTS); sfx.pop(); queueModal({icon:ev.icon,title:ev.title,body:`<p>${ev.text}</p>`,buttons:ev.choices.map((c,i)=>({label:c.label,ghost:i===1,fn:()=>applyOutcome(ev,c.fn())}))}); } }
 }
 // ---- 交通與行人 ----
 function roadNbrs(x,y){ return DIRS.map(([a,b])=>[x+a,y+b]).filter(([a,b])=>isRoad(a,b)); }
@@ -1752,10 +1782,66 @@ function stepAgent(a){ const nb=roadNbrs(a.nx,a.ny); let opts=nb.filter(([x,y])=
 function spawnAgent(){ const s=randRoad(); if(!s) return null; const nb=roadNbrs(s[0],s[1]); if(!nb.length) return null; const n=pick(nb); return {x:s[0],y:s[1],nx:n[0],ny:n[1],t:Math.random(),seed:Math.random()*99}; }
 function updateCars(dt){
   const want=ROADS.size<3?0:Math.min(22,2+Math.floor(CS.pop/30));
-  while(cars.length<want){ const a=spawnAgent(); if(!a) break; a.col=pick(CAR_COLS); a.kind=Math.random()<.12?'duck':(CS.cnt.robot&&Math.random()<.3)?'robot':Math.random()<.08?'bus':'car'; a.sp=a.kind==='bus'?.9:1.2+Math.random()*.4; cars.push(a); }
+  while(cars.length<want){ const a=spawnAgent(); if(!a) break; a.col=pick(CAR_COLS); a.kind=Math.random()<.12?'duck':(CS.cnt.robot&&Math.random()<.3)?'robot':'car'; a.sp=1.2+Math.random()*.4; cars.push(a); }
   if(cars.length>want) cars.length=want;
   cars.forEach(a=>{ a.t+=dt*a.sp; if(a.t>=1) stepAgent(a); }); cars=cars.filter(a=>!a.dead);
 }
+// ---- 大眾運輸：捷運高架、公車路線、空中航線 ----
+let transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]};
+const bctr=b=>[b.x+BW(b)/2,b.y+BW(b)/2];
+function nnOrder(arr){ if(arr.length<3) return arr.slice(); const out=[arr[0]], rest=arr.slice(1); while(rest.length){ const l=bctr(out[out.length-1]); let bi=0,bd=1e9; rest.forEach((q,i)=>{ const c=bctr(q), d=Math.hypot(c[0]-l[0],c[1]-l[1]); if(d<bd){ bd=d; bi=i; } }); out.push(rest.splice(bi,1)[0]); } return out; }
+function roadNear(b){ const w=BW(b); for(let i=-1;i<=w;i++) for(let j=-1;j<=w;j++){ if((i<0||i>=w||j<0||j>=w)&&!((i<0||i>=w)&&(j<0||j>=w))&&isRoad(b.x+i,b.y+j)) return [b.x+i,b.y+j]; } return null; }
+function bfsPath(a,b){ const k=(x,y)=>x+','+y, prev=new Map([[k(a[0],a[1]),null]]), q=[a]; let h=0; while(h<q.length){ const [x,y]=q[h++]; if(x===b[0]&&y===b[1]){ const out=[]; let c=k(x,y); while(c){ out.push(c.split(',').map(Number)); c=prev.get(c); } return out.reverse(); } for(const [dx,dy] of DIRS){ const nx=x+dx, ny=y+dy, kk=k(nx,ny); if(!prev.has(kk)&&isRoad(nx,ny)){ prev.set(kk,k(x,y)); q.push([nx,ny]); } } } return null; }
+function polyLen(P){ let L=0; for(let i=1;i<P.length;i++) L+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); return L; }
+function polyAt(P,s){ for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); if(s<=d||i===P.length-1){ const t=d?Math.min(1,s/d):0; return [P[i-1][0]+(P[i][0]-P[i-1][0])*t,P[i-1][1]+(P[i][1]-P[i-1][1])*t]; } s-=d; } return P[P.length-1]; }
+function rebuildTransit(){
+  const key=S.city.b.filter(b=>['mrt','bus','balloon','airport'].includes(b.t)&&b.ok).map(b=>b.t+b.x+','+b.y).join('|')+'#'+ROADS.size;
+  if(key===transit.key) return; transit.key=key;
+  // 捷運：2 站以上自動拉高架軌道
+  const st=nnOrder(S.city.b.filter(b=>b.t==='mrt'&&b.ok)); transit.mrt=null;
+  if(st.length>=2){ const C=st.map(bctr), P=[C[0]], stopIdx=[0]; const seq=st.length>=3?[...C.slice(1),C[0]]:[C[1],C[0]];
+    seq.forEach(c=>{ const l=P[P.length-1]; if(l[0]!==c[0]&&l[1]!==c[1]) P.push([c[0],l[1]]); P.push(c); stopIdx.push(P.length-1); });
+    const L=polyLen(P), stopS=stopIdx.map(i=>polyLen(P.slice(0,i+1))); transit.mrt={P,L,stopS};
+    const n=Math.min(3,st.length-1); if(transit.trains.length!==n) transit.trains=Array.from({length:n},(_,i)=>({s:L*i/n,dwell:0,last:-1}));
+    transit.trains.forEach(t=>t.s%=L);
+    if(!S.city.mrtLine){ S.city.mrtLine=1; toast('🚇','捷運通車了！','兩站之間自動蓋好高架軌道'); }
+  } else transit.trains=[];
+  // 公車：照站牌順序繞一圈
+  const stops=nnOrder(S.city.b.filter(b=>b.t==='bus'&&b.ok)), rt=stops.map(roadNear).filter(Boolean); transit.route=null;
+  if(rt.length>=2){ let P=[rt[0]]; for(let i=0;i<rt.length;i++){ const seg=bfsPath(P[P.length-1],rt[(i+1)%rt.length]); if(seg) P=P.concat(seg.slice(1)); } if(P.length>2) transit.route={P,stops:new Set(rt.map(r=>r[0]+','+r[1]))}; }
+  else if(rt.length===1){ const prev=new Map([[rt[0].join(','),null]]), q=[rt[0]]; let h=0, far=rt[0]; while(h<q.length&&h<60){ const [x,y]=q[h++]; far=[x,y]; for(const [dx,dy] of DIRS){ const kk=(x+dx)+','+(y+dy); if(!prev.has(kk)&&isRoad(x+dx,y+dy)){ prev.set(kk,1); q.push([x+dx,y+dy]); } } } const go=bfsPath(rt[0],far), back=go&&bfsPath(far,rt[0]); if(go&&back&&go.length>1) transit.route={P:go.concat(back.slice(1)),stops:new Set([rt[0].join(',')])}; }
+  const nb=transit.route?Math.min(5,Math.max(1,stops.length)):0; if(transit.buses.length!==nb||!transit.route) transit.buses=Array.from({length:nb},(_,i)=>({i:Math.floor(transit.route?(transit.route.P.length-1)*i/Math.max(1,nb):0),t:0,wait:0,kind:'bus'}));
+  // 熱氣球、飛機：兩座以上互飛
+  transit.air=[]; ['balloon','airport'].forEach(k=>{ const A=S.city.b.filter(b=>b.t===k&&b.ok); for(let i=0;i+1<A.length;i++) transit.air.push({k,a:bctr(A[i]),b:bctr(A[i+1]),ph:i*.37}); });
+}
+function updateTransit(dt){
+  rebuildTransit(); const m=transit.mrt;
+  if(m) transit.trains.forEach(t=>{ if(t.dwell>0){ t.dwell-=dt; return; } const ns=t.s+dt*2.2; m.stopS.forEach((ss,i)=>{ if(t.s<ss&&ns>=ss&&t.last!==i){ t.dwell=1.8; t.last=i; } }); t.s=ns; if(t.s>=m.L){ t.s-=m.L; t.last=-1; } });
+  const r=transit.route; if(r) transit.buses.forEach(a=>{ const P=r.P; if(a.i>=P.length-1) a.i=0; if(a.wait>0){ a.wait-=dt; } else { a.t+=dt*1.05; if(a.t>=1){ a.t=0; a.i++; if(a.i>=P.length-1) a.i=0; if(r.stops.has(P[a.i].join(','))){ a.wait=2.2; } } } const c=P[a.i], n=P[Math.min(P.length-1,a.i+1)]; a.x=c[0]; a.y=c[1]; a.nx=n[0]; a.ny=n[1]; });
+}
+function drawMrtPillars(list){ const m=transit.mrt; if(!m) return; const P=m.P; let acc=0; for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); for(let s=(1.2-acc%1.2);s<d;s+=1.2){ const t=s/d, x=P[i-1][0]+(P[i][0]-P[i-1][0])*t, y=P[i-1][1]+(P[i][1]-P[i-1][1])*t; if(bAt(Math.floor(x),Math.floor(y))) continue; list.push({d:dep(x,y)+.3,fn:()=>{ const g=P3(x,y,0), t2=P3(x,y,1.05); ellipse(g.x,g.y,tw*.08,tw*.04,'rgba(0,0,0,.2)'); ln(g,t2,'#b9bec8',Math.max(3,tw*.09)); ln(g,t2,'#d8dce2',Math.max(1,tw*.03)); }}); } acc+=d; } }
+function drawMrtTop(){ const m=transit.mrt; if(!m) return; const P=m.P.map(p=>P3(p[0],p[1],1.1));
+  const path=()=>{ ctx.beginPath(); P.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); };
+  ctx.lineJoin='round'; ctx.lineCap='round'; path(); ctx.strokeStyle='#8a8f99'; ctx.lineWidth=Math.max(5,tw*.2); ctx.stroke(); path(); ctx.strokeStyle='#e6e9ee'; ctx.lineWidth=Math.max(3,tw*.13); ctx.stroke();
+  transit.trains.forEach(t=>{ const seg=[]; for(let k=0;k<=8;k++){ let s=t.s-k*.16; if(s<0) s+=m.L; const q=polyAt(m.P,s); seg.push(P3(q[0],q[1],1.22)); }
+    ctx.beginPath(); seg.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.strokeStyle='#2f7d57'; ctx.lineWidth=Math.max(5,tw*.17); ctx.stroke();
+    ctx.beginPath(); seg.forEach((q,i)=>i?ctx.lineTo(q.x,q.y-tw*.02):ctx.moveTo(q.x,q.y-tw*.02)); ctx.strokeStyle='rgba(220,245,255,.9)'; ctx.setLineDash([tw*.05,tw*.04]); ctx.lineWidth=Math.max(1.5,tw*.05); ctx.stroke(); ctx.setLineDash([]);
+    circle(seg[0].x,seg[0].y,Math.max(2,tw*.04),'#fff7b0'); });
+  ctx.lineCap='butt'; }
+function drawAir(){ transit.air.forEach(r=>{ const p=((clock*.05+r.ph)%2), t=p<1?p:2-p, x=r.a[0]+(r.b[0]-r.a[0])*t, y=r.a[1]+(r.b[1]-r.a[1])*t, z=r.k==='airport'?2.2+Math.sin(t*Math.PI)*1.5:1.6+Math.sin(t*Math.PI)*1.2, c=P3(x,y,z); emoji(r.k==='airport'?'✈️':'🎈',c.x,c.y,tw*(r.k==='airport'?.45:.4)); }); }
+// ---- 排隊：服務不夠就看得到人龍 ----
+const Q_COLS=['#e2574c','#4d7cc7','#3fae7a','#f2b544','#9b6dd6','#ff8fa3','#f08a3c','#2f3a6b'], Q_SKIN=['#f6d2b5','#e8b48f','#c98b5f','#8d5a3b'];
+function queueLen(b){ const D=CB[b.t]; if(!b.ok) return 0;
+  if(b.t==='cityhall'){ return 0; }
+  if(!D.svc||D.svc==='trash'||D.svc==='water') return 0; const sat=(CS.sat||{})[D.svc]; if(sat===undefined||sat>=.95||!b.busy) return 0; return Math.min(9,1+Math.round((1-sat)*12)); }
+function queueSpots(b,n){ const w=BW(b), cx=b.x+w/2, cy=b.y+w/2; const sides=[[0,1],[1,0],[0,-1],[-1,0]].sort((p,q)=>dep(cx+q[0],cy+q[1])-dep(cx+p[0],cy+p[1])).slice(0,2);
+  const hasRoad=([sx,sy])=>{ for(let i=0;i<w;i++){ const tx=sx===1?b.x+w:sx===-1?b.x-1:b.x+i, ty=sy===1?b.y+w:sy===-1?b.y-1:b.y+i; if(isRoad(tx,ty)) return true; } return false; }; const side=sides.find(hasRoad)||sides[0];
+  const out=[]; for(let k=0;k<n;k++){ const row=Math.floor(k/Math.max(1,Math.floor(w*4.2))), u=.15+(k%Math.max(1,Math.floor(w*4.2)))*.22, off=.1+row*.2;
+    const x=side[0]===1?b.x+w+off:side[0]===-1?b.x-off:b.x+Math.min(w-.1,u), y=side[1]===1?b.y+w+off:side[1]===-1?b.y-off:b.y+Math.min(w-.1,u); out.push([x,y]); } return out; }
+function drawMini(x,y,i,extra){ const c=iso(x,y), s=tw*.3, bob=Math.sin(clock*3+i*1.3)*s*.03; ellipse(c.x,c.y,s*.18,s*.07,'rgba(0,0,0,.2)'); rrect(c.x-s*.15,c.y-s*.75+bob,s*.3,s*.55,s*.1,Q_COLS[i%8]); ctx.fillStyle='#3b3b46'; ctx.fillRect(c.x-s*.12,c.y-s*.22,s*.09,s*.22); ctx.fillRect(c.x+s*.03,c.y-s*.22,s*.09,s*.22); circle(c.x,c.y-s*.9+bob,s*.16,Q_SKIN[(i*3)%4]); if(extra) emoji(extra,c.x+s*.25,c.y-s*.45,s*.35); }
+function drawQueues(list){ S.city.b.forEach(b=>{ let n=queueLen(b), ex=null;
+    if(b.t==='cityhall'){ const jq=CS.unemp?Math.min(6,1+Math.round(CS.un/(CS.pop||1)*8)):0, hq=(CS.cap&&CS.pop>=CS.cap*.95&&CS.happy>35)?4:0; n=jq+hq; ex=jq?'📄':'🧳'; if(!n) return; const sp=queueSpots(b,n); sp.forEach(([x,y],i)=>list.push({d:dep(x,y)+.02,fn:()=>drawMini(x,y,i+b.x,i<jq?(i%3===0?'📄':null):(i%2===0?'🧳':null))})); return; }
+    if(!n) return; const sp=queueSpots(b,n); sp.forEach(([x,y],i)=>list.push({d:dep(x,y)+.02,fn:()=>drawMini(x,y,i+b.x+b.y,i===n-1&&n>=5&&Math.floor(clock*1.5+i)%3===0?'💢':null)})); }); }
 function updatePeds(dt){
   const want=Math.min(30,3+Math.floor(CS.pop/14)), wantT=Math.min(14,Math.floor(CS.tour*1.4)), wantR=Math.min(6,(CS.cnt.robot||0)*3);
   const count=k=>peds.filter(p=>p.k===k).length;
@@ -2033,6 +2119,7 @@ function drawCar(a){
   box(x0,y0,ww,dd,h,col,.04); box(x0+ww*.2,y0+dd*.2,ww*.6,dd*.6,.1,'#bfe0f2',.04+h);
   if(a.kind==='duck'){ const c=P3(p.x,p.y,h+.15); emoji('🦆',c.x,c.y-tw*.05,tw*.2); }
   if(a.kind==='robot'){ const c=P3(p.x,p.y,h+.12); emoji('🤖',c.x,c.y-tw*.03,tw*.15); }
+  if(a.kind==='bus'){ const c=P3(p.x,p.y,h+.2); emoji('🚌',c.x,c.y-tw*.05,tw*.22); if(a.wait>0) emoji('👋',c.x+tw*.18,c.y-tw*.2,tw*.14); }
   RAW=false;
 }
 function drawRobot(p){
@@ -2081,6 +2168,8 @@ function drawCity(){
     if(t==='h') list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.7; drawHill(x,y); ctx.globalAlpha=1; }});
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
+  transit.buses.forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
+  drawMrtPillars(list); drawQueues(list);
   peds.forEach(p=>{ const q=agentPos(p,.36*p.side); list.push({d:dep(q.x,q.y)+.01,fn:()=>drawPed(p)}); });
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
   S.city.b.forEach(b=>{ if(!b._hit) return; const P=b._hit.poly, cx=(P[0].x+P[2].x)/2, ty=P[4].y;
@@ -2089,6 +2178,7 @@ function drawCity(){
     if(b.burnt){ for(let k=0;k<2;k++){ const pp=(clock*.3+k/2)%1; ctx.globalAlpha=(1-pp)*.35; circle(cx+k*tw*.1,ty-tw*pp*.8,tw*(.1+pp*.15),'#444'); ctx.globalAlpha=1; } } });
   if(protest) peds.forEach(p=>{ if(p.k==='res'&&p.px!==undefined&&((p.seed*7)|0)%3===0){ const c=iso(p.px,p.py); emoji('✊',c.x+tw*.12,c.y-tw*.75+Math.sin(clock*6+p.seed)*tw*.04,tw*.18); } });
   if(ghost&&ghost.bull&&ghost.b&&ghost.b._hit){ ctx.globalAlpha=.3+.15*Math.sin(clock*6); poly(ghost.b._hit.poly,'#e2574c'); ctx.globalAlpha=1; poly(ghost.b._hit.poly,null,'#c0392b',2); }
+  drawMrtTop(); drawAir();
   citySigns(tops);
   cityPops.forEach(p=>{ if(!p.b._hit) return; const P=p.b._hit.poly, cx=(P[0].x+P[2].x)/2, a=Math.min(1,p.life*2), up=(3.2-p.life)*tw*.15, cy=P[4].y-tw*.35-up; ctx.globalAlpha=a;
     const fs=Math.max(14,tw*.24), wdt=fs*6.4, hh=fs*2.5; rrect(cx-wdt/2,cy-hh,wdt,hh,fs*.5,'#fffdf8',p.stars>=4?'#3fae7a':p.stars<=1?'#c9b9a0':'#f2b544',2.5);
@@ -2248,6 +2338,8 @@ function cityBuildHTML(){
 }
 function setCityTab(k){ cityTab=k; refreshSheet(); }
 function pickCity(k){ closeSheet(); setPlacing({city:k}); }
+function voteHTML(){ const v=voteState(), c=S.city.crisis, ap=approval(), l=c?c.left:v.next-S.time, mm=`${Math.floor(Math.max(0,l)/60)}:${String(Math.floor(Math.max(0,l)%60)).padStart(2,'0')}`;
+  return `<div class="item" style="display:block;padding:10px 12px;border-color:${c||ap<50?'#e2574c':ap<55?'#f2b544':'#3fae7a'}"><div class="nm" style="font-weight:900">${c?'🚨 罷免危機':'🗳️ 市長選舉'}・${c?`剩 ${mm}`:`${mm} 後開票`}</div><div class="bar" style="margin:6px 0"><i style="width:${c?Math.min(100,CS.happy/55*100):ap}%;background:${c||ap<50?'#e2574c':ap<55?'#f2b544':'#3fae7a'}"></i></div><div class="ds">${c?`幸福度 ${CS.happy} / 55，達標維持 5 秒就逆轉勝，否則下台`:`支持率 ${ap}%（要 50% 才能連任）・已連任 ${v.terms} 次・支持率看這一年的平均幸福度，赤字和抗議會扣分`}</div></div>`; }
 function misHTML(){ const m=S.city.mis; if(!m) return `<div class="item" style="padding:8px 10px"><div style="font-size:22px">🎯</div><div class="txt"><div class="nm" style="font-size:14px">下一個市長任務準備中…</div><div class="ds">已完成 ${S.city.misDone||0} 個任務</div></div></div>`;
   const p=Math.min(1,misProg(m)); return `<div class="item" style="display:block;padding:10px 12px;border-color:#f2b544"><div class="nm" style="font-weight:900">🎯 市長任務：${misText(m)}</div><div class="bar" style="margin:6px 0"><i style="width:${Math.round(p*100)}%"></i></div><div class="ds">剩 ${Math.floor(m.left/60)}:${String(Math.floor(m.left%60)).padStart(2,'0')}・獎金 $${fmt(m.reward)}・失敗的話市民會失望 60 秒</div></div>`; }
 function losers(){ const L=S.city.b.filter(b=>!CB[b.t].fixed&&((b.rev||0)*PAYM()-(b.up||0))<-.5); if(!L.length) return ''; const by={}; L.forEach(b=>by[b.t]=(by[b.t]||0)+1); return `<div class="ds" style="color:var(--bad);margin-top:4px">賠錢中：${Object.entries(by).map(([k,n])=>`${CB[k].icon}${CB[k].name}×${n}`).join('、')}</div>`; }
@@ -2255,12 +2347,18 @@ function losers(){ const L=S.city.b.filter(b=>!CB[b.t].fixed&&((b.rev||0)*PAYM()
 let depT=0, depIdx=0, depList=[], depKey='';
 function deputyAdvice(){
   const L=[], fmtT=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+  const vs=voteState(), ap=approval(), vl=vs.next-S.time, fmtV=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
+  const tipN=cityNeeds().filter(n=>!['fire','protest','road'].includes(n.k))[0], tip=tipN?`最快的方法：${NEED_SHORT[tipN.k]||tipN.h}`:'蓋公園、商店讓大家開心';
+  if(S.city.crisis){ const c=S.city.crisis; L.push({lv:3,t:`<b>罷免危機！</b>剩 ${fmtV(c.left)}，幸福度要到 55（現在 ${CS.happy}）。${tip}`,go:()=>tipN?goBuild(NEED_TAB[tipN.k]||'tour'):goBuild('tour')}); }
+  else if(vl<=90) L.push({lv:ap<50?3:2,good:ap>=55,t:`🗳️ <b>${fmtV(vl)} 後選舉開票</b>，目前支持率 ${ap}%${ap<50?`，會落選！${tip}`:ap<55?'，有點危險，再加把勁':'，穩穩連任'}`,go:()=>openSheet(cityGovHTML)});
+  else if(ap<52) L.push({lv:2,t:`市長，支持率只有 <b>${ap}%</b>，年底選舉會很危險。${tip}`,go:()=>tipN?goBuild(NEED_TAB[tipN.k]||'tour'):openSheet(cityGovHTML)});
   const fb=S.city.b.find(b=>b.fire>0); if(fb) L.push({lv:3,t:`市長！<b>${CB[fb.t].name}失火了</b>，快點它滅火！還剩 ${Math.ceil(fb.fire)} 秒`,go:()=>{ camX=fb.x+BW(fb)/2; camY=fb.y+BW(fb)/2; clampCam(); }});
   if(S.money<0) L.push({lv:3,t:`市長！<b>市庫赤字 $${fmt(S.money)}</b>，先拆掉賠錢的建築（市政頁有標紅）`,go:()=>openSheet(cityGovHTML)});
   if(protest) L.push({lv:3,t:'市民在<b>舉牌抗議</b>，收入 -20%！幸福度回到 50 就散場',go:()=>openSheet(cityGovHTML)});
   if(stageReady()) L.push({lv:2,good:1,t:`好消息！可以<b>升格成「${CITY_STAGES[S.city.stage+1].name}」</b>了，去市政按申請升格。`,go:()=>openSheet(cityGovHTML)});
   const ns=cityNeeds().filter(n=>!['fire','debt','protest'].includes(n.k));
   ns.filter(n=>n.urgent).slice(0,1).forEach(n=>L.push({lv:2,t:`市民抱怨「${n.say}」→ <b>${NEED_SHORT[n.k]||n.h}</b>`,go:()=>goBuild(NEED_TAB[n.k]||'public')}));
+  const qb=S.city.b.filter(b=>queueLen(b)>=4); if(qb.length){ const D=CB[qb[0].t]; L.push({lv:2,t:`${D.icon} ${D.name}門口<b>大排長龍</b>，再蓋一間${SVC[D.svc][1]}設施吧`,go:()=>goBuild(D.cat)}); }
   const m=S.city.mis; if(m) L.push({lv:1,t:`任務：<b>${misText(m)}</b>（${Math.round(Math.min(1,misProg(m))*100)}%，剩 ${fmtT(m.left)}），獎金 $${fmt(m.reward)}。`,go:()=>openSheet(cityGovHTML)});
   const opp=ns.filter(n=>!n.urgent&&needGain(n)>=1).sort((a,b)=>needGain(b)-needGain(a))[0];
   if(opp) L.push({lv:1,t:`商機：「${opp.say}」→ ${NEED_SHORT[opp.k]||opp.h}，每分鐘約多賺 <b>$${fmt(needGain(opp))}</b>`,go:()=>goBuild(NEED_TAB[opp.k]||'shop')});
@@ -2274,8 +2372,8 @@ function deputyAdvice(){
   return L;
 }
 function deputyTick(dt){
-  const el=$('deputy'); if(mode!=='city'||!booted){ el.classList.add('hidden'); $('stage').classList.remove('dep'); return; } el.classList.remove('hidden'); $('stage').classList.add('dep');
-  depT-=dt; if(depT>0) return; depT=1;
+  const el=$('deputy'); if(mode!=='city'||!booted){ el.classList.add('hidden'); $('stage').classList.remove('dep'); $('toast').style.top=''; return; } el.classList.remove('hidden'); $('stage').classList.add('dep'); { const r=el.getBoundingClientRect(), st=$('stage').getBoundingClientRect(); $('toast').style.top=Math.round(r.bottom-st.top+8)+'px'; }
+  depT-=dt; if(depT>0) return; depT=.5;
   depList=deputyAdvice(); const top=depList[0]; const urgent=top.lv>=3;
   const key=depList.map(a=>a.t.replace(/[0-9:,]+/g,'')).join('|');
   if(key!==depKey){ depKey=key; depIdx=0; } else if(!urgent&&(Math.floor(clock)%7===0)) depIdx=(depIdx+1)%Math.min(3,depList.length);
@@ -2301,7 +2399,7 @@ function cityGovHTML(){
   else up=`<div class="item done"><div class="ic">🏆</div><div class="txt"><div class="nm">${st.name}</div><div class="ds">已經是最高等級的城市了！</div></div></div>`;
   return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}・本市免稅，一切使用者付費</div>
     <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div></div>
-    ${misHTML()}
+    ${voteHTML()}${misHTML()}
     <div class="item" style="display:block;padding:8px 12px"><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>💰 收入</span><b>+$${fmt(cityGross()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>🔧 維護費＋薪水</span><b style="color:var(--bad)">-$${fmt(cityUpkeep()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0 0;border-top:1px dashed #efe3d2;margin-top:4px"><span>📈 淨利</span><b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">${cityRate()>=0?'+':'-'}$${fmt(Math.abs(cityRate()*60))} / 分</b></div>${losers()}</div>
     <h4>🗣️ 市民心聲＝商機</h4>${v}
     <h4>💰 錢從哪裡來（每分鐘）</h4><div class="item" style="display:block;padding:8px 12px">${incH||'<div class="ds">還沒有收入，先蓋房子和商店吧</div>'}</div>
@@ -2392,6 +2490,7 @@ let lastMoney=-1,lastRep=-1,lastClean=-1,lastTier=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
+  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免危機 ${f(c.left)}｜幸福度 ${CS.happy}/55`:`🗳️ 選舉 ${f(v.next-S.time)}｜支持率 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   { const mc=$('misChip'), m=S.city&&S.city.mis; const show=mode==='city'&&!!m; mc.classList.toggle('hidden',!show); if(show){ const t=`🎯 ${misText(m)}｜${Math.floor(m.left/60)}:${String(Math.floor(m.left%60)).padStart(2,'0')}`; if(mc.textContent!==t) mc.textContent=t; mc.classList.toggle('warn',m.left<30); } }
   const m=Math.floor(S.money), rp=S.rep, cl=cleanPct();
   if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
@@ -2417,6 +2516,7 @@ function closeSheet(){ $('sheetWrap').classList.add('hidden'); sheetFn=null; }
 $('sheetBg').onclick=closeSheet;
 $('bannerX').onclick=()=>setPlacing(null);
 $('deputy').onclick=()=>{ ensureAudio(); const a=depList[Math.min(depIdx,depList.length-1)]; if(a&&a.go) a.go(); sfx.pop(); };
+$('voteChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
 $('misChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
 $('bannerOK').onclick=()=>{ ensureAudio(); confirmGhost(); };
 $('navBuild').onclick=()=>{ ensureAudio(); openBuild(null); };
@@ -2538,7 +2638,7 @@ function citySetHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開始？城市會全部清除':'重新開始一座新城市'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.3</div>`;
 }
 function officeHTML(){
   return `<h2>🏥 院長室</h2><div class="sub">${TIERS[S.tier].name}・人氣：${titleOf(S.rep)}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>${tierHTML()}
@@ -2653,7 +2753,7 @@ function boot(){
     mode='city'; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); $('navH').classList.add('hidden'); $('navC').classList.remove('hidden');
     ticker(pick(['🏙️ 早安，市長！今天的城市也很怪。','🏙️ 市長上班了，鴨子們在市政府門口排隊。']));
     if(S.tut===0){ S.tut=1; S.day=today(); } else { welcomeBack(t0); }
-    makeKidLooks(); cityIntro(); lastCityKey=''; saveLocal();
+    makeKidLooks(); if(S.city.over) showGameOver(); else cityIntro(); lastCityKey=''; saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
   setTimeout(()=>finish(null),hadLocal?1500:6000);
