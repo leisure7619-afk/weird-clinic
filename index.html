@@ -1472,18 +1472,22 @@ const CB={
   market: {svc:'shop',cap:45,fee:3,sign:'夜市',cat:'shop',name:'怪怪夜市',icon:'🏮',cost:3000,w:2,stage:1,jobs:25,tour:2,desc:'臭豆腐配冰淇淋，意外地好吃。'},
   mall:   {svc:'shop',cap:100,fee:3.5,cat:'shop',name:'百貨公司',icon:'🛍️',cost:9000,w:2,stage:2,jobs:60,desc:'週年慶時，鴨子也來排隊。'},
   startup:{exp:70,sign:'新創',cat:'tech',name:'科技新創',icon:'💡',cost:3000,w:1,stage:1,jobs:20,desc:'正在開發「幫你決定午餐吃什麼」的 App。'},
-  solar:  {exp:20,cat:'tech',name:'太陽能板',icon:'☀️',cost:1500,w:1,stage:1,green:1,desc:'陰天時會自己唱歌打氣。'},
+  solar:  {exp:50,cat:'tech',name:'太陽能發電場',icon:'☀️',cost:3000,w:2,stage:1,green:1,sign:'太陽能',desc:'把電賣給隔壁城市。陰天時板子會自己唱歌打氣。'},
   robot:  {exp:280,sign:'機器人工廠',cat:'tech',name:'機器人工廠',icon:'🤖',cost:12000,w:2,stage:2,jobs:50,desc:'做出來的機器人會上街掃地，偶爾迷路。'},
   ai:     {exp:650,sign:'AI 研究所',cat:'tech',name:'想太多 AI 研究所',icon:'🧠',cost:30000,w:2,stage:3,jobs:80,desc:'AI 想了很久，結論是：要多喝水。'},
-  park:   {svc:'fun',cap:10,fee:1,cat:'tour',name:'公園',icon:'🌳',cost:150,w:1,stage:0,happy:4,green:2,desc:'入園費 $1，長椅要投幣才坐得下去。有一隻固定在這裡發呆的鴨子。'},
-  museum: {svc:'fun',cap:20,fee:4,sign:'博物館',cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:4000,w:1,stage:1,tour:3,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
-  onsen:  {svc:'fun',cap:15,fee:7,sign:'溫泉',cat:'tour',name:'溫泉會館',icon:'♨️',cost:5000,w:1,stage:2,tour:3,happy:2,desc:'泡完會變得很有耐心。'},
+  park:   {svc:'fun',cap:20,fee:1,cat:'tour',name:'公園',icon:'⛲',cost:400,w:2,stage:0,happy:4,green:3,desc:'入園費 $1，長椅要投幣才坐得下去。有噴水池、花圃和一隻固定在這裡發呆的鴨子。'},
+  museum: {sign:'博物館',svc:'fun',cap:30,fee:4,cat:'tour',name:'怪東西博物館',icon:'🏛️',cost:6000,w:2,stage:1,tour:4,desc:'館藏：會唱歌的燒杯、全世界最長的發票。'},
+  onsen:  {sign:'溫泉',svc:'fun',cap:25,fee:7,cat:'tour',name:'溫泉會館',icon:'♨️',cost:7000,w:2,stage:2,tour:4,happy:2,desc:'有露天風呂，偶爾有猴子一起泡。泡完會變得很有耐心。'},
   ferris: {svc:'fun',cap:25,fee:7,cat:'tour',name:'摩天輪',icon:'🎡',cost:8000,w:2,stage:2,tour:5,happy:3,desc:'轉一圈 20 分鐘，告白成功率 87%。'},
   beach:  {svc:'fun',cap:20,fee:2,cat:'tour',name:'海水浴場',icon:'🏖️',cost:600,w:1,stage:0,tour:3,happy:2,sand:1,desc:'只能蓋在沙灘上。救生員是一隻很認真的鴨子。'},
   lighthouse:{svc:'fun',cap:18,fee:5,cat:'tour',name:'燈塔咖啡',icon:'🗼',cost:3500,w:1,stage:1,tour:4,sand:1,sign:'燈塔',desc:'只能蓋在沙灘上。頂樓賣咖啡，晚上順便照亮海面。'},
   duck:   {svc:'fun',cap:60,fee:9,sign:'巨大鴨子',cat:'tour',name:'巨大鴨子地標',icon:'🦆',cost:40000,w:2,stage:3,tour:12,happy:5,desc:'城市的精神象徵，晚上眼睛會發光。'},
-  school: {svc:'edu',cap:15,fee:4,cat:'public',name:'學校',icon:'🏫',cost:2000,w:1,stage:1,happy:5,jobs:10,desc:'學費很便宜。今天的課：如何跟鴨子溝通。'},
+  school: {svc:'edu',cap:30,fee:4,cat:'public',name:'學校',icon:'🏫',cost:3500,w:2,stage:1,happy:5,jobs:14,desc:'學費很便宜，還有操場。今天的課：如何跟鴨子溝通。'},
   lost:   {svc:'help',cap:6,fee:5,sign:'協尋中心',cat:'public',name:'迷路協尋中心',icon:'🚓',cost:1500,w:1,stage:1,happy:3,jobs:8,desc:'找人收手續費。專找迷路的人、迷路的貓，還有迷路的自信。'},
+  garbage:{svc:'trash',cap:80,fee:.3,cat:'public',name:'垃圾場',icon:'🗑️',cost:800,w:2,stage:0,jobs:4,smell:1,desc:'垃圾費隨袋徵收。附近會有點臭，別蓋在住宅旁邊。可服務 80 人。'},
+  sewage: {svc:'water',cap:150,fee:.3,cat:'public',name:'污水處理廠',icon:'🚰',cost:2500,w:2,stage:1,jobs:6,smell:1,sign:'污水廠',desc:'用多少水付多少錢。處理過的水乾淨到鴨子都搶著游。附近有點臭。可服務 150 人。'},
+  recycle:{svc:'trash',cap:300,fee:.3,exp:120,cat:'public',name:'資源回收中心',icon:'♻️',cost:9000,w:2,stage:2,jobs:15,sign:'資源回收',desc:'回收物賣到外地，垃圾也能賺錢，而且不會臭。可服務 300 人。'},
+  bigpark:{svc:'fun',cap:50,fee:1,cat:'tour',name:'中央公園',icon:'🌷',cost:5000,w:3,stage:2,happy:8,green:5,tour:2,desc:'3×3 的城市大客廳：噴水池、池塘、溜滑梯，假日人擠人。'},
   hospital:{cat:'public',name:'怪病醫院',icon:'🏥',cost:0,w:2,stage:0,happy:6,fixed:1,desc:'點進去就能經營醫院。'}
 };
 const CCATS=[['traffic','🛣️ 交通'],['home','🏠 住宅'],['shop','🏪 商業'],['tech','🔬 科技'],['tour','🎡 觀光'],['public','🏛️ 公共']];
@@ -1539,17 +1543,18 @@ function terrMigrate(){
   if(S.city.tv) { TCLR=new Set(S.city.tc||[]); return; }
   const c=new Set(); const chk=(x,y)=>{ TCLR=new Set(); if(blocked(x,y)) c.add(x+','+y); };
   S.city.r.forEach(k=>{ const [x,y]=k.split(',').map(Number); chk(x,y); });
-  S.city.b.forEach(b=>{ const w=CB[b.t].w; for(let a=0;a<w;a++) for(let d=0;d<w;d++) chk(b.x+a,b.y+d); });
+  S.city.b.forEach(b=>{ const w=BW(b); for(let a=0;a<w;a++) for(let d=0;d<w;d++) chk(b.x+a,b.y+d); });
   S.city.tc=[...c]; S.city.tv=1; TCLR=c;
 }
 function viewOf(b){
-  const w=CB[b.t].w; let sea=0,river=0,hill=0;
+  const w=BW(b); let sea=0,river=0,hill=0;
   for(let a=-2;a<=w+1;a++) for(let d=-2;d<=w+1;d++){ const X=b.x+a, Y=b.y+d, near=a>=-1&&a<=w&&d>=-1&&d<=w, t=terr(X,Y);
     if(near&&(t==='sea'||Y<=0)) sea=1; if(near&&t==='w') river=1; if(t==='h') hill=1; }
   return sea?'sea':river?'river':hill?'hill':null;
 }
 const VIEW_TXT={sea:'🌊 海景',river:'🏞️ 河景',hill:'⛰️ 山景'};
-function viewMult(b){ if(!b.view) return 1; if(b.t==='onsen'&&b.view==='hill') return 1.8; if(b.t==='beach'||b.t==='lighthouse') return 1; return 1.3; }
+function viewMult(b){ return viewBase(b)*(b.smell?.75:1); }
+function viewBase(b){ if(!b.view) return 1; if(b.t==='onsen'&&b.view==='hill') return 1.8; if(b.t==='beach'||b.t==='lighthouse') return 1; return 1.3; }
 function drawWater(x,y,col){
   tile4(x,y,col);
   const c=iso(x+.5,y+.5), o=Math.sin(clock*1.6+x*1.7+y*1.1)*tw*.06;
@@ -1563,27 +1568,29 @@ function drawHill(x,y){ const d2=(x-24.5)**2+(y-24.5)**2, k=Math.max(0,1-d2/30),
 const citySize=()=>CITY_STAGES[S.city.stage].size;
 const cityZoom=()=>Math.max(.6,Math.min(1.3,14/citySize()));
 const isRoad=(x,y)=>ROADS.has(x+','+y);
-function cityRebuild(){ terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; }
-function bAt(x,y){ return S.city.b.find(b=>{ const w=CB[b.t].w; return x>=b.x&&x<b.x+w&&y>=b.y&&y<b.y+w; }); }
+const OLDW={park:1,school:1,museum:1,onsen:1,solar:1};
+function cityRebuild(){ S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); ROADS=new Set(S.city.r); cityDirty=true; }
+const BW=b=>b.w||CB[b.t].w;
+function bAt(x,y){ return S.city.b.find(b=>{ const w=BW(b); return x>=b.x&&x<b.x+w&&y>=b.y&&y<b.y+w; }); }
 function footFree(x,y,w){ const n=citySize(); for(let a=0;a<w;a++) for(let c=0;c<w;c++){ const X=x+a, Y=y+c; if(X<0||Y<0||X>=n||Y>=n||isRoad(X,Y)||bAt(X,Y)||blocked(X,Y)) return false; } return true; }
 function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const edge=(a===-1||a===w)!==(c===-1||c===w); if(edge&&isRoad(x+a,y+c)) return true; } return false; }
-const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋']};
+const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋'],trash:['🗑️','垃圾'],water:['🚰','污水']};
 function cityCalc(){
-  if(cityDirty){ S.city.b.forEach(b=>{ b.ok=nearRoad(b.x,b.y,CB[b.t].w); b.view=viewOf(b); }); cityDirty=false; }
-  let pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0; const cnt={}, sup={shop:0,move:0,fun:0,edu:0,help:0};
+  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell); S.city.b.forEach(b=>{ b.ok=nearRoad(b.x,b.y,BW(b)); b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; }
+  let pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0; const cnt={}, sup={shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0};
   S.city.b.forEach(b=>{ const D=CB[b.t]; cnt[b.t]=(cnt[b.t]||0)+1; if(!b.ok) return; pop+=b.occ||0; cap+=D.pop||0; jobs+=D.jobs||0; trans+=D.trans||0; tour+=D.tour||0; hb+=D.happy||0; green+=D.green||0; if(b.view&&(D.pop||D.cat==='tour')) views++; });
   const staff=jobs?Math.min(1,pop/jobs):1, emp=Math.min(pop,jobs), un=Math.max(0,pop-emp), er=pop?emp/pop:1;
   const tourists=Math.round(tour*3*(1+Math.min(1,trans/20))*(buffOn('cityhappy')?1.2:1));
   S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; b.cap=D.cap*(D.jobs?staff:1); sup[D.svc]+=b.cap; });
-  const dem={shop:emp*1+un*.3+tourists*1.2, move:emp*.6+un*.2+tourists*.8, fun:emp*.5+un*.3+tourists*1.5, edu:pop*.15, help:pop*.04+tourists*.15};
-  const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,exp:0};
+  const dem={shop:emp*1+un*.3+tourists*1.2, move:emp*.6+un*.2+tourists*.8, fun:emp*.5+un*.3+tourists*1.5, edu:pop*.15, help:pop*.04+tourists*.15, trash:pop+tourists*.3, water:pop};
+  const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0,exp:0};
   Object.keys(dem).forEach(k=>sat[k]=dem[k]<1?1:Math.min(1,sup[k]/dem[k]));
   S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; if(!b.ok) return;
     if(D.rent){ b.rev=(b.occ||0)*er*D.rent*viewMult(b); inc.rent+=b.rev; }
-    else if(D.svc){ const sh=sup[D.svc]?Math.min(dem[D.svc],sup[D.svc])/sup[D.svc]:0; b.served=b.cap*sh; b.busy=dem[D.svc]>sup[D.svc]*1.02; b.rev=b.served*D.fee*viewMult(b); inc[D.svc]+=b.rev; }
-    else if(D.exp){ b.rev=D.exp*(D.jobs?staff:1)*viewMult(b); inc.exp+=b.rev; } });
+    if(D.svc){ const sh=sup[D.svc]?Math.min(dem[D.svc],sup[D.svc])/sup[D.svc]:0; b.served=b.cap*sh; b.busy=dem[D.svc]>sup[D.svc]*1.02; const r=b.served*D.fee*viewMult(b); b.rev+=r; inc[D.svc]+=r; }
+    if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b)); b.rev+=r; inc.exp+=r; } });
   const pk=pop>40?1:0;
-  let h=40+Math.min(20,hb)+Math.min(8,green)+S.tier*3+Math.min(6,views*.6)+14*er+4*sat.shop+3*sat.move+4*sat.fun+2*(pk?sat.edu:1)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0);
+  let h=40+Math.min(20,hb)+Math.min(8,green)+S.tier*3+Math.min(6,views*.6)+14*er+4*sat.shop+3*sat.move+4*sat.fun+2*(pk?sat.edu:1)-(pop>=40?12*(1-sat.trash):0)-(pop>=80?12*(1-sat.water):0)-(staff<.7?4:0)+(buffOn('cityhappy')?10:0);
   CS={pop:Math.floor(pop),cap,jobs,emp:Math.floor(emp),un:Math.floor(un),er,staff,trans,tour,tourists,green,happy:Math.max(0,Math.min(100,Math.round(h))),unemp:un>5&&un>pop*.15,cnt,parks:cnt.park||0,roads:ROADS.size,dem,sup,sat,inc};
 }
 function cityNeeds(){
@@ -1595,11 +1602,14 @@ function cityNeeds(){
   if(d.fun>3&&s.fun<.85) v.push({k:'fun',w:1-s.fun,i:'🌳',t:'假日沒地方去',h:'蓋公園或觀光設施',say:'好想去公園'});
   if(CS.pop>40&&s.edu<.85) v.push({k:'edu',w:(1-s.edu)*.8,i:'🏫',t:'小孩沒學校讀',h:S.city.stage<1?'升格成小鎮後可以蓋學校':'蓋一間學校',say:'小孩要上學'});
   if(CS.pop>60&&s.help<.6) v.push({k:'help',w:(1-s.help)*.4,i:'🚓',t:'迷路的人變多了',h:S.city.stage<1?'升格成小鎮後可以蓋協尋中心':'蓋迷路協尋中心',say:'這裡是哪裡？'});
+  if(CS.pop>=40&&s.trash<.9) v.push({k:'trash',urgent:s.trash<.7,w:(1-s.trash)*2,i:'🗑️',t:`垃圾沒人收（${Math.round(d.trash-CS.sup.trash)} 人的垃圾）`,h:'蓋垃圾場，別蓋在住宅旁邊（會臭）',say:'垃圾堆在門口…'});
+  if(CS.pop>=80&&s.water<.9) v.push({k:'water',urgent:s.water<.7,w:(1-s.water)*2,i:'🚰',t:`污水排不掉（${Math.round(d.water-CS.sup.water)} 人）`,h:S.city.stage<1?'升格成小鎮後可以蓋污水處理廠':'蓋污水處理廠，離住宅遠一點',say:'馬桶沖不下去'});
+  if(S.city.b.some(b=>b.smell&&CB[b.t].pop)) v.push({k:'smell',w:.5,i:'🪰',t:'住宅旁邊好臭',h:'垃圾場、污水廠旁 2 格內的住宅、商店、景點收入 -25%',say:'好臭喔…'});
   if(CS.cap&&CS.pop>=CS.cap*.95&&CS.happy>35) v.push({k:'home',w:.6,i:'🏠',t:'房子都住滿了',h:'再蓋一些住宅',say:'想搬來住'});
   if(S.city.b.some(b=>!b.ok)) v.push({k:'road',w:.9,i:'🛣️',t:'有建築沒接到路',h:'建築要蓋在路旁邊才會營業',say:'路在哪？'});
-  return v.sort((a,b)=>((b.k==='road')-(a.k==='road'))||(needGain(b)-needGain(a))||(b.w-a.w));
+  return v.sort((a,b)=>((b.k==='road')-(a.k==='road'))||((b.urgent?1:0)-(a.urgent?1:0))||(needGain(b)-needGain(a))||(b.w-a.w));
 }
-const AVG_FEE={shop:3,move:1.2,fun:4,edu:4,help:5}, NEED_TAB={job:'shop',staff:'home',shop:'shop',move:'traffic',fun:'tour',edu:'public',help:'public',home:'home',road:'traffic'};
+const AVG_FEE={shop:3,move:1.2,fun:4,edu:4,help:5,trash:.3,water:.3}, NEED_TAB={trash:'public',water:'public',smell:'public',job:'shop',staff:'home',shop:'shop',move:'traffic',fun:'tour',edu:'public',help:'public',home:'home',road:'traffic'};
 function needGain(n){ const m=60/10*(1+S.city.stage*.1);
   if(AVG_FEE[n.k]) return Math.max(0,(CS.dem[n.k]-CS.sup[n.k]))*AVG_FEE[n.k]*m;
   if(n.k==='job') return CS.un*(1.2*3+.4*1.2+.2*4+2)*m*.6;
@@ -1631,7 +1641,7 @@ function cityUpdate(dt){
   const grow=CS.happy>35, fac=Math.min(1,CS.happy/100+.35);
   S.city.b.forEach(b=>{ const D=CB[b.t];
     if(D.pop){ const target=b.ok?D.pop*fac:0; if((b.occ||0)<target&&grow) b.occ=Math.min(target,(b.occ||0)+dt*.35*(1+D.pop/30)); else if((b.occ||0)>target) b.occ=Math.max(target,(b.occ||0)-dt*.2); }
-    if(b.ok&&b.rev>0){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round(payOf(b)*(1+S.city.stage*.1)); if(m>0){ S.money+=m; S.stats.earned+=m; if(mode==='city'){ const c=P3(b.x+D.w/2,b.y+D.w/2,D.w>1?1.4:.9); floats.push({c:1,text:'+$'+fmt(m),x:c.x,y:c.y,life:1.1,color:'#e09a12'}); } } } }
+    if(b.ok&&b.rev>0){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round(payOf(b)*(1+S.city.stage*.1)); if(m>0){ S.money+=m; S.stats.earned+=m; if(mode==='city'){ const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,BW(b)>1?1.4:.9); floats.push({c:1,text:'+$'+fmt(m),x:c.x,y:c.y,life:1.1,color:'#e09a12'}); } } } }
   });
   if(mode==='city'){ updateCars(dt); updatePeds(dt); cityEvT-=dt; if(cityEvT<=0&&!modalOpen){ cityEvT=110+Math.random()*80; const ev=pick(CITY_EVENTS); sfx.pop(); queueModal({icon:ev.icon,title:ev.title,body:`<p>${ev.text}</p>`,buttons:ev.choices.map((c,i)=>({label:c.label,ghost:i===1,fn:()=>applyOutcome(ev,c.fn())}))}); } }
 }
@@ -1719,7 +1729,7 @@ function cyl(x,y,r,z,h,col){ const b=P3(x,y,z), t=P3(x,y,z+h), rx=r*tw*.707, ry=
 function dome(x,y,r,z,col){ const c=P3(x,y,z), rx=r*tw*.707, ry=r*tw*.354; ellipse(c.x,c.y,rx,ry,shade(col,-.15)); ctx.beginPath(); ctx.ellipse(c.x,c.y,rx,rx*.95,0,Math.PI,Math.PI*2); ctx.closePath(); ctx.fillStyle=col; ctx.fill(); ctx.beginPath(); ctx.ellipse(c.x-rx*.3,c.y-rx*.45,rx*.22,rx*.3,-.5,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fill(); return {x:c.x,y:c.y-rx*.95}; }
 const CAT_COL={traffic:'#6b7280',home:'#3fae7a',shop:'#4d7cc7',tech:'#9b6dd6',tour:'#f08a3c',public:'#e2574c'};
 function drawCityB(b){
-  const D=CB[b.t], x=b.x, y=b.y, w=D.w, se=seasonOf(monthNo()), ph=clock; let top=null;
+  const D=CB[b.t], x=b.x, y=b.y, w=BW(b), se=seasonOf(monthNo()), ph=clock; let top=null;
   switch(b.t){
     case 'hospital':{ bldg(x,y,2,1.15,'#fbfbf8','#e2574c',{icon:null}); const c=P3(x+1,y+1,1.25); rrect(c.x-tw*.16,c.y-tw*.45,tw*.32,tw*.32,4,'#fff'); ctx.fillStyle='#e2574c'; ctx.fillRect(c.x-tw*.04,c.y-tw*.4,tw*.08,tw*.22); ctx.fillRect(c.x-tw*.11,c.y-tw*.33,tw*.22,tw*.08); if(tw>=24){ ctx.font=`900 ${Math.round(tw*.17)}px sans-serif`; const t2=TIERS[S.tier].name, ww=ctx.measureText(t2).width+12; rrect(c.x-ww/2,c.y-tw*.75,ww,tw*.26,6,'#fffdf8','#e2574c'); txt(t2,c.x,c.y-tw*.62,tw*.17,'#e2574c',900); } top=P3(x+1,y+1,1.6); break; }
     case 'house':{ const v=(x+y)%3; const {X,Y,L}=body(x,y,1,.4,['#f6e7c8','#ffd9c2','#d9ecff'][v],{inset:.16,rows:1,cols:2});
@@ -1748,7 +1758,6 @@ function drawCityB(b){
     case 'startup':{ box(x+.15,y+.15,.7,.7,.42,'#7cc6fe'); bwinZ('L',x+.15,y+.851,.7,.42,1,3,'rgba(255,255,255,.55)',0); bwinZ('R',x+.851,y+.15,.7,.42,1,3,'rgba(255,255,255,.45)',0);
       body(x+.05,y+.25,.85,.32,'#f4fbff',{inset:0,z:.42,rows:1,cols:3,wc:'rgba(80,170,240,.9)'}); box(x+.05,y+.25,.85,.85,.04,'#3b3b46',.74);
       const g1=P3(x+.35,y+.55,.78); ellipse(g1.x,g1.y,tw*.14,tw*.06,'#6fc25a'); const g2=P3(x+.65,y+.7,.85); circle(g2.x,g2.y,tw*.06,Math.floor(ph)%3?'#ffe066':'#fff3a8'); top=P3(x+.5,y+.6,1.0); break; }
-    case 'solar':{ poly([iso(x+.1,y+.1),iso(x+.9,y+.1),iso(x+.9,y+.9),iso(x+.1,y+.9)],'#cfd6e6'); for(let k=0;k<2;k++){ const a=P3(x+.15,y+.15+k*.4,.05), b2=P3(x+.85,y+.15+k*.4,.05), c2=P3(x+.85,y+.45+k*.4,.3), d2=P3(x+.15,y+.45+k*.4,.3); poly([a,b2,c2,d2],'#2f4f8a','#9ab'); } if(Math.floor(ph*2)%5===0) emoji('✨',P3(x+.5,y+.5,.5).x,P3(x+.5,y+.5,.5).y,tw*.15); top=P3(x+.5,y+.5,.45); break; }
     case 'robot':{ const {X,Y,L}=body(x,y,2,.75,'#cfd3da',{inset:.1,win:false}); for(let k=0;k<4;k++) gableY(X+k*L/4,Y,L/4,L,.75,.3,'#8a8f99','#9fd0f0');
       cyl(X+.25,Y+.25,.13,.75,1.0,'#9aa0aa'); for(let k=0;k<3;k++){ const pp=(ph*.4+k/3)%1, c=P3(X+.25,Y+.25,1.8+pp*.9); ctx.globalAlpha=(1-pp)*.8; circle(c.x+pp*tw*.2,c.y,tw*(.07+pp*.08),'#d8d8d8'); ctx.globalAlpha=1; }
       const g=P3(x+1.95,y+1.2,.45); ctx.save(); ctx.translate(g.x,g.y); ctx.rotate(ph); for(let k=0;k<8;k++){ ctx.rotate(Math.PI/4); ctx.fillStyle='#f2c14e'; ctx.fillRect(-tw*.03,-tw*.17,tw*.06,tw*.06); } ctx.restore(); circle(g.x,g.y,tw*.12,'#f2c14e'); circle(g.x,g.y,tw*.05,'#8a6a1a'); top=P3(x+1,y+1,1.5); break; }
@@ -1757,18 +1766,54 @@ function drawCityB(b){
       ctx.save(); ctx.translate(d.x,d.y); ctx.rotate(-.5+Math.sin(ph)*.3); ctx.beginPath(); ctx.ellipse(0,0,tw*.22,tw*.1,0,0,Math.PI); ctx.fillStyle='#e6e9ee'; ctx.fill(); ctx.strokeStyle='#999'; ctx.lineWidth=1; ctx.stroke(); ctx.restore();
       for(let k=0;k<3;k++) if(Math.floor(ph*3+k)%3===0) circle(t.x-tw*.15+k*tw*.15,t.y+tw*.25,tw*.03,'#fff');
       if(Math.floor(ph)%5===0) txt('…',t.x+tw*.35,t.y-tw*.05,tw*.3,'#5a4a80',900); top={x:t.x,y:t.y-tw*.05}; break; }
-    case 'park':{ cPlate(x,y,1,se==='winter'?'#d6e2d0':'#6fc25a'); const c=iso(x+.7,y+.65); ellipse(c.x,c.y,tw*.15,tw*.07,'#8fd3ff'); emoji('🦆',c.x,c.y-tw*.04,tw*.13); drawTree(x+.3,y+.35,{scale:.6}); box(x+.2,y+.75,.3,.1,.08,'#c98b4f'); top=P3(x+.5,y+.5,.7); break; }
-    case 'museum':{ const {X,Y,L}=body(x,y,1,.5,'#f4efe4',{inset:.12,win:false}); box(X-.04,Y+L-.02,L+.08,.14,.06,'#d9cfba');
-      for(let k=0;k<4;k++) ln(P3(X+.08+k*(L-.16)/3,Y+L+.07,.06),P3(X+.08+k*(L-.16)/3,Y+L+.07,.5),'#fffaf0',Math.max(2,tw*.045));
-      gableY(X-.05,Y-.05,L+.1,L+.2,.5,.26,'#bfae8a'); top=P3(x+.5,y+.5,.85); break; }
-    case 'onsen':{ cPlate(x,y,1,'#a8b3a0'); const {X,Y,L}=body(x,y,1,.32,'#c99a6b',{inset:.2,win:false}); pyramid(X-.12,Y-.12,L+.24,L+.24,.32,.32,'#4a5a7a');
-      const c=iso(x+.82,y+.82); ellipse(c.x,c.y,tw*.15,tw*.07,'#8fd3ff');
-      for(let k=0;k<3;k++){ const pp=(ph*.6+k/3)%1, s=P3(x+.5,y+.5,.75+pp*.6); ctx.globalAlpha=(1-pp)*.85; circle(s.x+(k-1)*tw*.1+Math.sin(ph*2+k)*tw*.03,s.y,tw*.06,'#fff'); ctx.globalAlpha=1; } top=P3(x+.5,y+.5,1.15); break; }
+    case 'park': case 'bigpark':{ const g=se==='winter'?'#d6e2d0':'#7cc96a', m=w/2, pw=w>1?.2:.14, S2=w>1?1:.7;
+      cPlate(x,y,w,g,.04);
+      poly([iso(x+.04,y+m-pw/2),iso(x+w-.04,y+m-pw/2),iso(x+w-.04,y+m+pw/2),iso(x+.04,y+m+pw/2)],'#e8d9b5'); poly([iso(x+m-pw/2,y+.04),iso(x+m+pw/2,y+.04),iso(x+m+pw/2,y+w-.04),iso(x+m-pw/2,y+w-.04)],'#e8d9b5');
+      const fc={spring:['#ff8fb1','#ffd1e0','#fff'],summer:['#e2574c','#f2c14e','#ff8fa3'],autumn:['#f08a3c','#c9573e','#f2c14e'],winter:['#ffffff','#dfe9ff','#ffffff']}[se]||['#e2574c','#f2c14e','#fff'];
+      const bed=(cx,cy,r)=>{ const c=iso(cx,cy); ellipse(c.x,c.y,tw*r,tw*r*.5,'#7a5a3a'); for(let k=0;k<7;k++){ const a=k*2.4; circle(c.x+Math.cos(a)*tw*r*.6,c.y+Math.sin(a)*tw*r*.3-tw*.02,tw*.03*S2,fc[k%3]); } };
+      const bush=(cx,cy,r)=>{ const c=iso(cx,cy); ellipse(c.x,c.y,tw*r*1.1,tw*r*.45,'rgba(30,60,20,.2)'); circle(c.x,c.y-tw*r*.4,tw*r*.6,'#4f9a4a'); circle(c.x-tw*r*.35,c.y-tw*r*.3,tw*r*.45,'#5fb35a'); circle(c.x+tw*r*.35,c.y-tw*r*.3,tw*r*.45,'#3f8a3c'); };
+      const bench=(cx,cy)=>{ box(cx-.12,cy-.04,.24,.08,.06,'#c98b4f'); box(cx-.12,cy-.06,.24,.02,.14,'#a96f3a'); };
+      const q=w>1?.25*w:.25;
+      bed(x+q,y+q,.16*S2); bush(x+w-q,y+q,.14*S2);
+      if(w>1){ const c=iso(x+w-q,y+w-q); ellipse(c.x,c.y,tw*.3*(w/2),tw*.15*(w/2),'#8fd3ff'); ellipse(c.x-tw*.06,c.y-tw*.02,tw*.12,tw*.04,'rgba(255,255,255,.5)'); emoji('🦆',c.x+Math.sin(ph*.7)*tw*.12,c.y-tw*.05,tw*.16);
+        const pg=[x+q,y+w-q]; box(pg[0]-.2,pg[1]-.15,.16,.16,.35,'#f2c14e'); poly([P3(pg[0]-.04,pg[1]-.15,.35),P3(pg[0]-.04,pg[1]+.01,.35),P3(pg[0]+.3,pg[1]+.01,0),P3(pg[0]+.3,pg[1]-.15,0)],'#e2574c');
+        bench(x+m+.35,y+m-.3); bench(x+m-.3,y+m+.35); }
+      else { bed(x+.75,y+.75,.12); bench(x+.25,y+.78); }
+      if(w>2){ bush(x+.4,y+m,.16); bush(x+w-.4,y+m,.16); bed(x+m,y+.45,.18); bed(x+m,y+w-.45,.18); }
+      const fr=w>1?.16*w:.16; cyl(x+m,y+m,fr,0,.08,'#cfd6e6'); const wt=P3(x+m,y+m,.08); ellipse(wt.x,wt.y,fr*tw*.6,fr*tw*.3,'#8fd3ff'); cyl(x+m,y+m,fr*.25,.08,.18,'#e6e9ee');
+      for(let k=0;k<4;k++){ const pp=(ph*1.2+k/4)%1, a=k*Math.PI/2+ph*.3, sp=P3(x+m+Math.cos(a)*fr*.5*pp,y+m+Math.sin(a)*fr*.5*pp,.26+Math.sin(pp*Math.PI)*.18); circle(sp.x,sp.y,tw*.025,'rgba(160,215,255,.9)'); }
+      [[x+.06,y+.06],[x+w-.06,y+w-.06]].forEach(([a,c])=>{ const g0=P3(a,c,0), g1=P3(a,c,.45); ln(g0,g1,'#555',1.5); circle(g1.x,g1.y,tw*.035,'#ffe9a0'); });
+      top=P3(x+m,y+m,.55); break; }
+    case 'museum':{ const H=w>1?.7:.5; const {X,Y,L}=body(x,y,w,H,'#f4efe4',{inset:.12,win:false}); box(X-.04,Y+L-.02,L+.08,.14,.06,'#d9cfba'); if(w>1) box(X-.08,Y+L+.08,L+.16,.14,.03,'#e6dcc8');
+      const nc=w>1?7:4; for(let k=0;k<nc;k++) ln(P3(X+.08+k*(L-.16)/(nc-1),Y+L+.07,.06),P3(X+.08+k*(L-.16)/(nc-1),Y+L+.07,H),'#fffaf0',Math.max(2,tw*.045));
+      gableY(X-.05,Y-.05,L+.1,L+.2,H,.26*w,'#bfae8a'); if(w>1){ const bn=P3(X+L+.01,Y+L*.5,H*.55); rrect(bn.x-tw*.06,bn.y-tw*.2,tw*.12,tw*.3,3,'#e2574c'); emoji('🦆',bn.x,bn.y-tw*.05,tw*.1); }
+      top=P3(x+w/2,y+w/2,H+.3*w); break; }
+    case 'onsen':{ if(w===1){ cPlate(x,y,1,'#a8b3a0'); const {X,Y,L}=body(x,y,1,.32,'#c99a6b',{inset:.2,win:false}); pyramid(X-.12,Y-.12,L+.24,L+.24,.32,.32,'#4a5a7a'); const c=iso(x+.82,y+.82); ellipse(c.x,c.y,tw*.15,tw*.07,'#8fd3ff'); }
+      else { cPlate(x,y,w,'#a8b3a0'); box(x+.15,y+.15,1.1,1.1,.42,'#c99a6b'); bwinZ('L',x+.15,y+1.252,1.1,.42,1,3,'rgba(255,230,180,.9)',0); pyramid(x+.02,y+.02,1.36,1.36,.42,.45,'#4a5a7a');
+        const c=iso(x+1.45,y+1.4); ellipse(c.x,c.y,tw*.42,tw*.2,'#9a9a9a'); ellipse(c.x,c.y,tw*.36,tw*.16,'#8fd3ff'); emoji('🐒',c.x+tw*.1,c.y-tw*.05,tw*.16);
+        for(let k=0;k<6;k++){ const a=k*1.05, r=P3(x+1.45+Math.cos(a)*.42,y+1.4+Math.sin(a)*.42,0); circle(r.x,r.y,tw*.035,'#7a7a7a'); }
+        for(let k=0;k<5;k++){ const b0=P3(x+.05+k*.38,y+1.95,0), b1=P3(x+.05+k*.38,y+1.95,.3); ln(b0,b1,'#7fa35a',2); } }
+      for(let k=0;k<3;k++){ const pp=(ph*.6+k/3)%1, s=P3(x+(w>1?1.45:.5),y+(w>1?1.4:.5),(w>1?.15:.75)+pp*.6); ctx.globalAlpha=(1-pp)*.85; circle(s.x+(k-1)*tw*.1+Math.sin(ph*2+k)*tw*.03,s.y,tw*.06,'#fff'); ctx.globalAlpha=1; }
+      top=P3(x+(w>1?.7:.5),y+(w>1?.7:.5),w>1?1.0:1.15); break; }
+    case 'solar':{ cPlate(x,y,w,'#cfd6e6'); const n=w*2; for(let k=0;k<n;k++){ const yy=y+.12+k*(w-.24)/n; const a=P3(x+.12,yy,.05), b2=P3(x+w-.12,yy,.05), c2=P3(x+w-.12,yy+(w-.24)/n*.75,.28), d2=P3(x+.12,yy+(w-.24)/n*.75,.28); poly([a,b2,c2,d2],'#2f4f8a','#9ab'); } if(Math.floor(ph*2)%5===0){ const s2=P3(x+w/2,y+w/2,.5); emoji('✨',s2.x,s2.y,tw*.15); } top=P3(x+w/2,y+w/2,.45); break; }
+    case 'school':{ if(w===1){ const {X,Y,L}=body(x,y,1,.5,'#fff4d6',{inset:.1,rows:1,cols:3}); box(X-.02,Y-.02,L+.04,L+.04,.05,'#c9573e',.5); body(x+.37,y+.37,.26,.5,'#fff4d6',{inset:0,z:.55,win:false}); pyramid(x+.33,y+.33,.34,.34,1.05,.28,'#c9573e'); top=P3(x+.5,y+.5,1.4); }
+      else { const c=iso(x+1,y+1.45); ellipse(c.x,c.y,tw*.82,tw*.36,'#d9634f'); ellipse(c.x,c.y,tw*.6,tw*.24,'#6fc25a'); ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(c.x,c.y,tw*.71,tw*.3,0,0,Math.PI*2); ctx.stroke(); emoji('⚽',c.x+Math.sin(ph)*tw*.3,c.y-tw*.04,tw*.13);
+        box(x+.1,y+.1,1.8,.75,.6,'#fff4d6'); bwinZ('L',x+.1,y+.852,1.8,.6,2,6,'rgba(191,224,242,.95)',0); bwinZ('R',x+1.902,y+.1,.75,.6,2,2,'rgba(170,205,230,.95)',0); box(x+.08,y+.08,1.84,.79,.05,'#c9573e',.6);
+        box(x+.85,y+.3,.3,.3,.5,'#fff4d6',.65); pyramid(x+.81,y+.26,.38,.38,1.15,.3,'#c9573e'); const cc=P3(x+1,y+.602,.92); circle(cc.x,cc.y,tw*.07,'#fff'); ctx.strokeStyle='#333'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x,cc.y-tw*.05); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x+tw*.035,cc.y); ctx.stroke();
+        const fp=P3(x+1.85,y+1.9,0), ft=P3(x+1.85,y+1.9,.9); ln(fp,ft,'#888',1.5); ctx.fillStyle='#3fae7a'; ctx.beginPath(); ctx.moveTo(ft.x,ft.y); ctx.lineTo(ft.x+tw*.18,ft.y+tw*.05+Math.sin(ph*3)*tw*.02); ctx.lineTo(ft.x,ft.y+tw*.12); ctx.fill();
+        top=P3(x+1,y+.45,1.5); } break; }
+    case 'garbage':{ cPlate(x,y,w,'#b8ad96'); const mound=(cx,cy,r,col)=>{ const c=iso(cx,cy); ctx.beginPath(); ctx.ellipse(c.x,c.y,tw*r,tw*r*.85,0,Math.PI,Math.PI*2); ctx.closePath(); ctx.fillStyle=col; ctx.fill(); ['#e2574c','#4d7cc7','#f2c14e','#fff','#3fae7a'].forEach((cl,k)=>{ circle(c.x+(k-2)*tw*r*.3,c.y-tw*r*(.25+(k%2)*.25),tw*.03,cl); }); };
+      mound(x+.6,y+.7,.42,'#8a7a5a'); mound(x+1.3,y+.55,.32,'#7d7a66'); mound(x+.7,y+1.4,.3,'#9a8f7a');
+      box(x+1.3,y+1.25,.5,.5,.35,'#d6d0c2'); box(x+1.28,y+1.23,.54,.54,.04,'#6b7280',.35);
+      for(let k=0;k<4;k++){ const f=P3(x+.6+Math.sin(ph*3+k*2)*.3,y+.7+Math.cos(ph*2.5+k)*.3,.6+Math.sin(ph*5+k)*.1); circle(f.x,f.y,tw*.018,'#222'); }
+      const tk=P3(x+.3+((ph*.15)%1)*1.4,y+1.85,0); emoji('🚛',tk.x,tk.y-tw*.12,tw*.26);
+      for(let k=0;k<6;k++){ const a=P3(x+.05+k*.38,y+.05,0), b2=P3(x+.05+k*.38,y+.05,.25); ln(a,b2,'#8a8f99',1.5); } top=P3(x+1,y+1,.8); break; }
+    case 'sewage':{ cPlate(x,y,w,'#c9cfc7'); [[.6,.6],[1.4,.6]].forEach(([a,c],k)=>{ cyl(x+a,y+c,.36,0,.22,'#a7aeb5'); const t=P3(x+a,y+c,.22); ellipse(t.x,t.y,.3*tw*.707,.3*tw*.354,'#7fae9a'); const an=ph*.5+k; ln({x:t.x-Math.cos(an)*tw*.2,y:t.y-Math.sin(an)*tw*.1},{x:t.x+Math.cos(an)*tw*.2,y:t.y+Math.sin(an)*tw*.1},'#e6e9ee',2); });
+      body(x+.3,y+1.15,.8,.45,'#dfe6ea',{inset:0,rows:1,cols:2}); box(x+.28,y+1.13,.84,.84,.04,'#4d7cc7',.45); cyl(x+1.5,y+1.5,.1,0,.7,'#8a8f99'); const d=P3(x+1.5,y+1.5,.75); emoji('💧',d.x,d.y-tw*.06,tw*.16); top=P3(x+1,y+1,.9); break; }
+    case 'recycle':{ const {X,Y,L}=body(x,y,2,.6,'#e8f4e8',{inset:.15,rows:1}); box(X-.03,Y-.03,L+.06,L+.06,.05,'#3fae7a',.6); const t=P3(x+1,y+1,.68); emoji('♻️',t.x,t.y-tw*.18,tw*.42);
+      ['#4d7cc7','#f2c14e','#3fae7a','#e2574c'].forEach((cl,k)=>box(x+.25+k*.4,y+1.88,.28,.1,.2,cl)); top=P3(x+1,y+1,1.1); break; }
     case 'ferris':{ poly([iso(x+.1,y+.1),iso(x+1.9,y+.1),iso(x+1.9,y+1.9),iso(x+.1,y+1.9)],'#cfd6e6'); const b0=P3(x+1,y+1,0), c=P3(x+1,y+1,1.25), R=tw*.85; ctx.strokeStyle='#9aa3b5'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(b0.x-tw*.3,b0.y); ctx.lineTo(c.x,c.y); ctx.lineTo(b0.x+tw*.3,b0.y); ctx.stroke(); ctx.beginPath(); ctx.arc(c.x,c.y,R,0,Math.PI*2); ctx.strokeStyle='#e2574c'; ctx.lineWidth=2; ctx.stroke(); for(let k=0;k<8;k++){ const a=ph*.4+k*Math.PI/4, px=c.x+Math.cos(a)*R, py=c.y+Math.sin(a)*R; ctx.strokeStyle='rgba(150,160,180,.7)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(px,py); ctx.stroke(); rrect(px-tw*.07,py,tw*.14,tw*.12,3,['#f2c14e','#7cc6fe','#ff8fa3','#3fae7a'][k%4]); } circle(c.x,c.y,tw*.06,'#e2574c'); top={x:c.x,y:c.y-R}; break; }
     case 'duck':{ box(x+.3,y+.3,1.4,1.4,.3,'#b9bec8'); const c=P3(x+1,y+1,.3); emoji('🦆',c.x,c.y-tw*.85,tw*1.6); if(Math.floor(ph*1.5)%3===0) emoji('✨',c.x+tw*.6,c.y-tw*1.4,tw*.25); top={x:c.x,y:c.y-tw*1.6}; break; }
-    case 'school':{ const {X,Y,L}=body(x,y,1,.5,'#fff4d6',{inset:.1,rows:1,cols:3}); box(X-.02,Y-.02,L+.04,L+.04,.05,'#c9573e',.5);
-      body(x+.37,y+.37,.26,.5,'#fff4d6',{inset:0,z:.55,win:false}); pyramid(x+.33,y+.33,.34,.34,1.05,.28,'#c9573e');
-      const cc=P3(x+.5,y+.632,.82); circle(cc.x,cc.y,tw*.07,'#fff'); ctx.strokeStyle='#333'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x,cc.y-tw*.05); ctx.moveTo(cc.x,cc.y); ctx.lineTo(cc.x+tw*.035,cc.y); ctx.stroke(); top=P3(x+.5,y+.5,1.4); break; }
     case 'lost':{ const {X,Y,L}=body(x,y,1,.55,'#e6eefc',{inset:.12,rows:1,cols:2}); const n='#2f3a6b';
       poly([P3(X,Y+L+.004,.42),P3(X+L,Y+L+.004,.42),P3(X+L,Y+L+.004,.55),P3(X,Y+L+.004,.55)],n); box(X-.02,Y-.02,L+.04,L+.04,.05,n,.55);
       const on=Math.floor(ph*3)%2; box(x+.38,y+.42,.12,.12,.1,on?'#ff4040':'#ffb3b3',.6); box(x+.52,y+.42,.12,.12,.1,on?'#a8c4ff':'#3a6bff',.6);
@@ -1855,7 +1900,9 @@ function drawCityGround(){
 function drawCity(){
   drawCityGround();
   const n=citySize(), list=[];
-  const tops=[]; S.city.b.forEach(b=>{ const w=CB[b.t].w, d=b.x+b.y+w-.4; list.push({d,fn:()=>{ const top=drawCityB(b); tops.push({b,top,d}); }}); });
+  if(CS.sat&&CS.pop>=40&&CS.sat.trash<.9&&ROADS.size){ const arr=[...ROADS], nb=Math.min(arr.length,Math.round((1-CS.sat.trash)*16)); for(let i=0;i<nb;i++){ const [x,y]=arr[(i*7919+3)%arr.length].split(',').map(Number); list.push({d:x+y+.6,fn:()=>{ const c=iso(x+.2+(i%4)*.15,y+.75); ellipse(c.x,c.y-tw*.04,tw*.07,tw*.06,'#2b2b2b'); ellipse(c.x+tw*.08,c.y-tw*.02,tw*.05,tw*.045,'#3b3b46'); circle(c.x+Math.sin(clock*4+i)*tw*.06,c.y-tw*.14+Math.cos(clock*5+i)*tw*.02,tw*.015,'#111'); }}); } }
+  if(CS.sat&&CS.pop>=80&&CS.sat.water<.9&&ROADS.size){ const arr=[...ROADS], nb=Math.min(arr.length,Math.round((1-CS.sat.water)*10)); for(let i=0;i<nb;i++){ const [x,y]=arr[(i*4513+11)%arr.length].split(',').map(Number); list.push({d:x+y+.55,fn:()=>{ const c=iso(x+.6,y+.4); ellipse(c.x,c.y,tw*.16,tw*.07,'rgba(120,100,60,.75)'); }}); } }
+  const tops=[]; S.city.b.forEach(b=>{ const w=BW(b), d=b.x+b.y+w-.4; list.push({d,fn:()=>{ const top=drawCityB(b); tops.push({b,top,d}); }}); });
   const vw=toWorld(0,0), vw2=toWorld(W,H), vw3=toWorld(W,0), vw4=toWorld(0,H);
   const ax=Math.max(0,Math.floor(Math.min(vw.x,vw4.x))-1), bx=Math.min(30,Math.ceil(Math.max(vw2.x,vw3.x))+2), ay=Math.max(0,Math.floor(Math.min(vw.y,vw3.y))-1), by=Math.min(30,Math.ceil(Math.max(vw2.y,vw4.y))+2);
   for(let y=ay;y<by;y++) for(let x=ax;x<bx;x++){ const t=terr(x,y); if(t!=='h'&&t!=='f') continue; if(x<n&&y<n&&(isRoad(x,y)||bAt(x,y))) continue; const out=x>=n||y>=n;
@@ -1878,7 +1925,7 @@ function cityPlace(k,x,y){
   if(!footFree(x,y,D.w)){ ticker(blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
   if(!nearRoad(x,y,D.w)){ ticker('🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   if(S.money<D.cost){ ticker('💸 錢不夠了。'); sfx.bad(); return false; }
-  S.money-=D.cost; S.city.b.push({t:k,x,y,occ:0}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
+  S.money-=D.cost; S.city.b.push({t:k,x,y,occ:0,w:D.w}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
   ticker(pick([`🏗️ ${D.icon} ${D.name}蓋好了！市民們跑來圍觀。`,`🏗️ ${D.name}完工！剪綵的時候鴨子也來了。`,`🏗️ ${D.icon} ${D.name}開張，市長致詞只說了三個字：「好、很好。」`]));
   saveLocal(); return true;
@@ -1909,7 +1956,7 @@ const WORK_OS={
   mrt:['列車很準時，有時準時到太早。']
 };
 const SPEND={conv:['茶葉蛋',3],bubble:['珍奶',2.5],market:['臭豆腐',3],mall:['新衣服',3.5],bus:['公車',1],bike:['單車',1],mrt:['捷運',1.5],park:['公園長椅投幣',1],museum:['博物館門票',4],onsen:['泡溫泉',7],ferris:['摩天輪',7],beach:['海邊陽傘',2],lighthouse:['燈塔咖啡',5],duck:['跟鴨子合照',9]};
-const NEED_OS={shop:'下班想買東西，結果排到店門外…市長多開幾間店啦！',move:'公車又客滿，我已經走了三條街。',fun:'週末想出去走走，可是沒地方去，只好在家看鴨子。',edu:'我家小孩沒學校讀，每天在家教鴨子算數。',help:'我又迷路了…這城市有沒有人專門帶路的？',staff:'我們店缺人手，我一個人做三個人的工作！',home:'我朋友想搬來，可是房子都住滿了。',road:'那間新開的店怎麼沒有路可以走進去？'};
+const NEED_OS={trash:'家門口的垃圾堆得比我還高，市長快蓋垃圾場！',water:'馬桶沖不下去…這城市需要污水處理廠！',smell:'我家隔壁是垃圾場，窗戶都不敢開。',shop:'下班想買東西，結果排到店門外…市長多開幾間店啦！',move:'公車又客滿，我已經走了三條街。',fun:'週末想出去走走，可是沒地方去，只好在家看鴨子。',edu:'我家小孩沒學校讀，每天在家教鴨子算數。',help:'我又迷路了…這城市有沒有人專門帶路的？',staff:'我們店缺人手，我一個人做三個人的工作！',home:'我朋友想搬來，可是房子都住滿了。',road:'那間新開的店怎麼沒有路可以走進去？'};
 function spendLine(){ const have=[...new Set(S.city.b.filter(b=>b.ok&&SPEND[b.t]).map(b=>b.t))]; if(!have.length) return null; const it=have.sort(()=>Math.random()-.5).slice(0,3); const tot=it.reduce((a,k)=>a+SPEND[k][1],0); return `今天花了 $${tot}：${it.map(k=>SPEND[k][0]).join('、')}。不用繳稅，用多少付多少！`; }
 function cityOS(p){
   if(p.k==='alien') return '👽 '+pick(['這顆星球的珍珠奶茶太好喝了。','我們家的飛碟停在停車場，有收費嗎？','地球人好有趣，連鴨子都有專用道。']);
@@ -1935,7 +1982,7 @@ function cityBHTML(){
   if(D.exp) kv.push(['產品外銷',D.jobs&&CS.staff<1?`員工只來 ${Math.round(CS.staff*100)}%`:'全力生產']);
   if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]);
   if(b.rev||D.svc||D.rent||D.exp) kv.push(['每分鐘收入',`$${fmt((b.rev||0)*M)}`]);
-  if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewMult(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewMult(b)-1)*100)}%`]);
+  if(D.trans) kv.push(['交通',`+${D.trans}`]); if(D.tour) kv.push(['觀光吸引力',`+${D.tour}`]); if(D.happy) kv.push(['幸福度',`+${D.happy}`]); if(b.view&&viewBase(b)>1) kv.push([VIEW_TXT[b.view],`收入 +${Math.round((viewBase(b)-1)*100)}%`]); if(b.smell) kv.push(['🪰 臭味','收入 -25%']);
   return `<h2>${D.icon} ${D.name}</h2><div class="sub">${D.desc}</div>${b.ok?'':'<div class="note" style="color:var(--bad);margin-bottom:8px">⚠️ 沒有接到道路，還不能運作。</div>'}<div class="kv">${kv.map(([a,v])=>`<div>${a}<b>${v}</b></div>`).join('')}</div>
     <div class="row"><button class="btn ghost" data-act="cityDemolish">拆除（退 $${fmt(D.cost*.5)}）</button></div>`;
 }
@@ -1943,7 +1990,7 @@ function cityDemolish(){ const b=citySel; if(!b) return; cityBulldoze(b.x,b.y); 
 function cityBuildHTML(){
   const st=S.city.stage, seg=`<div class="seg" style="flex-wrap:wrap">${CCATS.map(([k,l])=>`<button style="flex:1 1 30%" class="${cityTab===k?'on':''}" data-act="setCityTab" data-arg="${k}">${l}</button>`).join('')}</div>`;
   const items=Object.entries(CB).filter(([k,D])=>D.cat===cityTab&&!D.fixed).map(([k,D])=>{ const lock=D.stage>st;
-    const tags=[D.pop?`👥${D.pop}　租$${D.rent}`:'',D.svc?`🧾$${D.fee}×${D.cap}人`:'',D.exp?`📦外銷$${D.exp}`:'',D.jobs?`💼${D.jobs}`:'',D.trans?`🚏+${D.trans}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.w>1?'2×2':''].filter(Boolean).join('　');
+    const tags=[D.pop?`👥${D.pop}　租$${D.rent}`:'',D.svc?`🧾$${D.fee}×${D.cap}人`:'',D.exp?`📦外銷$${D.exp}`:'',D.jobs?`💼${D.jobs}`:'',D.trans?`🚏+${D.trans}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.w>1?`${D.w}×${D.w}`:''].filter(Boolean).join('　');
     return `<div class="item ${lock?'locked':''}"><div class="ic" style="background:#eef5fd">${D.icon}</div><div class="txt"><div class="nm">${D.name}</div><div class="ds">${D.desc}</div><div class="ds" style="color:var(--ink);margin-top:3px">${tags}</div></div>
       ${lock?`<div class="ds" style="text-align:right">🔒<br>${CITY_STAGES[D.stage].name.replace('搞怪','')}</div>`:`<button class="btn" ${S.money<D.cost?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(D.cost)}</button>`}</div>`; }).join('');
   return `<h2>🏗️ 城市建設</h2>${seg}<div class="sub">💰 ${fmt(S.money)}・建築要蓋在路旁邊・🧾 單價×每 10 秒客人</div>${items}`;
@@ -1956,10 +2003,10 @@ function cityGovHTML(){
   const needs=cityNeeds();
   const v=needs.length?needs.map(n=>{ const g=needGain(n); return `<div class="item" style="padding:8px 10px"><div style="font-size:22px">${n.i}</div><div class="txt"><div class="nm" style="font-size:14px">${n.t}</div><div class="ds">${n.h}</div>${g>=1?`<div class="ds" style="color:#c27a00;font-weight:800">💡 商機：每分鐘多賺約 $${fmt(g)}</div>`:''}</div><button class="btn" data-act="goBuild" data-arg="${NEED_TAB[n.k]}">去蓋</button></div>`; }).join('')
     :`<div class="item" style="padding:8px 10px"><div style="font-size:22px">😄</div><div class="txt"><div class="nm" style="font-size:14px">市民很滿意</div><div class="ds">想賺更多？蓋觀光設施吸引外地人來花錢</div></div><button class="btn" data-act="goBuild" data-arg="tour">去蓋</button></div>`;
-  const inc=CS.inc||{}, rows=[['🏠 房租',inc.rent],['🛒 商店',inc.shop],['🚏 交通票價',inc.move],['🎡 觀光門票',inc.fun],['🏫 學費',inc.edu],['🚓 協尋手續費',inc.help],['📦 科技外銷',inc.exp]].filter(r=>r[1]>0);
+  const inc=CS.inc||{}, rows=[['🏠 房租',inc.rent],['🛒 商店',inc.shop],['🚏 交通票價',inc.move],['🎡 觀光門票',inc.fun],['🏫 學費',inc.edu],['🚓 協尋手續費',inc.help],['🗑️ 垃圾清運費',inc.trash],['🚰 污水處理費',inc.water],['📦 科技外銷',inc.exp]].filter(r=>r[1]>0);
   const tot=rows.reduce((a,r)=>a+r[1],0)||1;
   const incH=rows.map(([t,x])=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:92px">${t}</span><div style="flex:1;height:8px;background:#f1e7d6;border-radius:4px"><div style="width:${Math.round(x/tot*100)}%;height:100%;background:#f2b544;border-radius:4px"></div></div><b style="width:64px;text-align:right">$${fmt(x*M)}</b></div>`).join('');
-  const sat=CS.sat||{}, need=Object.keys(SVC).filter(k=>(CS.dem[k]||0)>=1).map(k=>{ const p=Math.round(sat[k]*100); return `<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:62px">${SVC[k][0]} ${SVC[k][1]}</span><div style="flex:1;height:8px;background:#f1e7d6;border-radius:4px"><div style="width:${p}%;height:100%;background:${p>=85?'#3fae7a':p>=50?'#f2b544':'#e2574c'};border-radius:4px"></div></div><b style="width:40px;text-align:right">${p}%</b></div>`; }).join('');
+  const sat=CS.sat||{}, need=Object.keys(SVC).filter(k=>(CS.dem[k]||0)>=1&&!(k==='trash'&&CS.pop<40)&&!(k==='water'&&CS.pop<80)).map(k=>{ const p=Math.round(sat[k]*100); return `<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:62px">${SVC[k][0]} ${SVC[k][1]}</span><div style="flex:1;height:8px;background:#f1e7d6;border-radius:4px"><div style="width:${p}%;height:100%;background:${p>=85?'#3fae7a':p>=50?'#f2b544':'#e2574c'};border-radius:4px"></div></div><b style="width:40px;text-align:right">${p}%</b></div>`; }).join('');
   let up='';
   if(nx){ const cs=stageChecks(S.city.stage+1), ok=cs.every(c=>c.ok);
     up=`<div class="item" style="display:block"><div class="nm" style="font-weight:900">🏛️ ${st.name} → ${nx.name}</div><div class="ds" style="margin:4px 0 8px">升格後土地變大（${nx.size}×${nx.size}），解鎖新建築，所有收入再 +10%</div>
@@ -2192,7 +2239,7 @@ function officeHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的要重新開業？進度會全部清除':'重新開業（清除進度）'}</button></div>
-    <div class="sub" style="margin-top:14px">怪病診所 v1.3（搞怪城市）</div>`;
+    <div class="sub" style="margin-top:14px">怪病診所 v1.4（搞怪城市）</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } S=newState(); S.day=today(); S.tut=1; resetRuntime(); lastTitle=''; saveLocal(); cloudSave(true); closeSheet(); ticker('🏥 診所重新開業！'); updateLabDot(); }
