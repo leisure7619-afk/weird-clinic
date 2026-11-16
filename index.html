@@ -517,7 +517,7 @@ function drawWeather(){
 // ================= 建造與擴建 =================
 function setPlacing(type){ placing=type; ghost=null; const b=$('banner'); $('bannerOK').classList.add('hidden');
   if(!type){ b.classList.remove('show'); return; }
-  if(type.city){ const D=CB[type.city]; $('bannerTxt').textContent=type.city==='road'?'用手指在地上拖曳鋪路（每格 $40，過河 $300）':type.city==='bulldoze'?'點要拆的建築（拖曳可以連續拆道路）':`點發光的地方，先看預覽再蓋 ${D.icon} ${D.name}（$${fmt(costOf(type.city))}）`; $('bannerX').textContent='完成'; }
+  if(type.city){ const D=CB[type.city]; $('bannerTxt').textContent=type.city==='road'?'用手指在地上拖曳鋪路（每格 $40，過河 $300）':type.city==='bulldoze'?'點要拆的建築（拖曳可以連續拆道路）':type.city==='cablebase'?'🚡 選山下的起點站（貼著道路，8 格內）':type.city==='cable'?`🚡 先選山上的終點站，再選山下的起點站（$${fmt(costOf('cable'))}）`:`點發光的地方，先看預覽再蓋 ${D.icon} ${D.name}（$${fmt(costOf(type.city))}）`; $('bannerX').textContent='完成'; }
   b.classList.add('show'); }
 
 // ================= 搞怪城市 =================
@@ -829,7 +829,7 @@ function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const e
 const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋'],trash:['🗑️','垃圾'],water:['🚰','污水']};
 const LABOR=.65;
 function cityCalc(){
-  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&!!cableFoot(b.x,b.y))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
+  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
   if(cityDirty2){ cityDirty2=false; computeCombos(); }
   const NK=nightK(), T=S.city.trait;
   let cult=0,pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0,pcap=0,puse=0,praw=0; const cnt={}, tseen={}, sup={shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0}, hm=fxMul('home');
@@ -1102,12 +1102,13 @@ Object.assign(FREQ,{book:'weekly',bento:'daily',bakery:'daily',gym:'often',ktv:'
 Object.assign(CB,{
   lookout:{svc:'fun',cap:50,fee:6,jobs:4,tour:4,happy:2,hill:1,cat:'tour',name:'山頂觀景台',icon:'🔭',cost:6000,w:1,sign:'觀景台',desc:'要蓋在山坡上。爬上去看得到整座城市，情侶會在欄杆上掛鎖。'},
   tea:    {exp:90,jobs:15,tour:2,green:3,hill:1,cat:'ind',name:'高山茶園',icon:'🍵',cost:5000,w:2,sign:'茶園',desc:'2×2，要蓋在山坡上。雲霧裡長出來的茶，觀光客會來體驗採茶。'},
-  cable:  {svc:'move',cap:40,fee:3,jobs:4,tour:3,hill:1,cat:'traffic',name:'纜車站',icon:'🚡',cost:8000,w:1,sign:'纜車',desc:'要蓋在山坡上，纜線會自動拉到 6 格內最近的道路。山上沒有路，貼著纜車站的山坡設施就能運作。'},
+  cable:  {svc:'move',cap:40,fee:3,jobs:4,tour:3,hill:1,cat:'traffic',name:'纜車站',icon:'🚡',cost:8000,w:1,sign:'纜車',desc:'先選山上的終點站，再選山下貼著道路的起點站（8 格內）。山上沒有路，貼著山上站的設施就能營業。'},
   camp:   {svc:'fun',cap:60,fee:4,jobs:3,tour:2,happy:3,green:2,hill:1,cat:'tour',name:'露營區',icon:'🏕️',cost:3500,w:2,sign:'露營',desc:'2×2，要蓋在山坡上。晚上烤棉花糖，柴犬負責顧帳篷。'},
   radio:  {exp:40,happy:1,hill:1,cat:'public',name:'電波塔',icon:'📡',cost:7000,w:1,sign:'電波塔',desc:'要蓋在山坡上。全城手機訊號滿格，市民滑手機更開心。'},
   villa:  {rent:3,pop:12,hill:1,cat:'home',name:'山景別墅',icon:'🏡',cost:4000,w:1,sign:'別墅',desc:'要蓋在山坡上。住 12 人，風景好、房租貴。'}
 });
 CB.shrine.hillOK=1; CB.wind.hillOK=1;
+CB.cablebase={theme:'_',cat:'traffic',name:'纜車山下站',icon:'🚡',cost:0,w:1,sign:'纜車',desc:'纜車的起點站，要貼著道路。'};
 Object.assign(REQ,{lookout:{pop:60},tea:{pop:40},cable:{pop:100},camp:{pop:50},radio:{pop:150},villa:{pop:30}});
 Object.assign(PW,{lookout:1,tea:2,cable:4,camp:1,radio:5,villa:1});
 Object.assign(FREQ,{lookout:'rare',camp:'often'});
@@ -2017,7 +2018,7 @@ function drawHillB(b,x,y,w){ const ph=clock, HP='#8fa07a';
     const t=P3(x+.6,y+.75,.14); ln(t,{x:t.x,y:t.y-tw*.18},'#555',2); ln({x:t.x,y:t.y-tw*.18},{x:t.x+tw*.1,y:t.y-tw*.24},'#333',Math.max(2,tw*.04)); return P3(x+.5,y+.5,1); }
   if(b.t==='tea'){ cPlate(x,y,2,'#7fae5a',.04); for(let r=0;r<5;r++) for(let k=0;k<5;k++){ if(r>=3&&k>=3) continue; const c=iso(x+.25+k*.37,y+.25+r*.37); ellipse(c.x,c.y-tw*.04,tw*.14,tw*.08,(r+k)%2?'#4f9a44':'#5aa84c'); }
     box(x+1.25,y+1.25,.6,.55,.3,'#d9c7a3'); gableX(x+1.2,y+1.2,.7,.65,.3,.2,'#5a7a4a'); const p=iso(x+.6,y+1.5); emoji('👒',p.x,p.y-tw*.18,tw*.18); return P3(x+1,y+1,.7); }
-  if(b.t==='cable'){ const top=kit(x,y,1,{h:.4,wall:'#ece7dd',roof:'#c0392b',emo:'🚡',rows:1,plate:HP}); const f=cableFoot(b.x,b.y); if(f){ const z0=ZOFF, a=P3(x+.5,y+.5,.75); ZOFF=0; const fa=rotAnchor(f.x,f.y,1), g0=P3(fa[0]+.5,fa[1]+.5,0), g1=P3(fa[0]+.5,fa[1]+.5,.7); ln(g0,g1,'#6b6b6b',Math.max(2,tw*.04)); box(fa[0]+.38,fa[1]+.38,.24,.24,.06,'#c0392b',.66); ZOFF=z0; ln(a,g1,'#444',1.5);
+  if(b.t==='cable'){ const top=kit(x,y,1,{h:.4,wall:'#ece7dd',roof:'#c0392b',emo:'🚡',rows:1,plate:HP}); const f=b.fx==null?cableFoot(b.x,b.y):null; if(f){ const z0=ZOFF, a=P3(x+.5,y+.5,.75); ZOFF=0; const fa=rotAnchor(f.x,f.y,1), g0=P3(fa[0]+.5,fa[1]+.5,0), g1=P3(fa[0]+.5,fa[1]+.5,.7); ln(g0,g1,'#6b6b6b',Math.max(2,tw*.04)); box(fa[0]+.38,fa[1]+.38,.24,.24,.06,'#c0392b',.66); ZOFF=z0; ln(a,g1,'#444',1.5);
       for(let q=0;q<2;q++){ const t=(ph*.1+q*.5)%1, g={x:a.x+(g1.x-a.x)*t,y:a.y+(g1.y-a.y)*t}; ln(g,{x:g.x,y:g.y+tw*.07},'#444',1.2); rrect(g.x-tw*.08,g.y+tw*.07,tw*.16,tw*.12,3,q?'#3f7ac0':'#e2574c'); rrect(g.x-tw*.055,g.y+tw*.09,tw*.11,tw*.045,2,'#cfe8ff'); } } return top; }
   if(b.t==='camp'){ cPlate(x,y,2,'#7fae5a',.04); [[.35,.35,'#f08a3c'],[1.15,.4,'#4d7cc7'],[.4,1.15,'#3fae7a']].forEach(([a,c,col])=>{ const l=P3(x+a,y+c+.45,0), r=P3(x+a+.5,y+c+.45,0), t=P3(x+a+.25,y+c+.2,.42), bk=P3(x+a+.25,y+c-.05,.42); poly([l,r,t],col); poly([r,P3(x+a+.5,y+c,0),bk,t],shade(col,-.2)); });
     const f=iso(x+1.4,y+1.4); circle(f.x,f.y,tw*.08,'#6b4a2e'); for(let k=0;k<3;k++){ const s=.7+.3*Math.sin(ph*9+k*2); poly([{x:f.x-tw*.05+k*tw*.03,y:f.y},{x:f.x-tw*.02+k*tw*.03,y:f.y-tw*.16*s},{x:f.x+k*tw*.03,y:f.y}],k%2?'#f2c14e':'#e2574c'); }
@@ -2077,17 +2078,27 @@ function drawSpecial(b,x,y,w){ const ph=clock;
   return null; }
 
 const CAT_COL={traffic:'#6b7280',home:'#3fae7a',shop:'#4d7cc7',tech:'#9b6dd6',tour:'#f08a3c',public:'#e2574c',culture:'#b4508a',ind:'#8a6a4a',power:'#d39b1c'};
-// 纜車：山上的纜車站自動把纜線拉到 6 格內最近的道路；貼著（1 格內）有運作的纜車站，山上的設施就算接通
+// 纜車兩段式：先選山上的終點站，再選山下貼著道路的起點站（8 格內）
+function baseCheck(x,y,noMoney){ const t=placing&&placing.top; if(!t) return '先選山上的終點站'; const n=citySize(); if(x<0||y<0||x>=n||y>=n) return '超出土地範圍'; const tt=terr(x,y); if(tt==='h') return '⛰️ 起點站要蓋在山下的平地'; if(tt==='w'||badAt(x,y)||isRoad(x,y)||bAt(x,y)) return '這裡不能蓋';
+  if(!nearRoad(x,y,1)) return '🛣️ 起點站要貼著道路'; const d=Math.hypot(x-t.x,y-t.y); if(d>8.01) return `🚡 離山上的站太遠（${Math.round(d)} 格，最多 8 格）`; if(d<1.5) return '🚡 離山上的站太近'; if(!noMoney&&S.money<costOf('cable')) return '💸 錢不夠'; return ''; }
+function findBase(tx,ty){ let best=null; for(let y=ty-8;y<=ty+8;y++) for(let x=tx-8;x<=tx+8;x++){ if(baseCheck(x,y)) continue; const d=Math.hypot(x-tx,y-ty); if(!best||d<best.d) best={x,y,d}; } return best; }
+function placeCable(x,y){ const t=placing&&placing.top, m=baseCheck(x,y); if(!t||m){ if(m) ticker(m); sfx.bad(); return false; }
+  if(!cityPlace('cable',t.x,t.y,{final:1})){ return false; } const top=S.city.b.find(q=>q.t==='cable'&&q.x===t.x&&q.y===t.y); if(top){ top.fx=x; top.fy=y; }
+  S.city.b.push({t:'cablebase',x,y,w:1,occ:0,paid:0,bt:S.time,tx:t.x,ty:t.y}); placing={city:'cable'}; groundVer++; cityDirty=true; lastCityKey=''; cityCalc(); ticker('🚡 纜車通車！山上的設施貼著山上的站就能營業。'); return true; }
+// 舊版纜車：山上的纜車站自動把纜線拉到 6 格內最近的道路；貼著（1 格內）有運作的纜車站，山上的設施就算接通
 function cableFoot(x,y){ let best=null,bd=1e9; ROADS.forEach(k=>{ const [rx,ry]=k.split(',').map(Number); if(terr(rx,ry)==='h') return; const d=Math.hypot(rx-x,ry-y); if(d<=6.01&&d<bd){ bd=d; best={x:rx,y:ry}; } }); return best; }
-function nearCable(x,y,w){ return S.city.b.some(c=>c.t==='cable'&&!c.burnt&&(c.ok!==false)&&cableFoot(c.x,c.y)&&gapOf(x,y,w,c.x,c.y,1)<=1); }
+function cableOK(c){ return c.fx!=null?S.city.b.some(q=>q.t==='cablebase'&&q.x===c.fx&&q.y===c.fy&&nearRoad(q.x,q.y,1)):!!cableFoot(c.x,c.y); }
+function nearCable(x,y,w){ return S.city.b.some(c=>c.t==='cable'&&!c.burnt&&cableOK(c)&&gapOf(x,y,w,c.x,c.y,1)<=1); }
 // 山坡上的建築：先畫一塊山坡台座，再把整棟墊高到山坡高度
-function hillZ(b){ const D=CB[b.t]; if(!D||!(D.hill||D.hillOK)) return 0; const w=BW(b); let s=0,n=0; for(let a=0;a<w;a++) for(let c=0;c<w;c++){ const X=b.x+a, Y=b.y+c; if(terr(X,Y)!=='h') return 0; const k=hillK(X,Y); s+=.18+k*k*1.5+((X*7+Y*5)%4)*.07; n++; } return Math.min(1.1,Math.max(.25,s/n)); }
+function hillZ(b){ const D=CB[b.t]; if(!D||!(D.hill||D.hillOK)) return 0; const w=b.w||D.w||1; let mx=0; for(let a=0;a<w;a++) for(let c=0;c<w;c++){ const X=b.x+a, Y=b.y+c; if(terr(X,Y)!=='h') return 0; const k=hillK(X,Y); mx=Math.max(mx,.18+k*k*1.5+((X*7+Y*5)%4)*.07); } return Math.min(2.1,Math.max(.25,mx)); }
 function drawCityB(b,ox,oy){ const z=hillZ(b); if(!z) return drawCityB0(b,ox,oy); const w=BW(b); box(ox,oy,w,w,z,'#6aa85a'); ZOFF=z; try{ return drawCityB0(b,ox,oy); } finally{ ZOFF=0; } }
 function drawCityB0(b,ox,oy){
   const D=CB[b.t], x=ox??b.x, y=oy??b.y, w=BW(b), se=seasonOf(monthNo()), ph=clock; let top=null;
   if(b.burnt){ cPlate(x,y,w,'#6b6b6b',.05); box(x+.15,y+.15,w-.3,w-.3,.18,'#4a4440'); for(let k=0;k<w*2;k++){ const a=x+.2+((k*37)%10)/10*(w-.4), c=y+.2+((k*53)%10)/10*(w-.4); box(a,c,.12,.12,.12+((k*7)%4)*.05,'#2b2b2b',.18); } return P3(x+w/2,y+w/2,.5); }
   switch(b.t){
     case 'shrine': case 'hydro': case 'coaster': top=drawSpecial(b,x,y,w); break;
+    case 'cablebase':{ top=kit(x,y,1,{h:.38,wall:'#ece7dd',roof:'#c0392b',emo:'🚡',rows:1}); if(b.tx!=null){ const pb0=P3(x+.5,y+.2,.46), pb=P3(x+.5,y+.2,1.05); ln(pb0,pb,'#6b6b6b',Math.max(2,tw*.045)); const ta=rotAnchor(b.tx,b.ty,1), hz=hillZ({t:'cable',x:b.tx,y:b.ty,w:1}); ZOFF=hz; const pt=P3(ta[0]+.5,ta[1]+.5,.75); ZOFF=0; ln(pb,pt,'#444',1.5);
+      for(let q=0;q<2;q++){ const f2=(clock*.1+q*.5)%1, g={x:pb.x+(pt.x-pb.x)*f2,y:pb.y+(pt.y-pb.y)*f2}; ln(g,{x:g.x,y:g.y+tw*.07},'#444',1.2); rrect(g.x-tw*.08,g.y+tw*.07,tw*.16,tw*.12,3,q?'#3f7ac0':'#e2574c'); rrect(g.x-tw*.055,g.y+tw*.09,tw*.11,tw*.045,2,'#cfe8ff'); } } break; }
     case 'rice': case 'orchard': case 'veg': case 'chicken': case 'mill': case 'coop': case 'bnb': case 'farmhouse': case 'leisure': top=drawFarmB(b,x,y,w); break;
     case 'lookout': case 'tea': case 'cable': case 'camp': case 'radio': case 'villa': top=drawHillB(b,x,y,w); break;
     case 'statue':{ cPlate(x,y,3,'#e9dfcb',.04); for(let i=0;i<3;i++) for(let j=0;j<3;j++) if((i+j)%2) cPlate(x+i,y+j,1,'#ddd1b9',.06);
@@ -2423,7 +2434,7 @@ function drawCity(){
   drawDisc(); drawGhost(list);
   const vw=toWorld(0,0), vw2=toWorld(W,H), vw3=toWorld(W,0), vw4=toWorld(0,H);
   const XS=[vw.x,vw2.x,vw3.x,vw4.x], YS=[vw.y,vw2.y,vw3.y,vw4.y]; const ax=Math.max(0,Math.floor(Math.min(...XS))-1), bx=Math.min(30,Math.ceil(Math.max(...XS))+2), ay=Math.max(0,Math.floor(Math.min(...YS))-1), by=Math.min(30,Math.ceil(Math.max(...YS))+2);
-  for(let y=ay;y<by;y++) for(let x=ax;x<bx;x++){ const t=terr(x,y); if(t!=='h'&&t!=='f') continue; if(x<n&&y<n&&(isRoad(x,y)||bAt(x,y))) continue; const out=x>=n||y>=n;
+  for(let y=ay;y<by;y++) for(let x=ax;x<bx;x++){ const t=terr(x,y); if(t!=='h'&&t!=='f') continue; if(x<n&&y<n&&(isRoad(x,y)||bAt(x,y)||(ghost&&!ghost.bull&&!ghost.msg&&placing&&placing.city&&CB[ghost.k]&&(CB[ghost.k].hill||CB[ghost.k].hillOK)&&inFoot(ghost,x,y,CB[ghost.k].w))||(placing&&placing.top&&placing.top.x===x&&placing.top.y===y))) continue; const out=x>=n||y>=n;
     if(t==='h') list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.7; drawHill(x,y); ctx.globalAlpha=1; }});
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
@@ -2478,14 +2489,17 @@ function rateBuild(k,x,y){
   return {stars:Math.max(0,Math.min(5,Math.round(5*need*place))),why};
 }
 let cityPops=[];
-function cityPlace(k,x,y,o){ o=o||{}; if(k!=='road'&&k!=='bulldoze'&&CB[k]&&!themeOK(k)){ ticker('這個任務用不到這種建築。'); return false; }
+function cityPlace(k,x,y,o){ o=o||{};
+  if(k==='cablebase') return placeCable(x,y);
+  if(k==='cable'&&!o.final){ const m=placeCheck('cable',x,y); if(m){ ticker(m); sfx.bad(); return false; } setPlacing({city:'cablebase',top:{x,y}}); const f=findBase(x,y); ghost=f?{k:'cablebase',x:f.x,y:f.y,msg:''}:{k:'cablebase',x,y,msg:'8 格內沒有能蓋起點站的路邊，先在山腳鋪路'}; ghostBanner(); sfx.pop(); ticker('🚡 山上的站選好了！再選山下的起點站（要貼著道路，8 格內）'); return false; }
+  if(k!=='road'&&k!=='bulldoze'&&CB[k]&&!themeOK(k)){ ticker('這個任務用不到這種建築。'); return false; }
   const D=CB[k];
   if(k==='road'){ if(x<0||y<0||x>=citySize()||y>=citySize()||isRoad(x,y)||bAt(x,y)) return false; const tt=terr(x,y); if(tt==='h'){ ticker('⛰️ 山坡不能鋪路，改蓋 🚡 纜車站把山上的設施接起來。'); return false; } if(badAt(x,y)){ ticker('🔧 這裡有前任留下的爛攤子，點它先處理。'); return false; } const cost=tt==='w'?300:D.cost; if(S.money<cost){ ticker('💸 錢不夠鋪路了。'); return false; } S.money-=cost; if(tt==='w'&&!S.city.bridge){ S.city.bridge=1; ticker('🌉 第一座橋完工！鴨子們從橋下游過去表示祝賀。'); } S.city.r.push(x+','+y); ROADS.add(x+','+y); cityDirty=true; groundVer++; sfx.pop(); return true; }
   if(D.sand&&terr(x,y)!=='s'){ ticker('🏖️ 這個要蓋在海邊的沙灘上。'); sfx.bad(); return false; }
   if(D.water&&!nearWater(x,y,D.w)){ ticker('💧 要貼著河或湖蓋。'); sfx.bad(); return false; }
   if(D.coast&&!coastOK(x,y)){ ticker('⚓ 港口要貼著海邊的沙灘蓋，靠著海才能停船。'); sfx.bad(); return false; }
   if(!footFree(x,y,D.w,k)){ ticker(D.hill?'⛰️ 這個要整塊蓋在山坡上。':blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
-  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!cableFoot(x,y):(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
+  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!o.final:(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   const rate=rateBuild(k,x,y);
   const tk=k==='mrt'?trackAdd(x,y):0, cost=(o.cost||costOf(k))+tk*TRACK_COST; if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
   S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars,bt:S.time}; if(exB){ nb.par=bkey(exB); } S.city.b.push(nb); groundVer++; cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
@@ -2495,16 +2509,16 @@ function cityPlace(k,x,y,o){ o=o||{}; if(k!=='road'&&k!=='bulldoze'&&CB[k]&&!the
 }
 function cityBulldoze(x,y,o){ groundVer++; o=o||{};
   const b=bAt(x,y);
-  if(b){ if(CB[b.t].fixed){ ticker('🏛️ 市政府不能拆。'); return; } { const k0=bkey(b); if(!b.par){ const ch=S.city.b.filter(q=>q.par===k0); const nb2=ch.find(q=>nearRoad(q.x,q.y,BW(q))); if(nb2){ delete nb2.par; ch.forEach(q=>{ if(q!==nb2) q.par=bkey(nb2); }); } } } S.city.b=S.city.b.filter(q=>q!==b); S.money+=b.burnt||o.noRefund?0:Math.round((b.paid||CB[b.t].cost)*.5); cityDirty=true; sfx.pop(); return; }
+  if(b){ if(CB[b.t].fixed){ ticker('🏛️ 市政府不能拆。'); return; } { const k0=bkey(b); if(!b.par){ const ch=S.city.b.filter(q=>q.par===k0); const nb2=ch.find(q=>nearRoad(q.x,q.y,BW(q))); if(nb2){ delete nb2.par; ch.forEach(q=>{ if(q!==nb2) q.par=bkey(nb2); }); } } } S.city.b=S.city.b.filter(q=>q!==b); S.money+=b.burnt||o.noRefund?0:Math.round((b.paid||CB[b.t].cost)*.5); if(b.t==='cable'&&b.fx!=null) S.city.b=S.city.b.filter(q=>!(q.t==='cablebase'&&q.x===b.fx&&q.y===b.fy)); if(b.t==='cablebase'){ const tp=S.city.b.find(q=>q.t==='cable'&&q.fx===b.x&&q.fy===b.y); if(tp){ S.city.b=S.city.b.filter(q=>q!==tp); S.money+=Math.round((tp.paid||CB.cable.cost)*.5); } } cityDirty=true; sfx.pop(); return; }
   if(isRoad(x,y)){ S.city.r=S.city.r.filter(k=>k!==x+','+y); ROADS.delete(x+','+y); S.money+=10; cityDirty=true; sfx.pop(); cars=cars.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); peds=peds.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); }
 }
 let lastDragTile='';
 function cityDrag(sx,sy){ if(!(placing&&(placing.city==='road'||placing.city==='bulldoze'))) return false; const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y), k=x+','+y; if(k===lastDragTile) return true; lastDragTile=k; if(placing.city==='road') cityPlace('road',x,y); else if(isRoad(x,y)) cityBulldoze(x,y); return true; }
 var ghost=null;
-function placeCheck(k,x,y,noMoney){ const D=CB[k]; if(k!=='road'&&!themeOK(k)) return '這個任務用不到';
+function placeCheck(k,x,y,noMoney){ const D=CB[k]; if(k==='cablebase') return baseCheck(x,y,noMoney); if(k!=='road'&&!themeOK(k)) return '這個任務用不到';
   if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘'; if(D.water&&!nearWater(x,y,D.w)) return '💧 要貼著河或湖';
   if(!footFree(x,y,D.w,k)){ for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++) if(!tileOK(k,x+a,y+d)&&!isRoad(x+a,y+d)&&!bAt(x+a,y+d)) return badAt(x+a,y+d)?'🔧 有爛攤子，先點它處理':D.hill?'⛰️ 要整塊蓋在山坡上':'🌊 有水或山坡，蓋不了'; if(D.coast){ let r=0,bb=0; for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++){ if(isRoad(x+a,y+d)) r=1; if(bAt(x+a,y+d)) bb=1; } return `⚓ 沙灘往內 ${D.w} 排要空著（${r&&bb?'有道路和建築':r?'有道路':'有建築'}擋住）`; } return '這裡空間不夠'; }
-  if(k==='cable'){ if(!nearRoad(x,y,1)&&!cableFoot(x,y)) return '🚡 6 格內要有平地的道路（纜線會拉過去）'; }
+  if(k==='cable'){ }
   else if(!nearRoad(x,y,D.w)&&!expandBase(k,x,y)&&!(D.hill||D.hillOK)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路';
   else if((D.hill||D.hillOK)&&!nearRoad(x,y,D.w)&&!nearCable(x,y,D.w)) return '🚡 要貼著道路或纜車站'; if(noMoney) return ''; if(S.money<costOf(k)+(k==='mrt'?trackAdd(x,y)*TRACK_COST:0)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠（含軌道）'; return ''; }
 // 單指按著拖移要蓋的建築（紅框／綠框跟著手指走）
@@ -2522,7 +2536,7 @@ const inFoot=(g,x,y,w)=>x>=g.x&&x<g.x+w&&y>=g.y&&y<g.y+w;
 function ghostBanner(){ const t=$('bannerTxt'), ok=$('bannerOK');
   if(!ghost){ ok.classList.add('hidden'); return; }
   if(ghost.bull){ const nm=ghost.b?`${CB[ghost.b.t].icon} ${CB[ghost.b.t].name}（退 $${fmt(ghost.b.burnt?0:(ghost.b.paid||CB[ghost.b.t].cost)*.5)}）`:'🛣️ 這段道路（退 $10）'; t.textContent='拆除 '+nm+'？'; ok.textContent='✓ 拆除'; ok.classList.remove('hidden'); return; }
-  const D=CB[ghost.k]; if(ghost.msg){ t.textContent=`${D.icon} ${ghost.msg}`; ok.classList.add('hidden'); } else { const pw=D.pw||0, warn=CS.pw&&pw>0&&!D.pwr&&CS.pw.use+pw>CS.pw.cap&&!CS.pw.grace?'・⚡蓋了會停電':''; const tk=ghost.k==='mrt'?trackAdd(ghost.x,ghost.y):0, eb=expandBase(ghost.k,ghost.x,ghost.y); const sh=spotsIn(ghost.x,ghost.y,D.w).filter(s=>SPOTS[s.k].good).map(s=>{ const P=SPOTS[s.k]; return spotMatch(s,ghost.k)?`・${P.icon}${P.name} ${P.mul?`收入×${P.mul}`:'發電×2'}`:s.k==='relic'?'・🏺 考古學家會抗議':`・${P.icon}浪費${P.name}`; }).join(''); t.textContent=`${eb?`🏗️ 擴建（${extCount(eb)+1}/2）`:''}${D.icon} ${D.name} $${fmt(costOf(ghost.k)+tk*TRACK_COST)}${tk?`（含軌道 ${tk} 格 $${fmt(tk*TRACK_COST)}，維護 +$${fmt(tk*TRACK_UP*6)}/分）`:''}・維護 $${fmt(upOf({t:ghost.k})*6)}/分${warn}${sh}`; ok.textContent='✓ 蓋這裡'; ok.classList.remove('hidden'); } }
+  const D=CB[ghost.k]; if(ghost.msg){ t.textContent=`${D.icon} ${ghost.msg}`; ok.classList.add('hidden'); } else if(ghost.k==='cablebase'){ t.textContent=`🚡 山下起點站選這裡？纜車 $${fmt(costOf('cable'))}（拖曳可以換位置）`; ok.classList.remove('hidden'); } else { const pw=D.pw||0, warn=CS.pw&&pw>0&&!D.pwr&&CS.pw.use+pw>CS.pw.cap&&!CS.pw.grace?'・⚡蓋了會停電':''; const tk=ghost.k==='mrt'?trackAdd(ghost.x,ghost.y):0, eb=expandBase(ghost.k,ghost.x,ghost.y); const sh=spotsIn(ghost.x,ghost.y,D.w).filter(s=>SPOTS[s.k].good).map(s=>{ const P=SPOTS[s.k]; return spotMatch(s,ghost.k)?`・${P.icon}${P.name} ${P.mul?`收入×${P.mul}`:'發電×2'}`:s.k==='relic'?'・🏺 考古學家會抗議':`・${P.icon}浪費${P.name}`; }).join(''); t.textContent=`${eb?`🏗️ 擴建（${extCount(eb)+1}/2）`:''}${D.icon} ${D.name} $${fmt(costOf(ghost.k)+tk*TRACK_COST)}${tk?`（含軌道 ${tk} 格 $${fmt(tk*TRACK_COST)}，維護 +$${fmt(tk*TRACK_UP*6)}/分）`:''}・維護 $${fmt(upOf({t:ghost.k})*6)}/分${warn}${sh}`; ok.textContent='✓ 蓋這裡'; ok.classList.remove('hidden'); } }
 function confirmGhost(){ if(!ghost) return;
   if(ghost.bull){ if(ghost.b) cityBulldoze(ghost.b.x,ghost.b.y); else cityBulldoze(ghost.x,ghost.y); saveLocal(); ghost=null; setPlacing(placing); return; }
   const k=ghost.k; if(ghost.msg){ sfx.bad(); return; } if(cityPlace(k,ghost.x,ghost.y)){ ghost=null; if(CB[k].w>1) setPlacing(null); else setPlacing(placing); } }
@@ -2624,7 +2638,8 @@ function drawGhost(list){ if(!ghost) return;
   const D=CB[ghost.k], w=D.w, ok=!ghost.msg, a=.35+.2*Math.sin(clock*6);
   for(let i=0;i<w;i++) for(let j=0;j<w;j++) tile4(ghost.x+i,ghost.y+j,ok?`rgba(63,174,122,${a})`:`rgba(226,87,76,${a})`);
   ctx.strokeStyle=ok?'#2f8f5f':'#c0392b'; ctx.lineWidth=2; ctx.setLineDash([5,4]); poly([iso(ghost.x,ghost.y),iso(ghost.x+w,ghost.y),iso(ghost.x+w,ghost.y+w),iso(ghost.x,ghost.y+w)],null,ctx.strokeStyle,2); ctx.setLineDash([]);
-  if(ok){ const an=rotAnchor(ghost.x,ghost.y,w); list.push({d:an[0]+an[1]+w-.4,fn:()=>{ ctx.globalAlpha=.6; RAW=true; drawCityB({t:ghost.k,x:ghost.x,y:ghost.y,w,ok:1,occ:0},an[0],an[1]); RAW=false; ctx.globalAlpha=1; }}); } }
+  if(ok){ const an=rotAnchor(ghost.x,ghost.y,w); list.push({d:an[0]+an[1]+w-.4,fn:()=>{ ctx.globalAlpha=.6; RAW=true; drawCityB({t:ghost.k,x:ghost.x,y:ghost.y,w,ok:1,occ:0,fx:ghost.k==='cable'?-1:undefined,tx:placing&&placing.top?placing.top.x:undefined,ty:placing&&placing.top?placing.top.y:undefined},an[0],an[1]); RAW=false; ctx.globalAlpha=1; }}); }
+  if(placing&&placing.top){ const tp=placing.top, a2=rotAnchor(tp.x,tp.y,1); list.push({d:a2[0]+a2[1]+.6,fn:()=>{ ctx.globalAlpha=.8; RAW=true; drawCityB({t:'cable',x:tp.x,y:tp.y,w:1,ok:1,occ:0,fx:-1},a2[0],a2[1]); RAW=false; ctx.globalAlpha=1; }}); } }
 function cityTap(sx,sy){
   const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y);
   { const fb=S.city.b.find(q=>q.fire>0&&q._hit&&inPoly(sx,sy,q._hit.poly)); if(fb){ extinguish(fb); return; } }
@@ -2709,7 +2724,7 @@ const tabOf=D=>D.cat==='tech'||D.cat==='ind'?'work':D.cat;
 const SVC_LBL={shop:'🛒購物',move:'🚏交通',fun:'🎡休閒',edu:'🏫教育',help:'🚓協助',trash:'🗑️垃圾',water:'🚰污水'};
 const NEED_B={shop:['coop','conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['veg','chicken','rice','startup','pearl','bento','conv','noodle','soy','toy'],staff:['farmhouse','sky','tower','apt','treeh','house'],home:['farmhouse','sky','tower','apt','treeh','house','villa'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
 function bCard(k){ const D=CB[k], c=costOf(k);
-  const tags=[D.svc?`${SVC_LBL[D.svc]} ${D.cap}人`:'',D.pop?`👥住 ${D.pop} 人`:'',D.exp?`📦外銷 $${D.exp}`:'',D.pwr?`⚡發電 ${D.pwr}`:'',D.jobs?`💼${D.jobs}`:'',D.cult?`📚人文+${D.cult}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.green?`🌿+${D.green}`:'',D.w>1?`${D.w}×${D.w}`:'',D.smell?'💨會臭':'',D.noise?'🔊會吵':'',D.water?'💧要靠水':'',D.hill?(k==='cable'?'⛰️蓋在山上，纜線拉到 6 格內的路':'⛰️山坡・要貼路或纜車站'):'',D.hillOK?'⛰️山坡也能蓋':'',D.sand?'🏖️沙灘':''].filter(Boolean).join(' ');
+  const tags=[D.svc?`${SVC_LBL[D.svc]} ${D.cap}人`:'',D.pop?`👥住 ${D.pop} 人`:'',D.exp?`📦外銷 $${D.exp}`:'',D.pwr?`⚡發電 ${D.pwr}`:'',D.jobs?`💼${D.jobs}`:'',D.cult?`📚人文+${D.cult}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.green?`🌿+${D.green}`:'',D.w>1?`${D.w}×${D.w}`:'',D.smell?'💨會臭':'',D.noise?'🔊會吵':'',D.water?'💧要靠水':'',D.hill?(k==='cable'?'⛰️山上終點＋山下起點（8 格內）':'⛰️山坡・要貼路或纜車站'):'',D.hillOK?'⛰️山坡也能蓋':'',D.sand?'🏖️沙灘':''].filter(Boolean).join(' ');
   return `<div class="item bitem"><div class="ic" style="background:#eef5fd">${icoH(D.icon)}</div><div class="txt"><div class="nm">${D.name}</div><div class="tg">${tags}</div><div class="ds clamp">${D.desc}</div></div><button class="btn" ${S.money<c?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(c)}${k!=='road'?`<small>維護 ${fmt(upOf({t:k})*6)}/分</small>`:''}</button></div>`; }
 function lockList(ks){ if(!ks.length) return ''; return `<details class="locks"><summary>🔒 還沒解鎖（${ks.length}）</summary>${ks.map(k=>`<div class="lk">${icoH(CB[k].icon)} <b>${CB[k].name}</b><span>${(lockOf(k)||['再等一下']).join('、')}</span></div>`).join('')}</details>`; }
 function recHTML(){ const nd=cityNeeds().filter(v=>v.k!=='road'&&NEED_B[v.k]).slice(0,3), used=new Set(); let h='';
@@ -2913,7 +2928,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.21</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.22</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
