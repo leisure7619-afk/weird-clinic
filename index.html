@@ -2473,7 +2473,13 @@ function drawBigGroup(g,u0,v0,U,V,e){ if(e){ u0-=e.u0; v0-=e.v0; U+=e.u0+e.u1; V
 function hitRect(x0,y0,x1,y1,top,d){ const pts=[iso(x0,y0),iso(x1,y0),iso(x1,y1),iso(x0,y1)]; let L=pts[0],R=pts[0],B=pts[0],T=pts[0]; pts.forEach(p=>{ if(p.x<L.x) L=p; if(p.x>R.x) R=p; if(p.y>B.y) B=p; if(p.y<T.y) T=p; }); const ty=Math.min(T.y,top?top.y:T.y); return {poly:[L,B,R,{x:R.x,y:Math.min(R.y,ty)},{x:T.x,y:ty},{x:L.x,y:Math.min(L.y,ty)}],d}; }
 function hitShape(b,top,d){ const w=BW(b), pts=[iso(b.x,b.y),iso(b.x+w,b.y),iso(b.x+w,b.y+w),iso(b.x,b.y+w)]; let L=pts[0],R=pts[0],B=pts[0],T=pts[0]; pts.forEach(p=>{ if(p.x<L.x) L=p; if(p.x>R.x) R=p; if(p.y>B.y) B=p; if(p.y<T.y) T=p; }); const ty=Math.min(T.y,top?top.y:T.y); return {poly:[L,B,R,{x:R.x,y:Math.min(R.y,ty)},{x:T.x,y:ty},{x:L.x,y:Math.min(L.y,ty)}],d}; }
 function inPoly(px,py,P){ let c=false; for(let i=0,j=P.length-1;i<P.length;j=i++){ if(((P[i].y>py)!==(P[j].y>py))&&(px<(P[j].x-P[i].x)*(py-P[i].y)/(P[j].y-P[i].y)+P[i].x)) c=!c; } return c; }
-function buildingAtScreen(sx,sy){ let hit=null; S.city.b.forEach(b=>{ if(b._hit&&inPoly(sx,sy,b._hit.poly)&&(!hit||b._hit.d>hit._hit.d)) hit=b; }); return hit; }
+// 點建築：先用外框篩候選，重疊時把候選各自單獨畫在 7×7 小畫布上，看手指那一點真的有沒有畫到東西（前面的優先）
+const HITC=document.createElement('canvas'); HITC.width=HITC.height=7; const HITG=HITC.getContext('2d',{willReadFrequently:true});
+function solidAt(b,sx,sy){ const w=BW(b), an=rotAnchor(b.x,b.y,w), sv=ctx, nl=NIGHT, cb=CURB; let ok=false;
+  try{ ctx=HITG; HITG.setTransform(1,0,0,1,0,0); HITG.clearRect(0,0,7,7); HITG.setTransform(1,0,0,1,3.5-sx,3.5-sy); NIGHT=0; CURB=null; RAW=true; drawCityB(b,an[0],an[1]); const d=HITG.getImageData(0,0,7,7).data; for(let i=3;i<d.length;i+=4) if(d[i]>60){ ok=true; break; } }
+  catch(e){ ok=true; } finally{ ctx=sv; NIGHT=nl; CURB=cb; RAW=false; } return ok; }
+function buildingAtScreen(sx,sy){ const C=S.city.b.filter(b=>b._hit&&inPoly(sx,sy,b._hit.poly)).sort((a,b)=>b._hit.d-a._hit.d); if(C.length<=1) return C[0]||null;
+  const g=C.find(b=>solidAt(b,sx,sy)); return g||C[0]; }
 // 沒接到路的建築：地面標紅；鋪路模式時，把「鋪這格就能接上」的位置標黃
 function drawDisc(){ const L=S.city.b.filter(b=>!b.ok&&!b.burnt&&!CB[b.t].fixed); if(!L.length) return; const a=.25+.15*Math.sin(clock*5), road=placing&&placing.city==='road', n=citySize(), seen=new Set();
   L.forEach(b=>{ const w=BW(b); for(let i=0;i<w;i++) for(let j=0;j<w;j++) tile4(b.x+i,b.y+j,`rgba(226,87,76,${a})`);
@@ -2772,7 +2778,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.17</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.17.1</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
