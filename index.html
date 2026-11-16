@@ -525,7 +525,7 @@ const CITY_STAGES=[
   {name:'搞怪小鎮',mayor:'鎮長',size:18,req:{pop:80,road:18,cat:{shop:2}}},
   {name:'搞怪市',mayor:'市長',size:22,req:{pop:350,happy:60,has:['bus','startup'],cat:{tour:2}}},
   {name:'搞怪大都會',mayor:'大市長',size:26,req:{pop:1100,happy:66,has:['mrt','robot','ferris']}},
-  {name:'搞怪國際都市',mayor:'宇宙市長',size:30,req:{pop:2600,happy:72,has:['airport','ai','duck']}}
+  {name:'搞怪國際都市',mayor:'宇宙市長',size:30,req:{pop:2000,happy:72,has:['airport','ai','duck']}}
 ];
 const CB={
   road:   {cat:'traffic',name:'道路',icon:'🛣️',cost:40,w:1,stage:0,desc:'選好之後，用手指在地上拖曳就能連續鋪路。'},
@@ -1050,6 +1050,7 @@ Object.assign(CB,{
   soy:    {exp:100,jobs:18,smell:1,cat:'ind',name:'醬油釀造廠',icon:'🫙',cost:6000,w:2,sign:'醬油廠',desc:'2×2。釀一甕要一年，香味飄三條街（有人覺得臭）。'},
   chip:   {exp:900,jobs:80,cat:'ind',name:'搞怪晶圓廠',icon:'💾',cost:120000,w:3,sign:'晶圓廠',desc:'3×3。無塵室裡的工程師穿得像太空人。超耗電，外銷超賺。'},
   rlab:   {exp:300,jobs:30,cat:'ind',name:'晶片可靠度實驗室',icon:'🔬',cost:40000,w:2,sign:'可靠度實驗室',desc:'2×2。晶片在這裡被高溫烤、高濕泡、冷熱輪流折磨，撐過去才准出貨。口頭禪：「再跑 1000 小時看看」。'},
+  sky:    {rent:2.2,cat:'home',name:'摩天住宅',icon:'🌆',cost:80000,w:2,stage:3,pop:300,sign:'摩天住宅',desc:'2×2 住 300 人，是住宅大樓的 3 倍。頂樓有空中花園，電梯分高低樓層。很耗電。'},
   bento:  {svc:'shop',cap:40,fee:3,jobs:6,cat:'shop',name:'便當店',icon:'🍱',cost:1300,w:1,sign:'便當',desc:'排骨、雞腿、控肉三選一，老闆會多給一匙滷汁。'},
   bakery: {svc:'shop',cap:35,fee:3,jobs:5,cat:'shop',name:'麵包店',icon:'🥐',cost:1600,w:1,sign:'麵包店',desc:'下午三點出爐，柴犬會準時坐在門口。'},
   gym:    {svc:'fun',cap:45,fee:4,jobs:5,happy:1,cat:'tour',name:'健身房',icon:'🏋️',cost:3500,w:1,sign:'健身房',desc:'辦卡的人很多，真的去的人很少。'},
@@ -1061,8 +1062,8 @@ Object.assign(CB,{
   hydro:  {cat:'power',name:'小水力發電',icon:'💧',cost:6000,w:1,pwr:30,green:1,water:1,sign:'水力',desc:'要蓋在河邊或湖邊（旁邊有水）。安靜乾淨，偶爾卡到樹枝。發電 30⚡。'}
 });
 Object.assign(CB.shiba,{cat:'tour'}); Object.assign(CB.museum,{cat:'culture',cult:3}); Object.assign(CB.solar,{cat:'power',pwr:30,exp:0,desc:'2×2 太陽能板。陰天時板子會自己唱歌打氣。發電 30⚡，用不完的電賣給隔壁城市。'});
-Object.assign(REQ,{library:{pop:80},gallery:{pop:150},cinema:{pop:120,pwr:60},theater:{pop:100},noodle:{pop:80},toy:{pop:120},pearl:{pop:60},soy:{pop:80},chip:{pop:600,pwr:400,has:['startup']},rlab:{has:['chip']},gym:{pop:60},ktv:{pop:80},coaster:{pop:400,pwr:200,has:['ferris']},aquarium:{pop:250},clinic:{pop:60},post:{pop:40}});
-Object.assign(PW,{book:1,library:3,gallery:4,cinema:6,theater:2,noodle:8,toy:8,pearl:3,soy:4,chip:60,rlab:25,bento:1,bakery:2,gym:2,ktv:3,coaster:15,aquarium:8,clinic:2,post:1});
+Object.assign(REQ,{sky:{pop:1000,pwr:600,has:['tower']},library:{pop:80},gallery:{pop:150},cinema:{pop:120,pwr:60},theater:{pop:100},noodle:{pop:80},toy:{pop:120},pearl:{pop:60},soy:{pop:80},chip:{pop:600,pwr:400,has:['startup']},rlab:{has:['chip']},gym:{pop:60},ktv:{pop:80},coaster:{pop:400,pwr:200,has:['ferris']},aquarium:{pop:250},clinic:{pop:60},post:{pop:40}});
+Object.assign(PW,{sky:30,book:1,library:3,gallery:4,cinema:6,theater:2,noodle:8,toy:8,pearl:3,soy:4,chip:60,rlab:25,bento:1,bakery:2,gym:2,ktv:3,coaster:15,aquarium:8,clinic:2,post:1});
 Object.assign(FREQ,{book:'weekly',bento:'daily',bakery:'daily',gym:'often',ktv:'often',cinema:'often',gallery:'rare',theater:'rare',coaster:'rare',aquarium:'rare'});
 
 CB.cityhall.pwr=20;
@@ -1955,6 +1956,10 @@ function drawCityB(b,ox,oy){
     case 'apt':{ const {X,Y,L}=body(x,y,1,1.25,'#e9e1d4',{inset:.2,rows:4,cols:2});
       for(let k=1;k<4;k++) box(X-.02,Y+L,L+.04,.09,.03,'#b9b2a6',k*1.25/4);
       box(X-.02,Y-.02,L+.04,L+.04,.06,'#8a8f99',1.25); cyl(X+L*.35,Y+L*.4,.12,1.31,.2,'#c9b9a0'); ln(P3(X+L*.75,Y+L*.6,1.31),P3(X+L*.75,Y+L*.6,1.55),'#777',1.5); top=P3(x+.5,y+.5,1.6); break; }
+    case 'sky':{ const wc='rgba(255,255,255,.85)'; cPlate(x,y,2,'#d9dde2',.04); body(x,y,2,1.6,'#b9d3e8',{inset:.16,rows:5,wc}); box(x+.14,y+.14,1.72,1.72,.06,'#4f6072',1.6);
+      body(x+.34,y+.34,1.32,1.4,'#a8c7e1',{inset:0,z:1.66,rows:4,wc}); box(x+.32,y+.32,1.36,1.36,.05,'#4f6072',3.06); const g=P3(x+.25,y+1.55,1.67); ellipse(g.x,g.y,tw*.09,tw*.045,'#5fae5a'); const g2=P3(x+1.6,y+.3,1.67); ellipse(g2.x,g2.y,tw*.09,tw*.045,'#5fae5a');
+      body(x+.6,y+.6,.8,.9,'#97bbdb',{inset:0,z:3.11,rows:3,wc}); box(x+.58,y+.58,.84,.84,.05,'#4f6072',4.01); drawTree(x+.7,y+.7,{scale:.35}); ln(P3(x+1.15,y+1.15,4.06),P3(x+1.15,y+1.15,4.9),'#666',2);
+      if(Math.floor(ph*2)%2){ const q=P3(x+1.15,y+1.15,4.9); circle(q.x,q.y,tw*.04,'#ff4040'); } top=P3(x+1,y+1,4.9); break; }
     case 'tower':{ body(x,y,2,1.5,'#cfe4f3',{inset:.15,wc:'rgba(255,255,255,.85)'}); box(x+.12,y+.12,1.76,1.76,.06,'#5a6b7a',1.5);
       body(x+.4,y+.4,1.2,.65,'#b8d4ea',{inset:0,z:1.56,rows:2,wc:'rgba(255,255,255,.85)'}); box(x+.38,y+.38,1.24,1.24,.05,'#5a6b7a',2.21);
       body(x+.7,y+.7,.6,.4,'#a3c4e0',{inset:0,z:2.26,rows:1,wc:'rgba(255,255,255,.85)'}); ln(P3(x+1,y+1,2.66),P3(x+1,y+1,3.2),'#666',2);
@@ -2532,7 +2537,7 @@ const BTABS=[['rec','⭐ 推薦'],['home','🏠 住宅'],['shop','🛒 購物美
 const TAB_HINT={culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
 const tabOf=D=>D.cat==='tech'||D.cat==='ind'?'work':D.cat;
 const SVC_LBL={shop:'🛒購物',move:'🚏交通',fun:'🎡休閒',edu:'🏫教育',help:'🚓協助',trash:'🗑️垃圾',water:'🚰污水'};
-const NEED_B={shop:['conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['startup','pearl','bento','conv','noodle','soy','toy'],staff:['house','apt','treeh','tower'],home:['house','apt','treeh','tower'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
+const NEED_B={shop:['conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['startup','pearl','bento','conv','noodle','soy','toy'],staff:['sky','tower','apt','treeh','house'],home:['sky','tower','apt','treeh','house'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
 function bCard(k){ const D=CB[k], c=costOf(k);
   const tags=[D.svc?`${SVC_LBL[D.svc]} ${D.cap}人`:'',D.pop?`👥住 ${D.pop} 人`:'',D.exp?`📦外銷 $${D.exp}`:'',D.pwr?`⚡發電 ${D.pwr}`:'',D.jobs?`💼${D.jobs}`:'',D.cult?`📚人文+${D.cult}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.green?`🌿+${D.green}`:'',D.w>1?`${D.w}×${D.w}`:'',D.smell?'💨會臭':'',D.noise?'🔊會吵':'',D.water?'💧要靠水':'',D.sand?'🏖️沙灘':''].filter(Boolean).join(' ');
   return `<div class="item bitem"><div class="ic" style="background:#eef5fd">${icoH(D.icon)}</div><div class="txt"><div class="nm">${D.name}</div><div class="tg">${tags}</div><div class="ds clamp">${D.desc}</div></div><button class="btn" ${S.money<c?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(c)}${k!=='road'?`<small>維護 ${fmt(upOf({t:k})*6)}/分</small>`:''}</button></div>`; }
@@ -2737,7 +2742,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.15</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.16</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
