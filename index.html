@@ -596,8 +596,48 @@ function applyOpen(k){ const O=OPENS[k], c=S.city; if(!O||!c.needOpen) return; d
   (O.r||[]).forEach(r=>{ const [x,y]=r.split(',').map(Number); if(!c.r.includes(r)&&!bAt(x,y)&&!blocked(x,y)){ c.r.push(r); ROADS.add(r); } });
   const order=O.b.slice().sort((a,b)=>CB[b].w-CB[a].w); let burn=O.burnt||0;
   order.forEach(t=>{ const s=openSlot(t); if(!s) return; const D=CB[t], nb={t,x:s.x,y:s.y,w:D.w,occ:D.pop?Math.round(D.pop*.6):0,paid:D.cost,bt:-999}; if(burn>0&&t!=='bus'){ nb.burnt=1; nb.occ=0; burn--; } c.b.push(nb); if(D.req) c.unl[t]=1; });
-  S.money=O.money+2000*upL('cash'); (O.fx||[]).forEach(f=>c.fx.push({k:f.k,n:f.n,m:f.m,until:S.time+f.t,lb:f.lb}));
+  c.platT=S.time+3*MONTH; S.money=O.money+2000*upL('cash'); (O.fx||[]).forEach(f=>c.fx.push({k:f.k,n:f.n,m:f.m,until:S.time+f.t,lb:f.lb}));
   groundVer++; cityDirty=true; cityDirty2=true; lastCityKey=''; cityCalc(); saveLocal(); sfx.fan(); ticker(`${O.icon} 接手「${O.name}」，開始上班！`); }
+
+// ================= v2.14 百日施政：任期政見 =================
+const r10=v=>Math.round(v/10)*10, r100=v=>Math.round(v/100)*100;
+const spotWhy=ks=>{ const s=(S.city.spots||[]).find(q=>ks.includes(q.k)&&!q.done); return s?`地圖上有 ${SPOTS[s.k].icon}${SPOTS[s.k].name}`:null; };
+const needWhy=k=>{ const n=cityNeeds().slice(0,3).find(v=>v.k===k); return n?`民調：${n.t.replace(/（.*?）/g,'')}`:null; };
+const smellN=()=>S.city.b.filter(b=>b.t==='coal'||b.t==='garbage').length;
+const PLATS={
+  tour:{icon:'📷',name:'打造觀光名城',diff:2,goal:t=>`觀光客達到 ${fmt(t)} 人`,tgt:()=>Math.max(80,r10(CS.tourists*2.5+60)),val:()=>CS.tourists,why:()=>spotWhy(['hot','relic','photo'])||(S.city.trait==='tour'?'本市特色是觀光':null)||(S.city.open==='shiba'?'柴犬天堂很吸觀光客':null)},
+  commute:{icon:'🚏',name:'通勤不再擠',diff:2,goal:t=>`人口 ${fmt(t)} 時，交通滿足度還有 90%`,tgt:()=>Math.max(120,r10(CS.pop*2)),val:()=>CS.pop,ok:t=>CS.pop>=t&&(CS.sat.move||0)>=.9,why:()=>needWhy('move')},
+  clean:{icon:'🧹',name:'告別臭味',diff:3,goal:()=>'拆掉火力發電廠和垃圾場，垃圾滿足度 90%',tgt:()=>smellN(),val:()=>smellN(),ok:()=>smellN()===0&&(CS.sat.trash||0)>=.9&&!(CS.pw&&CS.pw.ratio<1),prog:p=>p.tgt?(p.tgt-smellN())/p.tgt*.8+((CS.sat.trash||0)>=.9?.2:0):0,need:()=>smellN()>0,why:()=>S.city.open==='indus'?'前任留下老舊工廠，市民一直嫌臭':'市民嫌發電廠和垃圾場很臭'},
+  shiba:{icon:'🐕',name:'柴犬之都',diff:2,goal:t=>`柴犬咖啡廳開到 ${t} 間`,tgt:()=>((CS.cnt||{}).shiba||0)+2,val:()=>(CS.cnt||{}).shiba||0,why:()=>S.city.trait==='shiba'?'本市特色是柴犬過多':S.city.open==='shiba'?'這裡本來就是柴犬天堂':null},
+  green:{icon:'🌳',name:'綠色城市',diff:1,goal:t=>`綠意達到 ${t}`,tgt:()=>Math.round((CS.green||0)+15),val:()=>CS.green||0,why:()=>S.city.open==='green'?'前任是環保狂，市民習慣了':S.city.trait==='eco'?'本市特色是環保':S.city.map&&S.city.map.land==='forest'?'這塊地樹很多':null},
+  rich:{icon:'💰',name:'市庫賺大錢',diff:2,goal:t=>`每分鐘淨利 $${fmt(t)}`,tgt:()=>Math.max(1500,r100(netPerMin()*3)),val:()=>netPerMin(),why:()=>S.city.open==='rich'?'前任欠的債要靠賺錢還':S.money<1500?'市庫快見底了':null},
+  jobs:{icon:'💼',name:'人人有工作',diff:2,goal:t=>`人口 ${fmt(t)} 時，失業率低於 3%`,tgt:()=>Math.max(120,r10(CS.pop*2)),val:()=>CS.pop,ok:t=>CS.pop>=t&&CS.un<=CS.pop*LABOR*.03,why:()=>needWhy('job')||(S.city.open==='school'?'大學城的學生畢業要找工作':null)},
+  growth:{icon:'👥',name:'人口倍增',diff:2,goal:t=>`人口達到 ${fmt(t)}`,tgt:()=>Math.max(150,r10(CS.pop*3)),val:()=>CS.pop,why:()=>S.city.open==='blank'?'空地很多，等人搬進來':null},
+  stage:{icon:'🎊',name:'升格大作戰',diff:0,goal:t=>`升格為「${CITY_STAGES[t].name}」`,tgt:()=>S.city.stage+1,val:()=>S.city.stage,need:()=>S.city.stage<CITY_STAGES.length-1,why:()=>null},
+  fixall:{icon:'🔧',name:'收拾前任爛攤子',diff:1,goal:()=>'處理完地圖上的爛攤子，重建所有燒毀的建築',tgt:()=>1,val:()=>0,ok:()=>!(S.city.spots||[]).some(s=>SPOTS[s.k].bad&&!s.done)&&!S.city.b.some(b=>b.burnt),need:()=>(S.city.spots||[]).some(s=>SPOTS[s.k].bad&&!s.done)||S.city.b.some(b=>b.burnt),why:()=>S.city.open==='ruin'?'前任捲款落跑，留下一堆燒毀的房子':'地圖上還有前任的爛攤子'},
+  happy:{icon:'😊',name:'全國最幸福',diff:3,goal:t=>`人口 ${fmt(t)} 時，幸福度 80 以上`,tgt:()=>Math.max(100,r10(CS.pop*1.5)),val:()=>CS.pop,ok:t=>CS.pop>=t&&CS.happy>=80,why:()=>S.city.trait==='slow'?'慢活小城的市民很重視心情':null},
+  power:{icon:'🌬️',name:'乾淨能源自主',diff:2,goal:t=>`不靠火力發電，發電量達到 ${t}`,tgt:()=>Math.max(150,r10((CS.pw?CS.pw.cap:0)*2)),val:()=>(CS.cnt||{}).coal?0:(CS.pw?CS.pw.cap:0),why:()=>spotWhy(['gust'])||(S.city.trait==='windy'?'本市特色是風很大':null)||(S.city.open==='green'?'綠能小鎮的傳統':null)}
+};
+const platDiff=(id,t)=>id==='stage'?Math.min(3,t):PLATS[id].diff;
+function platOK(p){ const P=PLATS[p.id]; return P.ok?P.ok(p.tgt):P.val()>=p.tgt; }
+function platProg(p){ const P=PLATS[p.id]; if(platOK(p)) return 1; if(P.prog) return Math.max(0,Math.min(.99,P.prog(p))); if(P.ok) return Math.min(.99,P.val()/p.tgt); if(p.id==='stage') return 0; return Math.max(0,Math.min(.99,P.val()/p.tgt)); }
+function platOptions(){ const c=S.city, ex=c.plat&&!c.plat.res?c.plat.id:null; const L=Object.keys(PLATS).filter(k=>k!==ex&&(!PLATS[k].need||PLATS[k].need())).map(k=>{ const P=PLATS[k], t=P.tgt(), w=P.why(), p={id:k,tgt:t}; return {k,t,w,sc:(w?3:1)+Math.random()*1.5,ok:platOK(p)}; }).filter(o=>!o.ok&&o.t>0);
+  L.sort((a,b)=>b.sc-a.sc); return L.slice(0,3); }
+function platPoll(chg){ const c=S.city, O=platOptions(); if(!O.length){ c.platT=S.time+YEAR; return; } c.platT=S.time+MONTH;
+  const nd=cityNeeds().filter(v=>v.k!=='road').slice(0,3), M=MCX(), T=TRAITS[c.trait], SP=(c.spots||[]).filter(s=>!s.done).map(s=>SPOTS[s.k]);
+  const info=`<div class="note"><b>📋 民調：市民最不滿</b><br>${nd.length?nd.map((v,i)=>`${i+1}. ${v.i} ${v.t}`).join('<br>'):'大家目前都還算滿意'}<br><b style="display:inline-block;margin-top:6px">🗺️ 本市</b><br>${LANDS[M.land]?`${LANDS[M.land].icon} ${LANDS[M.land].name}`:M.name}${T?`・${T.icon} ${T.name}`:''}${c.open?`・${OPENS[c.open].icon} ${OPENS[c.open].name}開局`:''}${SP.length?`<br>特殊地點：${SP.map(P=>`${P.icon}${P.name}`).join('、')}`:''}</div>`;
+  queueModal({icon:'🗳️',title:c.platN?'新的任期政見':'上任百日：選一個政見',body:`<p>${c.platN?'上一個政見結束了。':'你已經熟悉這座城市了。'}選一個長期目標，<b>2 年內</b>達成有獎勵，跳票支持率會掉。</p>${info}`,
+    buttons:[...O.map(o=>{ const P=PLATS[o.k], d=platDiff(o.k,o.t); return {label:`${P.icon} ${P.name} ${'★'.repeat(d)}${'☆'.repeat(3-d)}`,sub:`${P.goal(o.t)}・${o.w||'一般政見'}・達成 🏅${d}${d>=2?'＋🧩':''}`,fn:()=>platSet(o.k,o.t,chg)}; }),...(chg?[]:[{label:'下個月再說',ghost:1}])]}); }
+function platSet(k,t,chg){ const c=S.city; c.plat={id:k,tgt:t,t0:S.time,until:S.time+2*YEAR,chg:chg?1:0}; c.platN=(c.platN||0)+1; sfx.fan(); toast(PLATS[k].icon,`政見：${PLATS[k].name}`,`${PLATS[k].goal(t)}，2 年內完成`); ticker(`📢 市長宣布政見「${PLATS[k].name}」，記者們拍個不停。`); saveLocal(); }
+function platTick(){ const c=S.city; if(c.needOpen||c.over||!c.intro) return; if(c.platT==null) c.platT=S.time+(c.open?3*MONTH:60);
+  const p=c.plat; if(!p||p.res){ if(S.time>=c.platT) platPoll(); return; }
+  if(platOK(p)){ const d=platDiff(p.id,p.tgt); p.res='ok'; c.platT=S.time+MONTH; S.meta.md+=d; voteState().bonus=(voteState().bonus||0)+d*2; sfx.fan();
+    queueModal({icon:'🎉',title:`政見達成：${PLATS[p.id].name}！`,body:`<p>市民在市政府前面放鞭炮，鴨子們排隊來握手。</p><div class="note" style="text-align:center">🏅 柴犬勳章 +${d}・支持率 +${d*2}${d>=2?'<br>🧩 還有一片藍圖碎片':''}</div>`,buttons:[{label:'太棒了',fn:()=>{ if(d>=2) bpGain('政見達成的獎勵'); }}]}); saveLocal(); return; }
+  if(S.time>=p.until){ p.res='fail'; c.platT=S.time+MONTH; voteState().bonus=(voteState().bonus||0)-4; sfx.bad(); toast('📉',`政見跳票：${PLATS[p.id].name}`,'支持率 -4，記者在門口堵你'); ticker('📰 頭條：「市長政見跳票！」市長戴墨鏡從後門離開。'); saveLocal(); } }
+function platHTML(){ const c=S.city, p=c.plat; if(!p||p.res){ if(c.needOpen||!c.intro) return ''; const l=(c.platT??S.time)-S.time; return `<div class="item" style="padding:8px 10px"><div style="font-size:22px">🗳️</div><div class="txt"><div class="nm" style="font-size:14px">${p&&p.res==='ok'?'✅ 上一個政見達成了！':p&&p.res==='fail'?'📉 上一個政見跳票了':'任期政見'}</div><div class="ds">${l>0?`約 ${Math.ceil(l/MONTH)} 個月後市府做民調，選${p?'新的':''}政見`:'民調準備中…'}</div></div></div>`; }
+  const P=PLATS[p.id], g=platProg(p), l=p.until-S.time; return `<div class="item" style="display:block;padding:10px 12px;border-color:#7a5cff"><div class="nm" style="font-weight:900">🗳️ 政見：${P.icon} ${P.name}</div><div class="ds">${P.goal(p.tgt)}</div><div class="bar" style="margin:6px 0"><i style="width:${Math.round(g*100)}%;background:#7a5cff"></i></div><div class="ds">剩 ${Math.floor(Math.max(0,l)/60)}:${String(Math.floor(Math.max(0,l)%60)).padStart(2,'0')}・達成 🏅${platDiff(p.id,p.tgt)}${platDiff(p.id,p.tgt)>=2?'＋🧩':''}・跳票支持率 -4</div><div class="row" style="margin-top:6px"><button class="btn ghost" ${p.chg?'disabled':''} data-act="platChange">${p.chg?'這任已經改過政見了':'改政見（支持率 -5，限一次）'}</button></div></div>`; }
+function platChange(){ const c=S.city, p=c.plat; if(!p||p.chg) return; closeSheet();
+  queueModal({icon:'🙊',title:'要改政見嗎？',body:`<p>記者會說你「髮夾彎」，支持率 -5。期限一樣從現在算 2 年。</p>`,buttons:[{label:'改（支持率 -5）',fn:()=>{ voteState().bonus=(voteState().bonus||0)-5; platPoll(1); }},{label:'算了',ghost:1}]}); }
 
 // ---- 特殊地點 ----
 const SPOTS={
@@ -908,7 +948,7 @@ function cityUpdate(dt){
     if(!D.fixed){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round((b.ok?payOf(b)*PAYM()*(protest?.8:1):0)-(b.up||0)); if(m){ S.money+=m; if(m>0) S.stats.earned+=m; if(mode==='city'&&(m>0||m<=-2)){ const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,BW(b)>1?1.4:.9); floats.push({c:1,text:(m>0?'+$':'-$')+fmt(Math.abs(m)),x:c.x,y:c.y,life:1.1,color:m>0?'#e09a12':'#e2574c'}); } } } }
   });
   cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
-  if(mode==='city'&&!modalOpen){ misTick(dt); electionTick(dt); evTick(); incTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
+  if(mode==='city'&&!modalOpen){ misTick(dt); platTick(); electionTick(dt); evTick(); incTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
   if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); updateTransit(dt); decTick(dt); }
 }
 // ================= v2.5：地圖、電力、組合、決策、任期 =================
@@ -2470,7 +2510,7 @@ function cityGovHTML(){
   return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}・本市免稅，一切使用者付費</div>
     <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>市民滿意度<b style="color:#f2b544">${'★'.repeat(Math.round(CS.happy/20))}<span style="color:#e2d6c4">${'☆'.repeat(5-Math.round(CS.happy/20))}</span></b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div><div>⚡ 用電 / 發電<b style="color:${CS.pw.ratio<1?'var(--bad)':'var(--ink)'}">${Math.round(CS.pw.use)} / ${Math.round(CS.pw.cap)}${CS.pw.grace?' 🔌借電中':''}</b></div><div>🔗 運作中的組合<b>${CMB.length} 組</b></div></div>
     <div class="row" style="margin:0 0 8px"><button class="btn ghost" data-act="openDex">📖 組合圖鑑 ${COMBOS.filter(c=>S.meta.dex[c.id]).length}/${COMBOS.length}</button><button class="btn ghost" data-act="openFame">🏅 名人堂 ${S.meta.md}</button></div>
-    ${voteHTML()}${misHTML()}${evHTML()}${fxHTML()}
+    ${voteHTML()}${platHTML()}${misHTML()}${evHTML()}${fxHTML()}
     <div class="item" style="display:block;padding:8px 12px"><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>💰 收入</span><b>+$${fmt(cityGross()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>🔧 維護費＋薪水</span><b style="color:var(--bad)">-$${fmt(cityUpkeep()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0 0;border-top:1px dashed #efe3d2;margin-top:4px"><span>📈 淨利</span><b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">${cityRate()>=0?'+':'-'}$${fmt(Math.abs(cityRate()*60))} / 分</b></div>${losers()}</div>
     <h4>🗣️ 市民心聲＝商機</h4>${v}
     <h4>💰 錢從哪裡來（每分鐘）</h4><div class="item" style="display:block;padding:8px 12px">${incH||'<div class="ds">還沒有收入，先蓋房子和商店吧</div>'}</div>
@@ -2575,7 +2615,7 @@ const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||
 function rotateView(d){ groundVer++; rot=(rot+d+4)%4; S.city.rot=rot; ROTV=mode==='city'?rot:0; sfx.pop(); ticker(pick(['🔄 換個角度看城市。','🔄 市長轉了一圈，看到新的風景。','🔄 從這邊看，鴨子也比較帥。'])); }
 $('zRot').onclick=()=>{ ensureAudio(); if(mode==='city') rotateView(-1); };
 $('zHome').onclick=()=>{ if(mode==='city'){ zoom=cityZoom(); applyZoom(); camX=citySize()/2; camY=citySize()/2; return; } };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={book:bookArtist,bidOly,cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,toggleNight,askReset,buyUpg,buyMap,askResign,openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={platChange,book:bookArtist,bidOly,cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,toggleNight,askReset,buyUpg,buyMap,askResign,openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 let confirmReset=false;
 function citySetHTML(){
@@ -2586,7 +2626,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.13</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.14</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
