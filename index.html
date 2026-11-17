@@ -581,10 +581,10 @@ const CITY_OS={
 const SHIBA_OS=['汪！（翻譯：今天的罐罐呢？）','我不是胖，是毛多。','散步可以，但我要走我想走的那條。','（原地趴下，變成一塊麻糬）','聽說這裡是柴犬友善城市，我很滿意。','咖啡廳那隻柴犬是我表哥。','我剛剛對鴨子叫了一聲，牠沒理我。'];
 let CS={pop:0,cap:0,jobs:0,emp:0,un:0,er:1,staff:1,trans:0,tour:0,tourists:0,green:0,happy:50,unemp:false,cnt:{},dem:{},sup:{},sat:{},inc:{}};
 let mode='city', ROADS=new Set(), cars=[], peds=[], cityAliens=0, cityEvT=100, cityStatT=0, cityDirty=true, cityPayT=0;
-function initCity(type,th){ th=THEMES[th]?th:'city';
+function initCity(type,th,ld){ th=THEMES[th]?th:'city';
   const r=[]; for(let x=1;x<=10;x++) r.push(x+','+4); for(let y=5;y<=10;y++) r.push(7+','+y);
   const mt=MAPS[type]?type:'coast';
-  return {stage:0,r,b:[{t:'cityhall',x:5,y:5}],needOpen:1,intro:0,tv:1,tc:[],map:Object.assign({type:mt},genLand(mt,((S&&S.meta&&S.meta.hist||[]).slice(-1)[0]||{}).land,THEMES[th].lands)),trait:pick(Object.keys(TRAITS)),pv:1,unl:{},fx:[],theme:th,t0:0};
+  return {stage:0,r,b:[{t:'cityhall',x:5,y:5}],needOpen:1,intro:0,tv:1,tc:[],map:Object.assign({type:mt},genLand(mt,((S&&S.meta&&S.meta.hist||[]).slice(-1)[0]||{}).land,LANDS[ld]?[ld]:THEMES[th].lands)),trait:pick(Object.keys(TRAITS)),pv:1,unl:{},fx:[],theme:th,t0:0};
 }
 // ================= v2.13 可玩性：開局三選一、特殊地點、藍圖碎片 =================
 const OPENS={
@@ -1123,8 +1123,8 @@ const STAGESETS={
     {name:'模範農村',mayor:'模範村長',size:22,req:{pop:160,happy:70,has:['mill','leisure']}}
   ]};
 const THEMES={
-  city:{icon:'🏙️',name:'都市發展',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
-  farm:{icon:'🌾',name:'田園農村',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,lands:['plain','river','lakes'],maps:['coast','bay'],
+  city:{icon:'🏙️',name:'都市發展',tag:'從小村發展成國際都市',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
+  farm:{icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,lands:['plain','river','lakes'],maps:['coast','bay'],
     allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','school','lost','clinic','post','garbage','sewage','recycle','wind','solar','hydro','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
 };
 const themeOf=()=>(S&&S.city&&S.city.theme)||'city', themeDef=()=>THEMES[themeOf()];
@@ -1172,13 +1172,17 @@ function missionHTML(){ const c=S.city; if(c.needOpen) return ''; const T=themeD
   return `<div class="card" style="margin-bottom:10px"><div class="nm" style="font-weight:900;font-size:16px">🎯 任務：${T.icon} ${T.name}</div><div class="ds">${c.mdone?`✅ 任務完成！評等 <b>${gradeOf().g}</b>・中央會在幾個月後派你去新任務`:`第 ${y} 年 / ${CAPY} 年・目標全部同時達成就算完成，越快評等越高（S：3.5 年內）`}</div>
     ${G.map(g=>`<div class="kvrow" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--line);font-size:14px"><span>${g.ok?'✅':'⬜'} ${g.t}</span><b style="color:${g.ok?'#3fae7a':'var(--soft)'}">${g.v}</b></div>`).join('')}</div>`; }
 // ---- 派令（取代選地圖） ----
-function orderCards(){ const m=S.meta, maps=Object.keys(MAPS).filter(k=>m.maps[k]), out=[], seen=new Set();
-  for(let i=0;i<30&&out.length<3;i++){ const th=pick(Object.keys(THEMES)), T=THEMES[th], ok=maps.filter(k=>!T.maps||T.maps.includes(k)); if(!ok.length) continue; const mp=pick(ok), key=th+mp; if(seen.has(key)) continue; seen.add(key); out.push({th,mp}); }
-  if(!out.some(o=>o.th!=='city')&&maps.some(k=>THEMES.farm.maps.includes(k))) out[out.length-1]={th:'farm',mp:pick(maps.filter(k=>THEMES.farm.maps.includes(k)))};
+// v2.24 派令：每張預先抽好地形（地圖、地形、主題盡量都不一樣），卡片才不會看起來差不多
+function orderCards(){ const m=S.meta, maps=Object.keys(MAPS).filter(k=>m.maps[k]), prev=((m.hist||[]).slice(-1)[0]||{}).land, cand=[], out=[];
+  Object.keys(THEMES).forEach(th=>{ const T=THEMES[th]; maps.filter(k=>!T.maps||T.maps.includes(k)).forEach(mp=>(T.lands||Object.keys(LANDS)).filter(l=>l!==prev).forEach(ld=>cand.push({th,mp,ld}))); });
+  shuffle(cand);
+  const pen=o=>out.filter(x=>x.ld===o.ld).length*10+out.filter(x=>x.mp===o.mp).length*3+out.filter(x=>x.th===o.th).length*4;
+  while(out.length<3){ let best=null, bs=1e9; for(const o of cand){ if(out.includes(o)) continue; const v=pen(o); if(v<bs){ bs=v; best=o; } } if(!best) break; out.push(best); }
+  if(out.length&&!out.some(o=>o.th!=='city')){ const f=cand.find(o=>o.th!=='city'&&!out.some(x=>x.ld===o.ld)); if(f) out[out.length-1]=f; }
   return out; }
-function chooseMap(){ const m=S.meta, C=S.city.orderC||(S.city.orderC=orderCards());
-  queueModal({icon:'📜',title:'中央的派令',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。選一張派令赴任：</p><div class="note">🎯 每個任務有自己的目標，${CAPY} 年內完成，越快評等越高、勳章越多<br>💰 起始資金依開局而定・🏅 勳章可以在名人堂換升級和新地圖</div>`,
-    buttons:C.map(o=>{ const T=THEMES[o.th], M=MAPS[o.mp]; return {label:`${T.icon} ${T.name}・${M.icon} ${M.name}`,sub:`${T.desc}　難度 ${'★'.repeat(T.star)}${'☆'.repeat(3-T.star)}・勳章 ×${T.mul}`,fn:()=>startNewCity(o.mp,o.th)}; }).concat([{label:'🏅 先去名人堂',ghost:1,fn:()=>openSheet(fameHTML)}])}); }
+function chooseMap(){ const m=S.meta; if(!S.city.orderC||S.city.orderC.some(o=>!o.ld)) S.city.orderC=orderCards(); const C=S.city.orderC, nm=Object.entries(MAPS).filter(([k])=>!m.maps[k]), oneMap=C.every(o=>o.mp===C[0].mp);
+  queueModal({icon:'📜',title:'中央的派令',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。選一張派令赴任：</p><div class="note">🎯 每個任務有自己的目標，${CAPY} 年內完成，越快評等越高、勳章越多<br>💰 起始資金依開局而定・🏅 勳章可以在名人堂換升級${nm.length?'':'和新地圖'}${nm.length?`<br>🗺️ 想換地圖？名人堂有 ${nm.map(([k,X])=>`${X.icon}${X.name}`).join('、')}`:''}</div>`,
+    buttons:C.map(o=>{ const T=THEMES[o.th], M=MAPS[o.mp], L=LANDS[o.ld]; return {label:`${T.icon} ${T.name}・${L.icon} ${L.name}`,sub:`${oneMap?'':`${M.icon} ${M.name}・`}${L.desc}<br>${T.tag}・難度 ${'★'.repeat(T.star)}${'☆'.repeat(3-T.star)}・勳章 ×${T.mul}`,fn:()=>startNewCity(o.mp,o.th,o.ld)}; }).concat([{label:'🏅 先去名人堂',ghost:1,fn:()=>openSheet(fameHTML)}])}); }
 
 CB.cityhall.pwr=20;
 Object.entries(PW).forEach(([k,v])=>{ if(CB[k]) CB[k].pw=v; });
@@ -1635,9 +1639,9 @@ function drawStadiumEv(b,c,RX,RY,H,top){ const A=concertOn(), e=S.city.ev;
 function settleCalc(kind){ const c=S.city, N=Math.max(1,CITY_STAGES.length-1), st=c.stage, sm=Math.round(st/N*4), pb=Math.floor(Math.log2(1+CS.pop/(themeDef().popK||150))), tb=kind==='full'?3:0, mb=c.mdone?5:0, G=gradeOf(), mul=G.m*(themeDef().mul||1), md=Math.max(1,Math.round((sm+pb+tb+mb)*mul));
   return {md,lines:`🏛️ 規模「${CITY_STAGES[st].name}」 🏅+${sm}<br>👥 人口 ${fmt(CS.pop)} 🏅+${pb}${tb?`<br>🎖️ ${TERM} 年任期圓滿 🏅+${tb}`:''}${mb?'<br>🎯 任務完成 🏅+5':''}<br>⭐ 評等 ${G.g}・${themeDef().icon} ${themeDef().name} ×${mul.toFixed(2)}`}; }
 function settle(kind){ if(S.city.settled) return 0; const s=settleCalc(kind); S.city.settled=1; S.meta.md+=s.md; S.meta.hist.push({th:themeOf(),grade:gradeOf().g,name:S.city.name,land:(S.city.map||{}).land,map:(S.city.map||{}).type||'coast',trait:S.city.trait||'',years:yearNo(),pop:CS.pop,stage:S.city.stage,md:s.md,end:kind}); saveLocal(); return s.md; }
-function startNewCity(type,th){ const meta=S.meta, muted=S.muted, earned=S.stats.earned, nn=S.noNight;
+function startNewCity(type,th,ld){ const meta=S.meta, muted=S.muted, earned=S.stats.earned, nn=S.noNight;
   S=newState(); S.meta=meta; S.muted=muted; S.noNight=nn; S.stats.earned=earned; S.tut=1; S.day=today();
-  S.city=initCity(type,th); setTheme(); S.money=3000+2000*upL('cash');
+  S.city=initCity(type,th,ld); setTheme(); S.money=3000+2000*upL('cash');
   transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1;
   resetRuntime(); rot=0; ROTV=0; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey='';
   S.city.spots=genSpots(); saveLocal(); cloudSave(true); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
@@ -1658,7 +1662,7 @@ let confirmResign=false;
 function askResign(){ if(!confirmResign){ confirmResign=true; refreshSheet(); return; } confirmResign=false; closeSheet(); const kind=S.city.done?'full':'early', s=settleCalc(kind); settle(kind);
   queueModal({icon:'🧳',title:'卸任了',body:`<p>你收拾好辦公室，柴犬雕像目送你離開。</p><div class="note">${s.lines}<br><b>🏅 勳章 +${s.md}</b></div>`,buttons:[{label:'選新土地',fn:chooseMap}]}); }
 function buyUpg(k){ const u=UPG.find(x=>x.k===k), lv=upL(k); if(!u||lv>=u.max||S.meta.md<u.cost[lv]) return; S.meta.md-=u.cost[lv]; S.meta.up[k]=lv+1; sfx.fan(); cityDirty=true; saveLocal(); refreshSheet(); toast(u.icon,`${u.name} 升級！`,u.desc); }
-function buyMap(k){ const M=MAPS[k]; if(!M||S.meta.maps[k]||S.meta.md<M.cost) return; S.meta.md-=M.cost; S.meta.maps[k]=1; sfx.fan(); saveLocal(); refreshSheet(); toast(M.icon,`解鎖新地圖：${M.name}`,'下次開新城市時可以選'); }
+function buyMap(k){ const M=MAPS[k]; if(!M||S.meta.maps[k]||S.meta.md<M.cost) return; S.meta.md-=M.cost; S.meta.maps[k]=1; if(S.city&&S.city.orderC) S.city.orderC=null; sfx.fan(); saveLocal(); refreshSheet(); toast(M.icon,`解鎖新地圖：${M.name}`,'下次開新城市時可以選'); }
 function fameHTML(){ const m=S.meta, v=voteState(), T=TRAITS[S.city.trait], M=MAPS[(S.city.map||{}).type||'coast'];
   return `<h2>🏅 市長名人堂</h2><div class="sub">柴犬勳章 <b style="font-size:16px">🏅 ${m.md}</b>・連任、發現組合、任期結算都會拿到，換城市也會保留</div>
   <h4>這座城市</h4><div class="item" style="display:block"><div class="nm">${M.icon} ${M.name}・${T?`${T.icon} ${T.name}`:'沒有特色的老城市'}</div><div class="ds">${T?T.desc:''}</div><div class="ds" style="margin-top:4px">任期 ${Math.min(TERM,v.terms)} / ${TERM} 年${S.city.done?'（已圓滿）':''}・${TERM} 年任期圓滿，結算多拿 🏅3${!S.city.settled?`<br>🎯 任務：${themeDef().icon} ${themeDef().name}・${S.city.mdone?'已完成，等中央調派':`${CAPY} 年內完成任務目標（看「市政」）`}`:''}</div>
@@ -2943,7 +2947,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.23.1</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.24</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
