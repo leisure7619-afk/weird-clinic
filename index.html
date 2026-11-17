@@ -831,6 +831,7 @@ const LABOR=.65;
 function cityCalc(){
   if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
   if(cityDirty2){ cityDirty2=false; computeCombos(); }
+  if(themeOf()==='farm') farmPlan();
   const NK=nightK(), T=S.city.trait;
   let cult=0,pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0,pcap=0,puse=0,praw=0; const cnt={}, tseen={}, sup={shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0}, hm=fxMul('home');
   S.city.b.forEach(b=>{ const D=CB[b.t]; cnt[b.t]=(cnt[b.t]||0)+1; if(!b.ok) return; pop+=b.occ||0; cap+=(D.pop||0)*hm; jobs+=D.jobs||0; trans+=D.trans||0; if(D.tour){ tour+=D.tour*(tseen[b.t]?.3:1); tseen[b.t]=(tseen[b.t]||0)+D.tour; } hb+=D.happy||0; green+=D.green||0; cult+=D.cult||0; if(b.view&&(D.pop||D.cat==='tour')) views++; puse+=D.pw||0; if(D.pwr){ const q=pwrOf(b); pcap+=q; if(!D.fixed) praw+=q; } });
@@ -1132,18 +1133,21 @@ function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme
 function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; }
 // ---- 農村建築 ----
 Object.assign(CB,{
-  rice:     {theme:'farm',crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。一年收兩次：6 月一期稻作、11 月二期稻作。靠河或湖收成 +30%。'},
-  orchard:  {theme:'farm',crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。每年 7 月收成一次，一次收很多。靠水 +30%。'},
+  rice:     {theme:'farm',crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。一年收兩次：6 月、11 月。收成時要 6 個人手（牛舍、農機可以少用人）。靠河或湖 +30%。'},
+  orchard:  {theme:'farm',crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。每年 7 月收成一次，一次收很多，要 8 個人手。靠水 +30%。'},
   veg:      {theme:'farm',exp:25,jobs:2,green:1,cat:'farm',name:'菜園',icon:'🥬',cost:400,w:1,sign:'菜園',desc:'每天都有菜可以賣，錢不多但很穩定。'},
   chicken:  {theme:'farm',exp:80,jobs:8,smell:1,cat:'farm',name:'養雞場',icon:'🐔',cost:3000,w:2,sign:'養雞場',desc:'2×2。雞蛋天天賣，但有點臭，別貼著住宅。'},
   mill:     {theme:'farm',exp:40,jobs:12,cat:'farm',name:'碾米廠',icon:'🍚',cost:6000,w:2,sign:'碾米廠',desc:'2×2。稻米收成 +25%。'},
   coop:     {theme:'farm',svc:'shop',cap:40,fee:3,jobs:6,cat:'farm',name:'農會直銷所',icon:'🧺',cost:1800,w:1,sign:'農會',desc:'市民買菜的地方，也幫農民賣東西：所有收成 +20%。'},
   bnb:      {theme:'farm',exp:30,tour:3,happy:1,cat:'farm',name:'田園民宿',icon:'🛏️',cost:2500,w:1,sign:'民宿',desc:'觀光客來住一晚，早上被雞叫醒。'},
   leisure:  {theme:'farm',svc:'fun',cap:60,fee:6,jobs:8,tour:4,happy:2,cat:'farm',name:'休閒農場',icon:'🐑',cost:8000,w:2,sign:'休閒農場',desc:'2×2。餵羊、擠牛奶、做 pizza，城市小孩最愛。'},
-  farmhouse:{theme:'farm',rent:1.2,pop:8,cat:'home',name:'農舍',icon:'🏚️',cost:600,w:1,sign:'農舍',desc:'住 8 人，便宜又寬敞，門口曬著菜乾。'}
+  farmhouse:{theme:'farm',rent:1.2,pop:8,cat:'home',name:'農舍',icon:'🏚️',cost:600,w:1,sign:'農舍',desc:'住 8 人，便宜又寬敞，門口曬著菜乾。'},
+  oxbarn:   {theme:'farm',tool:1,jobs:1,cat:'farm',name:'牛舍',icon:'🐂',cost:800,w:1,sign:'牛舍',desc:'老黃牛幫忙犁田、拉車：4 格內的田收成只要一半人手，收成 +5%。'},
+  tractor:  {theme:'farm',tool:1,jobs:3,cat:'farm',name:'農機行',icon:'🚜',cost:6000,w:1,sign:'農機行',desc:'出租耕耘機和割稻機：6 格內的田只要 1 個人顧機器，收成 +15%。每塊田每次收成油錢 $40。'},
+  hcenter:  {theme:'farm',tool:1,jobs:6,cat:'farm',name:'中央採收中心',icon:'🏭',cost:25000,w:2,sign:'採收中心',desc:'2×2。大型聯合收割機開去全村每一塊田：不用人手，收成 +30%；田有 8 塊以上再 +10%。每塊田每次收成油錢 $100。'}
 });
-Object.assign(REQ,{coop:{pop:20},chicken:{pop:20},orchard:{pop:30},mill:{pop:40,has:['rice']},bnb:{pop:30},leisure:{pop:60}});
-Object.assign(PW,{chicken:2,mill:4,coop:1,bnb:1,leisure:2,farmhouse:1});
+Object.assign(REQ,{tractor:{pop:50,has:['rice']},hcenter:{pop:120,has:['tractor','mill']},coop:{pop:20},chicken:{pop:20},orchard:{pop:30},mill:{pop:40,has:['rice']},bnb:{pop:30},leisure:{pop:60}});
+Object.assign(PW,{tractor:1,hcenter:6,chicken:2,mill:4,coop:1,bnb:1,leisure:2,farmhouse:1});
 Object.assign(FREQ,{coop:'daily',leisure:'rare'});
 Object.assign(OPENS,{
   fcoop:{th:'farm',icon:'🧺',name:'老農會接手',desc:'老農會、兩塊稻田和幾間農舍都在，只是年輕人都跑光了。',money:3000,b:['coop','rice','rice','farmhouse','farmhouse','farmhouse']},
@@ -1152,14 +1156,32 @@ Object.assign(OPENS,{
   fwild:{th:'farm',icon:'🌿',name:'一片荒地',desc:'只有村辦公室和雜草。給你一筆錢，從頭開墾。',money:8000,b:[]}
 });
 // ---- 收成、颱風、返鄉青年（每月一次） ----
-function harvest(kind){ const c=S.city, ks=kind==='rice'?['rice']:['orchard']; let amt=0, n=0;
-  S.city.b.forEach(b=>{ if(!ks.includes(b.t)||!b.ok||b.burnt) return; const D=CB[b.t]; let v=D.crop*(nearWater(b.x,b.y,BW(b))?1.3:1); if(b.t==='rice'&&(CS.cnt.mill||0)) v*=1.25; if(CS.cnt.coop) v*=1.2; amt+=v; n++; });
-  if(!n) return; let ty=1; if(c.typh&&kind==='rice'){ ty=c.typh==='gamble'?(Math.random()<.5?.5:1):c.typh; c.typh=0; } amt=Math.round(amt*ty); S.money+=amt; c.harv=c.harv||{}; const y=yearNo(); c.harv[y]=(c.harv[y]||0)+amt;
-  sfx.fan(); toast(kind==='rice'?'🌾':'🍊',`${kind==='rice'?(monthNo()===6?'一期稻作':'二期稻作'):'水果'}收成！`,`+$${fmt(amt)}${ty<1?'（颱風損失）':''}・今年累計 $${fmt(c.harv[y])}`); ticker(kind==='rice'?'🌾 稻穗金黃，阿公阿嬤邊割稻邊唱歌。':'🍊 果園大豐收，柴犬在樹下撿掉下來的橘子。'); }
+// v2.25 採收方式：人力 → 🐂 牛 → 🚜 農機 → 🏭 中央採收
+const HANDS={rice:6,orchard:8}, HM={hand:{i:'🧑‍🌾',n:'人力',h:1,m:1,f:0},ox:{i:'🐂',n:'牛',h:.5,m:1.05,f:0},tractor:{i:'🚜',n:'農機',h:0,one:1,m:1.15,f:40},central:{i:'🏭',n:'中央採收',h:0,m:1.3,f:100}};
+const CROPS={rice:{i:'🌾',n:'稻米',d:'穩定，收多少算多少'},premium:{i:'💎',n:'高價米',d:'收成 ×1.6，但 40% 機率天氣不好只剩 ×0.4'},flower:{i:'🌻',n:'花海',d:'這季不收稻米，觀光客 +35%、幸福度 +4（5 個月）'}};
+function farmGap(a,b){ const wa=BW(a), wb=BW(b); return Math.max(Math.max(0,a.x-(b.x+wb-1),b.x-(a.x+wa-1)),Math.max(0,a.y-(b.y+wb-1),b.y-(a.y+wa-1))); }
+function farmPlan(){ const L=S.city.b, ok=t=>L.filter(q=>q.t===t&&q.ok&&!q.burnt), ox=ok('oxbarn'), tr=ok('tractor'), hc=ok('hcenter').length>0, F=L.filter(q=>CB[q.t].crop&&!q.burnt);
+  F.forEach(b=>{ b.hm=hc?'central':tr.some(t=>farmGap(t,b)<=6)?'tractor':ox.some(t=>farmGap(t,b)<=4)?'ox':'hand'; }); return F; }
+function farmHands(kind){ const F=farmPlan().filter(b=>b.ok&&(!kind||b.t===kind)); let need=0; F.forEach(b=>{ const M=HM[b.hm]; need+=M.one?1:Math.round(HANDS[b.t]*M.h); }); return {F,need,have:Math.round(CS.pop*.6)}; }
+function harvest(kind){ const c=S.city, H=farmHands(kind); if(!H.F.length) return;
+  const crop=kind==='rice'?(c.crop||'rice'):'fruit'; if(kind==='rice') c.crop=0; if(crop==='flower') return;
+  const fr=H.need>H.have?H.have/H.need:1; let amt=0, fuel=0;
+  H.F.forEach(b=>{ const D=CB[b.t], M=HM[b.hm]; let v=D.crop*(nearWater(b.x,b.y,BW(b))?1.3:1)*M.m; if(b.t==='rice'&&(CS.cnt.mill||0)) v*=1.25; if(CS.cnt.coop) v*=1.2; if(b.hm==='central'&&H.F.length>=8) v*=1.1; if(M.h>0||M.one) v*=fr; amt+=v; fuel+=M.f; });
+  let ty=1, bad=0; if(c.typh&&kind==='rice'){ ty=c.typh==='gamble'?(Math.random()<.5?.5:1):c.typh; c.typh=0; }
+  if(crop==='premium'){ if(Math.random()<.4){ ty*=.4; bad=1; } else ty*=1.6; }
+  amt=Math.max(0,Math.round(amt*ty-fuel)); S.money+=amt; c.harv=c.harv||{}; const y=yearNo(); c.harv[y]=(c.harv[y]||0)+amt;
+  const lost=fr<1?`・人手不夠，${Math.round((1-fr)*100)}% 來不及收`:'';
+  sfx.fan(); toast(kind==='rice'?(crop==='premium'?'💎':'🌾'):'🍊',`${kind==='rice'?(monthNo()===6?'一期':'二期')+(crop==='premium'?'高價米':'稻作'):'水果'}收成！`,`+$${fmt(amt)}${ty<1?(bad?'（天氣不好）':'（颱風損失）'):''}${fuel?`・油錢 $${fmt(fuel)}`:''}${lost}`);
+  if(fr<1) setTimeout(()=>ticker(`🧑‍🌾 人手不夠，田裡還有 ${Math.round((1-fr)*100)}% 沒收完。${farmTip(H)}。`),2500);
+  else ticker(kind==='rice'?{hand:'🌾 稻穗金黃，阿公阿嬤邊割稻邊唱歌。',ox:'🐂 老黃牛拉著牛車，一車一車把稻子載回家。',tractor:'🚜 割稻機轟隆隆開過，一個下午就收完了。',central:'🏭 聯合收割機排成一列開進田裡，收完直接送碾米廠。'}[H.F[0].hm]:'🍊 果園大豐收，柴犬在樹下撿掉下來的橘子。'); }
+function cropAsk(){ const c=S.city; if(!S.city.b.some(b=>b.t==='rice')) return; const nx=monthNo()<6?'6 月':'11 月';
+  queueModal({icon:'🌱',title:'這季稻田要種什麼？',body:`<p>${nx}收成。全村的稻田一起決定：</p>`,buttons:Object.entries(CROPS).map(([k,C])=>({label:`${C.i} ${C.n}`,sub:C.d,fn:()=>{ c.crop=k; if(k==='flower'){ c.fx.push({k:'tour',m:1.35,until:S.time+5*MONTH,lb:'🌻 休耕花海'},{k:'happy',n:4,until:S.time+5*MONTH,lb:'🌻 休耕花海'}); ticker('🌻 稻田變成一大片花海，假日塞滿拍照的人。'); cityDirty=true; } else ticker(k==='premium'?'💎 改種高價米，阿伯每天看天空祈禱。':'🌾 照舊種稻米，穩穩的最好。'); }}))}); }
+function farmTip(H){ const has=k=>H.F.some(b=>b.hm===k); return has('hand')?'蓋 🐂 牛舍或 🚜 農機行，田就不用那麼多人':unlocked('hcenter')?'蓋 🏭 中央採收中心，全村都不用人手':unlocked('tractor')?'在田旁邊蓋 🚜 農機行，或多蓋農舍':'多蓋農舍讓更多人住進來'; }
+function harvestWarn(kind){ const H=farmHands(kind); if(H.F.length&&H.need>H.have) toast('🧑‍🌾','下個月要收成，人手不夠',`要 ${H.need} 人、村裡只有 ${H.have} 人能幫忙・${farmTip(H)}`); }
 function typhoonAsk(){ const c=S.city, n=S.city.b.filter(b=>b.t==='rice').length; if(!n) return; const cost=300*n;
   queueModal({icon:'🌀',title:'颱風要來了！',body:`<p>氣象局說颱風下週登陸，11 月的二期稻作可能會被吹倒。</p>`,buttons:[{label:`加強排水、綁好稻子（$${fmt(cost)}）`,sub:'收成只少 10%',dis:S.money<cost,fn:()=>{ S.money-=cost; c.typh=.9; ticker('🌀 村民一起綁稻子，柴犬在旁邊加油。'); }},{label:'賭一把，什麼都不做',sub:'一半機會沒事，一半機會收成砍半',ghost:1,fn:()=>{ c.typh='gamble'; }}]}); }
 function themeMonth(){ const c=S.city, m=monthNo(); if(themeOf()!=='farm') return;
-  if(m===6||m===11) harvest('rice'); if(m===7) harvest('orchard'); if(m===8&&Math.random()<.45) typhoonAsk();
+  if(m===6||m===11) harvest('rice'); if(m===7) harvest('orchard'); if(m===8&&Math.random()<.45) typhoonAsk(); if(m===1||m===7) setTimeout(cropAsk,m===7?3000:0); if(m===5||m===10) harvestWarn('rice'); if(m===6) harvestWarn('orchard');
   if(CS.happy>=65&&CS.pop>0&&!CS.unemp){ const n=Math.max(1,Math.round((CS.happy-60)/8)); c.youth=(c.youth||0)+n; if(Math.random()<.4) ticker(`👩‍🌾 ${n} 位年輕人回鄉了，說這裡比城市舒服。`); } }
 // ---- 任務目標與評等 ----
 function missionGoals(){ const c=S.city, N=CITY_STAGES.length-1, top=c.stage>=N;
@@ -1170,7 +1192,9 @@ function missionGoals(){ const c=S.city, N=CITY_STAGES.length-1, top=c.stage>=N;
 function gradeOf(){ const c=S.city; if(!c.mdone) return {g:'未完成',m:.7}; const y=(c.mdoneT-(c.t0||0))/YEAR; return y<=3.5?{g:'S',m:1.5}:y<=5?{g:'A',m:1.25}:y<=6.5?{g:'B',m:1}:{g:'C',m:.8}; }
 function missionHTML(){ const c=S.city; if(c.needOpen) return ''; const T=themeDef(), G=missionGoals(), y=Math.min(CAPY,Math.floor((S.time-(c.t0??S.time))/YEAR)+1);
   return `<div class="card" style="margin-bottom:10px"><div class="nm" style="font-weight:900;font-size:16px">🎯 任務：${T.icon} ${T.name}</div><div class="ds">${c.mdone?`✅ 任務完成！評等 <b>${gradeOf().g}</b>・中央會在幾個月後派你去新任務`:`第 ${y} 年 / ${CAPY} 年・目標全部同時達成就算完成，越快評等越高（S：3.5 年內）`}</div>
-    ${G.map(g=>`<div class="kvrow" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--line);font-size:14px"><span>${g.ok?'✅':'⬜'} ${g.t}</span><b style="color:${g.ok?'#3fae7a':'var(--soft)'}">${g.v}</b></div>`).join('')}</div>`; }
+    ${G.map(g=>`<div class="kvrow" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--line);font-size:14px"><span>${g.ok?'✅':'⬜'} ${g.t}</span><b style="color:${g.ok?'#3fae7a':'var(--soft)'}">${g.v}</b></div>`).join('')}${themeOf()==='farm'?farmLine():''}</div>`; }
+function farmLine(){ const H=farmHands(), n={}; H.F.forEach(b=>n[b.hm]=(n[b.hm]||0)+1); if(!H.F.length) return ''; const c=S.city.crop&&CROPS[S.city.crop];
+  return `<div class="kvrow" style="padding:6px 0;border-top:1px dashed var(--line);font-size:13px;color:var(--soft)">🚜 採收：${Object.keys(HM).filter(k=>n[k]).map(k=>`${HM[k].i} ${HM[k].n} ${n[k]} 塊`).join('・')}<br>收成要 ${H.need} 人，村裡能幫忙 ${H.have} 人${H.need>H.have?' ⚠️':' ✅'}${c?`・這季種 ${c.i}${c.n}`:''}</div>`; }
 // ---- 派令（取代選地圖） ----
 // v2.24 派令：每張預先抽好地形（地圖、地形、主題盡量都不一樣），卡片才不會看起來差不多
 function orderCards(){ const m=S.meta, maps=Object.keys(MAPS).filter(k=>m.maps[k]), prev=((m.hist||[]).slice(-1)[0]||{}).land, cand=[], out=[];
@@ -1318,7 +1342,7 @@ const DECS=[
     optDem(src,src?`拆掉住宅旁的 ${CB[src.t].icon} ${CB[src.t].name}`:'',3,'臭味的來源拆掉了，附近居民終於敢開窗。'),
     optPol('種一排隔離樹（5 分鐘）',P*.5,4,[{k:'nosmell',t:300,lb:'🌲 隔離樹'}],'一排大樹擋住臭味，還多了遛柴犬的地方。'),
     optTrap('發放免費口罩',P*.35,'口罩發完了，臭味還在，而且大家戴著口罩認不出彼此。')]}; }},
-  {id:'lose',w:()=>S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&!CB[b.t].crop&&!b.burnt&&((b.rev||0)*PAYM()-(b.up||0))<-1).length>=2?1.6:0,make:P=>{ const L=S.city.b.filter(b=>!CB[b.t].fixed&&!b.burnt&&!CB[b.t].pwr).sort((a,b)=>((a.rev||0)*PAYM()-(a.up||0))-((b.rev||0)*PAYM()-(b.up||0))); const w=L[0]; return {icon:'📉',title:'有建築一直在賠錢',text:'主計處：「有幾棟建築客人很少，維護費比收入還高。」',opts:[
+  {id:'lose',w:()=>S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&!CB[b.t].crop&&!CB[b.t].tool&&!b.burnt&&((b.rev||0)*PAYM()-(b.up||0))<-1).length>=2?1.6:0,make:P=>{ const L=S.city.b.filter(b=>!CB[b.t].fixed&&!b.burnt&&!CB[b.t].pwr&&!CB[b.t].tool&&!CB[b.t].crop).sort((a,b)=>((a.rev||0)*PAYM()-(a.up||0))-((b.rev||0)*PAYM()-(b.up||0))); const w=L[0]; return {icon:'📉',title:'有建築一直在賠錢',text:'主計處：「有幾棟建築客人很少，維護費比收入還高。」',opts:[
     optDem(w,w?`拆掉最賠錢的 ${CB[w.t].icon} ${CB[w.t].name}`:'',3,'賠錢的建築拆掉了，市庫鬆了一口氣。'),
     optPol('商圈行銷補助（3 分鐘）',P*.6,3,[{k:'rev',s:'shop',m:1.3,t:180,lb:'📣 商圈行銷'},{k:'rev',s:'tour',m:1.3,t:180}],'商店街掛滿彩旗，客人變多了。'),
     optTrap('找網紅業配',P*.5,'網紅來拍了 30 秒就走了，一個客人都沒帶來。')]}; }},
@@ -1610,7 +1634,7 @@ function olyTick(){ const O=S.city.oly; if(!O||modalOpen) return;
     S.city.fx.push({k:'tour',m:sc>=.6?1.15:1,until:S.time+YEAR,lb:sc>=.6?'🏟️ 運動會後觀光熱':'🦟 運動會後場館變蚊子館'}); if(sc<.6) S.city.fx.push({k:'happy',n:-3,until:S.time+YEAR});
     sfx.fan(); queueModal({icon:sc>=.6?'🏆':'🦟',title:'國際運動會閉幕',body:`<p>${sc>=.6?'各國選手說這是史上最可愛的一屆，吉祥物毛毛的周邊全部賣光。':'比賽辦完了，但很多場館蓋得太趕，之後沒人用，變成蚊子館…'}</p><div class="note">🏅 柴犬勳章 +${md}<br>🗳️ 支持率 ${sc>=.6?'+4':'-3'}<br>${sc>=.6?'✈️ 接下來一年觀光客 +15%':'😓 接下來一年幸福度 -3'}</div>`,buttons:[{label:'太好了'}]}); saveLocal(); } }
 function evTick(){ const e=S.city.ev; if(e&&S.time>=e.until&&!modalOpen) concertEnd(); olyTick(); }
-function evHTML(){ if(!(CS.cnt.stadium||0)&&S.city.stage<2) return ''; const R=EVR(), on=concertOn(), cd=Math.max(0,R.last+MONTH*2-S.time), O=S.city.oly;
+function evHTML(){ if(themeOf()!=='city'||(!(CS.cnt.stadium||0)&&S.city.stage<2)) return ''; const R=EVR(), on=concertOn(), cd=Math.max(0,R.last+MONTH*2-S.time), O=S.city.oly;
   let h=`<h4>🎤 大型活動</h4>`;
   if(on) h+=`<div class="item"><div class="ic">${on.icon}</div><div class="txt"><div class="nm">${on.name} 演唱會進行中</div><div class="ds">還有 ${fmtT(S.city.ev.until-S.time)}${S.city.ev.jam?'・🚗 大眾運輸不夠，散場會塞車':''}</div></div></div>`;
   else h+=ARTISTS.map(A=>{ const C=artistChecks(A), ok=C.every(c=>c.ok), lock=!ok;
@@ -2003,8 +2027,9 @@ function drawFarmB(b,x,y,w){ const ph=clock, m=monthNo();
   if(b.t==='rice'){ cPlate(x,y,2,'#8a7a52',.05); const col=m<=2||m===12?'#a8916a':(m===3||m===4||m===7)?'#9cc9c4':(m===6||m===10||m===11)?'#e2c04a':'#7fbf4a';
     for(let a=0;a<2;a++) for(let c=0;c<2;c++){ const X=x+.1+a*.92, Y=y+.1+c*.92; poly([P3(X,Y,.06),P3(X+.82,Y,.06),P3(X+.82,Y+.82,.06),P3(X,Y+.82,.06)],col);
       if(col!=='#a8916a') for(let r=0;r<4;r++) for(let q=0;q<4;q++){ const p=P3(X+.12+q*.2,Y+.12+r*.2,.06); ln(p,{x:p.x,y:p.y-tw*(col==='#9cc9c4'?.03:.06)},col==='#e2c04a'?'#c99a2a':'#4f9a3a',1.2); } }
-    const s=iso(x+1.75,y+1.75); if(m>=5&&m<=11) emoji('🧑‍🌾',s.x,s.y-tw*.14,tw*.2); return P3(x+1,y+1,.4); }
-  if(b.t==='orchard'){ cPlate(x,y,2,'#8fb86a',.04); const fr=m>=6&&m<=8; for(let r=0;r<3;r++) for(let q=0;q<3;q++) drawTree(x+.35+q*.65,y+.35+r*.65,fr?{scale:.42,fruits:'#f08a3c'}:{scale:.42}); return P3(x+1,y+1,1); }
+    if(S.city.crop==='flower'&&col!=='#a8916a') for(let k=0;k<22;k++){ const p=iso(x+.2+((k*.37)%1)*1.6,y+.2+((k*.61)%1)*1.6); circle(p.x,p.y-tw*.06,tw*.05,['#f2c14e','#f39ab0','#c58be0','#fff'][k%4]); }
+    if(m===6||m===11) drawHarvest(b,x,y,ph); else { const s=iso(x+1.75,y+1.75); if(m>=5&&m<=11) emoji('🧑‍🌾',s.x,s.y-tw*.14,tw*.2); } return P3(x+1,y+1,.4); }
+  if(b.t==='orchard'){ cPlate(x,y,2,'#8fb86a',.04); const fr=m>=6&&m<=8; for(let r=0;r<3;r++) for(let q=0;q<3;q++) drawTree(x+.35+q*.65,y+.35+r*.65,fr?{scale:.42,fruits:'#f08a3c'}:{scale:.42}); if(m===7) drawHarvest(b,x,y,ph); return P3(x+1,y+1,1); }
   if(b.t==='veg'){ cPlate(x,y,1,'#8a6a4a',.04); ['#5aa84c','#9b6dd6','#f08a3c','#5aa84c'].forEach((c,i)=>{ for(let q=0;q<4;q++){ const p=iso(x+.18+q*.21,y+.2+i*.2); ellipse(p.x,p.y-tw*.02,tw*.06,tw*.035,c); } }); return P3(x+.5,y+.5,.3); }
   if(b.t==='chicken'){ cPlate(x,y,2,'#c9b98f',.04); const top=kit(x,y,2,{h:.4,wall:'#e9d6b0',rt:'gable',roof:'#b5443a',inset:.55,emo:'🐔',plate:'#c9b98f'}); for(let k=0;k<7;k++){ const a=(ph*.3+k*.37)%1, p=iso(x+.25+((k*.29)%1)*1.5,y+.2+a*.3+(k%2)*1.45); circle(p.x,p.y-tw*.03,tw*.04,'#fff'); circle(p.x+tw*.03,p.y-tw*.05,tw*.015,'#e2574c'); }
     for(const [a,c,d,e] of [[.05,.05,1.95,.05],[.05,.05,.05,1.95],[1.95,.05,1.95,1.95],[.05,1.95,1.95,1.95]]) ln(P3(x+a,y+c,.15),P3(x+d,y+e,.15),'#8a6a4a',1.2); return top; }
@@ -2012,10 +2037,19 @@ function drawFarmB(b,x,y,w){ const ph=clock, m=monthNo();
   if(b.t==='coop') return kit(x,y,1,{h:.42,wall:'#fff4e2',roof:'#3f8a56',awn:'#3f8a56',emo:'🧺',rows:1,cols:2});
   if(b.t==='bnb') return kit(x,y,1,{h:.45,wall:'#f3e3c3',rt:'gable',roof:'#8a5a36',emo:'🛏️',rows:1,cols:2});
   if(b.t==='farmhouse') return kit(x,y,1,{h:.4,wall:'#efe6d2',rt:'gy',roof:'#5a6b7a',rows:1,cols:2,fn:(X,Y,L)=>{ ln(P3(X+.05,Y+L+.12,.3),P3(X+L-.05,Y+L+.12,.3),'#8a6a4a',1); for(let k=0;k<4;k++){ const p=P3(X+.15+k*.17,Y+L+.12,.3); ln(p,{x:p.x,y:p.y+tw*.07},'#7a8a3a',2); } }});
+  if(b.t==='oxbarn'){ const top=kit(x,y,1,{h:.42,wall:'#b5443a',rt:'gable',roof:'#7a2f28',rows:1,cols:1}); const p=iso(x+.8,y+.95); emoji('🐂',p.x,p.y-tw*.1,tw*.24); return top; }
+  if(b.t==='tractor'){ const top=kit(x,y,1,{h:.45,wall:'#ece7dd',roof:'#3f8a56',awn:'#f2c14e',rows:1,cols:2}); const p=iso(x+.75,y+.98); emoji('🚜',p.x,p.y-tw*.1,tw*.24); return top; }
+  if(b.t==='hcenter'){ const top=kit(x,y,2,{h:.62,wall:'#dfe3e6',rt:'gable',roof:'#4d7cc7',emo:'🌾',rows:1,fn:(X,Y,L)=>{ cyl(X+L*.88,Y+L*.15,.2,0,1.3,'#cfd3d8'); cyl(X+L*.88,Y+L*.45,.2,0,1.3,'#bfc5cb'); }}); combine(x+.6,y+1.65,0); return top; }
   if(b.t==='leisure'){ cPlate(x,y,2,'#9fd07a',.04); box(x+.15,y+.15,.7,.6,.4,'#b5443a'); gableX(x+.1,y+.1,.8,.7,.4,.25,'#7a2f28'); const pd=iso(x+1.4,y+.6); ellipse(pd.x,pd.y,tw*.3,tw*.15,'#7fbfda');
     [['🐑',.5,1.4],['🐑',1.1,1.6],['🐄',1.5,1.25],['🧒',.95,1.05]].forEach(([e,a,c],i)=>{ const p=iso(x+a+Math.sin(ph*.5+i)*.05,y+c); emoji(e,p.x,p.y-tw*.12,tw*.22); }); return P3(x+1,y+1,.8); }
   return null; }
 
+// 收成月田裡的採收畫面：依採收方式換人、牛、耕耘機、聯合收割機
+function combine(X,Y,z){ box(X,Y,.55,.36,.26,'#f2c14e',z); box(X+.3,Y+.04,.22,.26,.22,'#3f8a56',z+.26); box(X-.12,Y-.02,.12,.4,.08,'#c99a2a',z+.04); }
+function drawHarvest(b,x,y,ph){ const hm=b.hm||'hand', t=(ph*.06+((b.x*7+b.y*3)%10)/10)%1, row=Math.floor(t*3), u=t*3-row, ux=row%2?1-u:u, X=x+.2+ux*1.3, Y=y+.3+row*.55;
+  if(hm==='central'){ combine(X,Y,.06); return; }
+  const p=iso(X+.2,Y+.2), e=hm==='tractor'?'🚜':hm==='ox'?'🐂':'🧑‍🌾'; emoji(e,p.x,p.y-tw*.12,tw*.24);
+  if(hm!=='tractor'){ const q=iso(X+.2+(row%2?.35:-.35),Y+.25); emoji('🧑‍🌾',q.x,q.y-tw*.12,tw*.2); } }
 const HILLHINT=new Set();
 function drawHillB(b,x,y,w){ const ph=clock, HP='#8fa07a';
   if(b.t==='lookout'){ cPlate(x,y,1,HP,.04); box(x+.15,y+.15,.7,.7,.14,'#a88a66'); for(const [a,c] of [[.22,.22],[.78,.22],[.22,.78],[.78,.78]]) ln(P3(x+a,y+c,.14),P3(x+a,y+c,.62),'#7a5a3a',Math.max(1.5,tw*.03)); gableX(x+.12,y+.12,.76,.76,.62,.22,'#b5443a');
@@ -2117,7 +2151,7 @@ function drawCityB0(b,ox,oy){
     case 'shrine': case 'hydro': case 'coaster': top=drawSpecial(b,x,y,w); break;
     case 'cablebase':{ top=kit(x,y,1,{h:.38,wall:'#ece7dd',roof:'#c0392b',emo:'🚡',rows:1}); if(b.tx!=null){ const pb0=P3(x+.5,y+.2,.46), pb=P3(x+.5,y+.2,1.05); ln(pb0,pb,'#6b6b6b',Math.max(2,tw*.045)); const ta=rotAnchor(b.tx,b.ty,1), hz=hillZ({t:'cable',x:b.tx,y:b.ty,w:1}); ZOFF=hz; const pt=P3(ta[0]+.5,ta[1]+.5,.75); ZOFF=0; ln(pb,pt,'#444',1.5);
       for(let q=0;q<2;q++){ const f2=(clock*.1+q*.5)%1, g={x:pb.x+(pt.x-pb.x)*f2,y:pb.y+(pt.y-pb.y)*f2}; ln(g,{x:g.x,y:g.y+tw*.07},'#444',1.2); rrect(g.x-tw*.08,g.y+tw*.07,tw*.16,tw*.12,3,q?'#3f7ac0':'#e2574c'); rrect(g.x-tw*.055,g.y+tw*.09,tw*.11,tw*.045,2,'#cfe8ff'); } } break; }
-    case 'rice': case 'orchard': case 'veg': case 'chicken': case 'mill': case 'coop': case 'bnb': case 'farmhouse': case 'leisure': top=drawFarmB(b,x,y,w); break;
+    case 'rice': case 'orchard': case 'veg': case 'chicken': case 'mill': case 'coop': case 'bnb': case 'farmhouse': case 'leisure': case 'oxbarn': case 'tractor': case 'hcenter': top=drawFarmB(b,x,y,w); break;
     case 'lookout': case 'tea': case 'cable': case 'camp': case 'radio': case 'villa': top=drawHillB(b,x,y,w); break;
     case 'statue':{ cPlate(x,y,3,'#e9dfcb',.04); for(let i=0;i<3;i++) for(let j=0;j<3;j++) if((i+j)%2) cPlate(x+i,y+j,1,'#ddd1b9',.06);
       box(x+.55,y+.55,1.9,1.9,.12,'#cdbfa5'); box(x+.75,y+.75,1.5,1.5,.38,'#e2d6bf',.12); const pl=P3(x+1.5,y+2.26,.3); rrect(pl.x-tw*.28,pl.y-tw*.1,tw*.56,tw*.16,3,'#b89a5a'); if(tw>=26) txt('阿布',pl.x,pl.y-tw*.02,tw*.1,'#fff8e6',900);
@@ -2719,6 +2753,7 @@ function cityBHTML(){
   if(D.pop){ kv.push(['住戶',`${Math.floor(b.occ||0)} / ${D.pop} 人`]); kv.push(['有工作的住戶',`${Math.round(CS.er*100)}%`]); kv.push(['房租',`$${D.rent} / 人（沒工作付不出來）`]); }
   if(D.svc){ kv.push(['客人',`${Math.round(b.served||0)} / ${Math.round(D.cap)} 人`]); kv.push(['單價',`$${D.fee}`]); kv.push(['狀況',!b.ok?'未營業':b.busy?'🔥 大排長龍':(b.served||0)<D.cap*.5?'😴 有點冷清':'🙂 生意不錯']); }
   if(D.exp) kv.push(['產品外銷',D.jobs&&CS.staff<1?`員工只來 ${Math.round(CS.staff*100)}%`:'全力生產']);
+  if(D.crop&&themeOf()==='farm'){ farmPlan(); const M=HM[b.hm||'hand']; kv.push(['採收方式',`${M.i} ${M.n}・要 ${M.one?1:Math.round(HANDS[b.t]*M.h)} 人${M.m>1?`・收成 +${Math.round((M.m-1)*100)}%`:''}`]); }
   if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]);
   if(b.stars!==undefined) kv.push(['蓋好時的市民滿意度','★'.repeat(b.stars)+'☆'.repeat(5-b.stars)]);
   if(D.svc&&LOCAL_SVC[D.svc]) kv.push(['附近居民',`${Math.round(b.near||0)} 人`]);
@@ -2788,7 +2823,8 @@ function deputyAdvice(){
   const m=S.city.mis; if(m) L.push({lv:1,t:`任務：<b>${misText(m)}</b>（${Math.round(Math.min(1,misProg(m))*100)}%，剩 ${fmtT(m.left)}），獎金 $${fmt(m.reward)}。`,go:()=>openSheet(cityGovHTML)});
   const opp=ns.filter(n=>!n.urgent&&needGain(n)>=1).sort((a,b)=>needGain(b)-needGain(a))[0];
   if(opp) L.push({lv:1,t:`商機：「${opp.say}」→ ${NEED_SHORT[opp.k]||opp.h}，每分鐘約多賺 <b>$${fmt(needGain(opp))}</b>`,go:()=>goBuild(NEED_TAB[opp.k]||'shop')});
-  const lose=S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&!CB[b.t].crop&&!b.burnt&&((b.rev||0)*PAYM()-(b.up||0))<-1);
+  if(themeOf()==='farm'){ const H=farmHands(); if(H.F.length&&H.need>H.have) L.push({lv:1,t:`收成人手不夠：要 <b>${H.need} 人</b>、村裡只有 ${H.have} 人能幫忙。${farmTip(H)}`,go:()=>goBuild('farm')}); }
+  const lose=S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&!CB[b.t].crop&&!CB[b.t].tool&&!b.burnt&&((b.rev||0)*PAYM()-(b.up||0))<-1);
   if(lose.length>=2){ const k=lose[0].t; L.push({lv:1,t:`有 <b>${lose.length} 棟在賠錢</b>（像${CB[k].name}），客人不夠就別再蓋同一種`,go:()=>openSheet(cityGovHTML)}); }
   const nx=CITY_STAGES[S.city.stage+1]; if(nx&&!stageReady()){ const c=stageChecks(S.city.stage+1).find(c=>!c.ok); if(c) L.push({lv:0,t:`主線：升格「${nx.name}」還差 <b>${c.t}</b>（${c.v}）。`,go:()=>openSheet(cityGovHTML)}); }
   const ruin=S.city.b.find(b=>b.burnt); if(ruin) L.push({lv:0,t:`${CB[ruin.t].name}燒毀後還沒處理，點它可以重建或清掉。`,go:()=>{ camX=ruin.x+.5; camY=ruin.y+.5; clampCam(); }});
@@ -2947,7 +2983,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.24</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.25</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
