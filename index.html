@@ -997,7 +997,7 @@ function cityUpdate(dt){
   });
   cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
   if(mode==='city'&&!modalOpen){ misTick(dt); platTick(); xferTick(); electionTick(dt); evTick(); incTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
-  if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); updateTransit(dt); decTick(dt); }
+  if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); wildTick(dt); updateTransit(dt); decTick(dt); }
 }
 // ================= v2.5：地圖、電力、組合、決策、任期 =================
 const MAPS={
@@ -1124,13 +1124,13 @@ const STAGESETS={
     {name:'模範農村',mayor:'模範村長',size:22,req:{pop:160,happy:70,has:['mill','leisure']}}
   ]};
 const THEMES={
-  city:{icon:'🏙️',name:'都市發展',tag:'從小村發展成國際都市',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
-  farm:{icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,lands:['plain','river','lakes'],maps:['coast','bay'],
+  city:{hall:['🏛️','市政府','市長辦公的地方。點它打開市政。'],icon:'🏙️',name:'都市發展',tag:'從小村發展成國際都市',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
+  farm:{hall:['🏤','鄉公所','村長辦公的地方，矮矮的一層樓，門口有廣播喇叭。點它打開市政。'],icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,lands:['plain','river','lakes'],maps:['coast','bay'],
     allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','school','lost','clinic','post','garbage','sewage','recycle','wind','solar','hydro','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
 };
 const themeOf=()=>(S&&S.city&&S.city.theme)||'city', themeDef=()=>THEMES[themeOf()];
 function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme) return D.theme===t; const T=THEMES[t]; return !T.allow||T.allow.includes(k); }
-function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; }
+function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; const h=(THEMES[themeOf()]||THEMES.city).hall||THEMES.city.hall; Object.assign(CB.cityhall,{icon:h[0],name:h[1],sign:h[1],desc:h[2]}); }
 // ---- 農村建築 ----
 Object.assign(CB,{
   rice:     {theme:'farm',crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。一年收兩次：6 月、11 月。收成時要 6 個人手（牛舍、農機可以少用人）。靠河或湖 +30%。'},
@@ -1665,7 +1665,7 @@ function settleCalc(kind){ const c=S.city, N=Math.max(1,CITY_STAGES.length-1), s
 function settle(kind){ if(S.city.settled) return 0; const s=settleCalc(kind); S.city.settled=1; S.meta.md+=s.md; S.meta.hist.push({th:themeOf(),grade:gradeOf().g,name:S.city.name,land:(S.city.map||{}).land,map:(S.city.map||{}).type||'coast',trait:S.city.trait||'',years:yearNo(),pop:CS.pop,stage:S.city.stage,md:s.md,end:kind}); saveLocal(); return s.md; }
 function startNewCity(type,th,ld){ const meta=S.meta, muted=S.muted, earned=S.stats.earned, nn=S.noNight;
   S=newState(); S.meta=meta; S.muted=muted; S.noNight=nn; S.stats.earned=earned; S.tut=1; S.day=today();
-  S.city=initCity(type,th,ld); setTheme(); S.money=3000+2000*upL('cash');
+  S.city=initCity(type,th,ld); setTheme(); WILD.length=0; wildKey=''; S.money=3000+2000*upL('cash');
   transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1;
   resetRuntime(); rot=0; ROTV=0; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey='';
   S.city.spots=genSpots(); saveLocal(); cloudSave(true); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
@@ -1739,6 +1739,26 @@ function abuTick(dt){ if(!S.city||ROADS.size<2){ ABU=null; return; }
   if(A.idle>0){ A.idle-=dt; return; }
   A.t+=dt*.55; if(A.t>=1){ A.t=0; A.x=A.nx; A.y=A.ny; const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>[A.x+a,A.y+b]).filter(([a,b])=>isRoad(a,b)), fw=nb.filter(([a,b])=>a!==A.lx||b!==A.ly), q=pick(fw.length?fw:nb.length?nb:[[A.x,A.y]]);
     A.lx=A.x; A.ly=A.y; A.nx=q[0]; A.ny=q[1]; if(Math.random()<.3){ A.idle=2.5+Math.random()*4; A.pose=pickIdle(); } } }
+// v2.26 各主題的野生動物：農村到處是野生柴犬（在田埂、田裡、路邊晃來晃去，晚上睡覺，點了會講話）
+const WILDS={farm:{name:'野生柴犬',n:()=>Math.min(14,5+Math.floor(S.city.b.filter(b=>CB[b.t].crop).length/2)),cols:['red','red','red','sesame','black','white'],
+  lines:['汪？（從稻草堆裡探出頭）','（在田埂上曬太陽，不想理你）','我不是野狗，我是這片田的守護者。','剛剛追了一隻青蛙，沒追到。','耕耘機好吵，我比較喜歡老黃牛。','（偷吃了一顆掉在地上的橘子）','村長人很好，都會分我便當的雞腿。','稻子收完的田最好打滾了。']}};
+let WILD=[], WOCC=new Set(), wildKey='';
+function wildFree(x,y){ const n=citySize(), i=Math.floor(x), j=Math.floor(y); if(i<0||j<0||i>=n||j>=n) return false; const t=terr(i,j); return t!=='w'&&t!=='sea'&&t!=='h'&&!WOCC.has(i+','+j); }
+function wildSpot(){ const F=S.city.b.filter(b=>CB[b.t].crop), n=citySize();
+  for(let k=0;k<30;k++){ let x,y; if(F.length&&Math.random()<.75){ const f=pick(F); x=f.x-1+Math.floor(Math.random()*(BW(f)+2)); y=f.y-1+Math.floor(Math.random()*(BW(f)+2)); } else { x=Math.floor(Math.random()*n); y=Math.floor(Math.random()*n); } if(wildFree(x,y)) return [x+.3+Math.random()*.4,y+.3+Math.random()*.4]; } return null; }
+function wildTick(dt){ const W=WILDS[themeOf()]; if(!W||!S.city||!shibaReady()){ WILD.length=0; return; }
+  const key=themeOf()+':'+S.city.b.length+':'+citySize()+':'+S.city.r.length;
+  if(key!==wildKey){ wildKey=key; WOCC=new Set(); S.city.b.forEach(b=>{ if(CB[b.t].crop) return; const w=BW(b); for(let a=0;a<w;a++) for(let c=0;c<w;c++) WOCC.add((b.x+a)+','+(b.y+c)); });
+    WILD=WILD.filter(d=>wildFree(d.x,d.y)); const want=W.n(); for(let k=0;WILD.length<want&&k<want*2;k++){ const p=wildSpot(); if(p) WILD.push({x:p[0],y:p[1],tx:p[0],ty:p[1],idle:Math.random()*5,pose:pickIdle(),dir:Math.random()<.5?1:-1,col:pick(W.cols),seed:Math.random()*9}); } WILD.length=Math.min(WILD.length,want); }
+  WILD.forEach(d=>{ if(d.sayT>0) d.sayT-=dt; if(isNight()) return; if(d.idle>0){ d.idle-=dt; return; }
+    const dx=d.tx-d.x, dy=d.ty-d.y, l=Math.hypot(dx,dy);
+    if(l<.03){ if(Math.random()<.6){ d.idle=2+Math.random()*7; d.pose=pickIdle(); } for(let k=0;k<8;k++){ const nx=d.x+(Math.random()*2-1)*2.2, ny=d.y+(Math.random()*2-1)*2.2; if(wildFree(nx,ny)&&wildFree((d.x+nx)/2,(d.y+ny)/2)){ d.tx=nx; d.ty=ny; break; } } return; }
+    const st=Math.min(l,.45*dt); d.x+=dx/l*st; d.y+=dy/l*st; }); }
+function wildDeco(list){ WILD.forEach(d=>list.push({d:dep(d.x,d.y)+.01,fn:()=>{ const q=R2(d.x,d.y), c=P3(q[0],q[1],0), t=R2(d.tx,d.ty), tc=P3(t[0],t[1],0);
+  const moving=!isNight()&&d.idle<=0&&Math.hypot(d.tx-d.x,d.ty-d.y)>.03; if(moving&&Math.abs(tc.x-c.x)>.5) d.dir=tc.x>c.x?1:-1;
+  const h=dogH()*.72; if(moving) drawShibaSpr(c.x,c.y,h,d.col,walkAct(d.seed),d.dir,walkBob(h,d.seed)); else drawShibaSpr(c.x,c.y,h,d.col,isNight()?'sleep':d.pose,d.dir,0); d._sx=c.x; d._sy=c.y-h*.5; }})); }
+function wildTap(sx,sy){ const W=WILDS[themeOf()]; if(!W) return false; const d=WILD.find(d=>d._sx!=null&&Math.hypot(sx-d._sx,sy-d._sy)<Math.max(22,dogH()*.7)); if(!d) return false;
+  sfx.pop(); ticker(`🐕 ${W.name}：${isNight()?pick(['（睡著了，還在打呼）','zzz…雞腿…zzz']):pick(W.lines)}`); if(!isNight()){ d.idle=3; d.pose='sit'; } return true; }
 function abuPos(){ const A=ABU, dx=A.nx-A.x, dy=A.ny-A.y, l=.42*A.side; return {x:A.x+dx*A.t+.5+(-dy)*l, y:A.y+dy*A.t+.5+dx*l}; }
 function abuDeco(list){ if(!ABU) return; const p=abuPos(); list.push({d:dep(p.x,p.y)+.01,fn:()=>{ const q=R2(p.x,p.y), c=P3(q[0],q[1],0), n=R2(ABU.nx+.5,ABU.ny+.5), nc=P3(n[0],n[1],0), A=ABU;
   const moving=!isNight()&&A.idle<=0&&(A.nx!==A.x||A.ny!==A.y); if(moving&&Math.abs(nc.x-c.x)>.5) A.dir=nc.x>c.x?1:-1;
@@ -2050,6 +2070,24 @@ function drawHarvest(b,x,y,ph){ const hm=b.hm||'hand', t=(ph*.06+((b.x*7+b.y*3)%
   if(hm==='central'){ combine(X,Y,.06); return; }
   const p=iso(X+.2,Y+.2), e=hm==='tractor'?'🚜':hm==='ox'?'🐂':'🧑‍🌾'; emoji(e,p.x,p.y-tw*.12,tw*.24);
   if(hm!=='tractor'){ const q=iso(X+.2+(row%2?.35:-.35),Y+.25); emoji('🧑‍🌾',q.x,q.y-tw*.12,tw*.2); } }
+// v2.26 農村的鄉公所：一層樓的矮房子、紅瓦、旗桿、村里廣播喇叭、公布欄；農村變大後門口長出大榕樹、掛紅布條
+function drawHallFarm(x,y,ph){ const st=S.city.stage||0;
+  cPlate(x,y,2,'#d9d3c3',.04);
+  const sp=P3(x+1.86,y+.3,0), st2=P3(x+1.86,y+.3,1.15); ln(sp,st2,'#8a8f96',Math.max(1.5,tw*.03));
+  for(const d of [-1,1]){ const a={x:st2.x,y:st2.y+tw*.03}; poly([a,{x:a.x+d*tw*.13,y:a.y-tw*.06},{x:a.x+d*tw*.13,y:a.y+tw*.04}],'#c9ced4'); }
+  if(st>=1) drawTree(x+1.8,y+.95,{scale:.62});
+  box(x+.12,y+.27,1.56,1.01,.05,'#b9b2a3');
+  box(x+.15,y+.3,1.5,.95,.38,'#f3efe6');
+  bwinZ('L',x+.15,y+1.252,1.5,.38,1,5,'rgba(170,200,230,.9)',0); bwinZ('R',x+1.652,y+.3,.95,.38,1,2,'rgba(150,185,220,.9)',0);
+  if(st>=2){ poly([P3(x+.2,y+1.256,.27),P3(x+1.6,y+1.256,.27),P3(x+1.6,y+1.256,.34),P3(x+.2,y+1.256,.34)],'#d9473b'); const m=P3(x+.9,y+1.26,.3); emoji('🏅',m.x,m.y,tw*.1); }
+  gableX(x+.08,y+.22,1.64,1.11,.38,.32,'#a5533c');
+  box(x+.62,y+1.25,.48,.26,.3,'#e8e2d4'); box(x+.57,y+1.22,.58,.34,.04,'#7d7468',.3);
+  poly([P3(x+.72,y+1.512,0),P3(x+1,y+1.512,0),P3(x+1,y+1.512,.24),P3(x+.72,y+1.512,.24)],'#6b4a2e');
+  box(x+1.2,y+1.66,.34,.04,.22,'#7a5a3a'); poly([P3(x+1.24,y+1.702,.07),P3(x+1.5,y+1.702,.07),P3(x+1.5,y+1.702,.2),P3(x+1.24,y+1.702,.2)],'#f6f1e2');
+  const fb=P3(x+.28,y+1.72,0), ft=P3(x+.28,y+1.72,1.25); ln(fb,ft,'#777',1.5); ctx.fillStyle='#3fae7a'; ctx.beginPath(); ctx.moveTo(ft.x,ft.y); ctx.lineTo(ft.x+tw*.2,ft.y+tw*.05+Math.sin(ph*3)*tw*.02); ctx.lineTo(ft.x,ft.y+tw*.13); ctx.fill(); emoji('🐾',ft.x+tw*.07,ft.y+tw*.065,tw*.07);
+  const sc=iso(x+.45,y+1.45); emoji('🛵',sc.x,sc.y-tw*.06,tw*.16);
+  const sh=iso(x+1.72,y+1.84); box(x+1.6,y+1.72,.24,.24,.12,'#c9c2b5'); drawShibaSpr(sh.x,sh.y-tw*.12,dogH(),'red','sit',-1,0);
+  return P3(x+1,y+.8,.9); }
 const HILLHINT=new Set();
 function drawHillB(b,x,y,w){ const ph=clock, HP='#8fa07a';
   if(b.t==='lookout'){ cPlate(x,y,1,HP,.04); box(x+.15,y+.15,.7,.7,.14,'#a88a66'); for(const [a,c] of [[.22,.22],[.78,.22],[.22,.78],[.78,.78]]) ln(P3(x+a,y+c,.14),P3(x+a,y+c,.62),'#7a5a3a',Math.max(1.5,tw*.03)); gableX(x+.12,y+.12,.76,.76,.62,.22,'#b5443a');
@@ -2168,7 +2206,7 @@ function drawCityB0(b,ox,oy){
       const wn=P3(fx-.12,fy+.12,1.75); circle(wn.x,wn.y,tw*.13,'#7aa6c9'); circle(wn.x,wn.y,tw*.105,'#cfe8ff'); emoji('🐕',wn.x,wn.y+tw*.01,tw*.17);
       for(let k=0;k<3;k++){ const p=(ph*.35+k/3)%1; ctx.globalAlpha=(1-p)*.35; circle(t0.x+(k-1)*tw*.25*(1+p),t0.y-tw*p*.2,tw*(.12+p*.2),'#ffffff'); ctx.globalAlpha=1; }
       top=P3(fx,fy,3.0); break; }
-    case 'cityhall':{ cPlate(x,y,2,'#e6dfd0',.04); box(x+.1,y+1.55,1.8,.35,.08,'#d9cfba'); box(x+.2,y+.2,1.6,1.3,.75,'#f4efe4'); bwinZ('L',x+.2,y+1.502,1.6,.75,2,6,'rgba(170,200,230,.9)',0); bwinZ('R',x+1.802,y+.2,1.3,.75,2,4,'rgba(150,185,220,.9)',0);
+    case 'cityhall':{ if(themeOf()==='farm'){ top=drawHallFarm(x,y,ph); break; } cPlate(x,y,2,'#e6dfd0',.04); box(x+.1,y+1.55,1.8,.35,.08,'#d9cfba'); box(x+.2,y+.2,1.6,1.3,.75,'#f4efe4'); bwinZ('L',x+.2,y+1.502,1.6,.75,2,6,'rgba(170,200,230,.9)',0); bwinZ('R',x+1.802,y+.2,1.3,.75,2,4,'rgba(150,185,220,.9)',0);
       for(let k=0;k<6;k++) ln(P3(x+.3+k*.28,y+1.56,.08),P3(x+.3+k*.28,y+1.56,.75),'#fffaf0',Math.max(2,tw*.05)); box(x+.15,y+.15,1.7,1.4,.07,'#c9b98f',.75);
       gableY(x+.55,y+1.1,.9,.5,.82,.28,'#bfae8a'); cyl(x+1,y+.85,.32,.82,.3,'#f4efe4'); const dt=dome(x+1,y+.85,.32,1.12,'#7aa6c9'); ln({x:dt.x,y:dt.y},{x:dt.x,y:dt.y-tw*.35},'#777',1.5);
       ctx.fillStyle='#3fae7a'; ctx.beginPath(); ctx.moveTo(dt.x,dt.y-tw*.35); ctx.lineTo(dt.x+tw*.2,dt.y-tw*.3+Math.sin(ph*3)*tw*.02); ctx.lineTo(dt.x,dt.y-tw*.22); ctx.fill(); emoji('🐾',dt.x+tw*.07,dt.y-tw*.29,tw*.07);
@@ -2491,7 +2529,7 @@ function drawCity(){
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
   transit.buses.forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
-  FESTLIT.length=0; festDeco(list); beautyDeco(list); spotDeco(list); incDeco(list); abuDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
+  FESTLIT.length=0; festDeco(list); beautyDeco(list); spotDeco(list); incDeco(list); abuDeco(list); wildDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
   peds.forEach(p=>{ const q=agentPos(p,.36*p.side); list.push({d:dep(q.x,q.y)+.01,fn:()=>drawPed(p)}); });
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
   if(NIGHT>.02) drawNight(); if(NIGHT>.3) FESTLIT.forEach(f=>f());
@@ -2561,7 +2599,7 @@ function cityPlace(k,x,y,o){ o=o||{};
 }
 function cityBulldoze(x,y,o){ groundVer++; o=o||{};
   const b=bAt(x,y);
-  if(b){ if(CB[b.t].fixed){ ticker('🏛️ 市政府不能拆。'); return; } { const k0=bkey(b); if(!b.par){ const ch=S.city.b.filter(q=>q.par===k0); const nb2=ch.find(q=>nearRoad(q.x,q.y,BW(q))); if(nb2){ delete nb2.par; ch.forEach(q=>{ if(q!==nb2) q.par=bkey(nb2); }); } } } S.city.b=S.city.b.filter(q=>q!==b); S.money+=b.burnt||o.noRefund?0:Math.round((b.paid||CB[b.t].cost)*.5); if(b.t==='cable'){ S.city.b=S.city.b.filter(q=>!(q.t==='cablebase'&&q.tx===b.x&&q.ty===b.y)); S.city.cl=(S.city.cl||[]).filter(l=>!((l[0]===b.x&&l[1]===b.y)||(l[2]===b.x&&l[3]===b.y))); } if(b.t==='cablebase'){ const tp=S.city.b.find(q=>q.t==='cable'&&q.x===b.tx&&q.y===b.ty); if(tp&&!(S.city.cl||[]).some(l=>(l[0]===tp.x&&l[1]===tp.y)||(l[2]===tp.x&&l[3]===tp.y))&&!S.city.b.some(q=>q!==b&&q.t==='cablebase'&&q.tx===tp.x&&q.ty===tp.y)){ S.city.b=S.city.b.filter(q=>q!==tp); S.money+=Math.round((tp.paid||CB.cable.cost)*.5); } } cityDirty=true; sfx.pop(); return; }
+  if(b){ if(CB[b.t].fixed){ ticker(`${CB.cityhall.icon} ${CB.cityhall.name}不能拆。`); return; } { const k0=bkey(b); if(!b.par){ const ch=S.city.b.filter(q=>q.par===k0); const nb2=ch.find(q=>nearRoad(q.x,q.y,BW(q))); if(nb2){ delete nb2.par; ch.forEach(q=>{ if(q!==nb2) q.par=bkey(nb2); }); } } } S.city.b=S.city.b.filter(q=>q!==b); S.money+=b.burnt||o.noRefund?0:Math.round((b.paid||CB[b.t].cost)*.5); if(b.t==='cable'){ S.city.b=S.city.b.filter(q=>!(q.t==='cablebase'&&q.tx===b.x&&q.ty===b.y)); S.city.cl=(S.city.cl||[]).filter(l=>!((l[0]===b.x&&l[1]===b.y)||(l[2]===b.x&&l[3]===b.y))); } if(b.t==='cablebase'){ const tp=S.city.b.find(q=>q.t==='cable'&&q.x===b.tx&&q.y===b.ty); if(tp&&!(S.city.cl||[]).some(l=>(l[0]===tp.x&&l[1]===tp.y)||(l[2]===tp.x&&l[3]===tp.y))&&!S.city.b.some(q=>q!==b&&q.t==='cablebase'&&q.tx===tp.x&&q.ty===tp.y)){ S.city.b=S.city.b.filter(q=>q!==tp); S.money+=Math.round((tp.paid||CB.cable.cost)*.5); } } cityDirty=true; sfx.pop(); return; }
   if(isRoad(x,y)){ S.city.r=S.city.r.filter(k=>k!==x+','+y); ROADS.delete(x+','+y); S.money+=10; cityDirty=true; sfx.pop(); cars=cars.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); peds=peds.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); }
 }
 let lastDragTile='';
@@ -2696,14 +2734,14 @@ function cityTap(sx,sy){
   const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y);
   { const fb=S.city.b.find(q=>q.fire>0&&q._hit&&inPoly(sx,sy,q._hit.poly)); if(fb){ extinguish(fb); return; } }
   { const ic=incAtScreen(sx,sy); if(ic&&incTap(ic)) return; }
-  if(!(placing&&placing.city)&&abuTap(sx,sy)) return;
+  if(!(placing&&placing.city)&&(abuTap(sx,sy)||wildTap(sx,sy))) return;
   if(!(placing&&placing.city)){ const sp=spotAtScreen(sx,sy); if(sp){ spotTap(sp); return; } }
   if(placing&&placing.city){
     if(placing.city==='road'){ cityPlace('road',x,y); return; }
     if(placing.city==='bulldoze'){ const b=buildingAtScreen(sx,sy)||bAt(x,y); const tgt=b?{bull:1,b}:isRoad(x,y)?{bull:1,x,y}:null;
       if(!tgt){ ghost=null; setPlacing(placing); return; }
       if(ghost&&ghost.bull&&((tgt.b&&ghost.b===tgt.b)||(!tgt.b&&!ghost.b&&ghost.x===x&&ghost.y===y))){ confirmGhost(); return; }
-      if(tgt.b&&CB[tgt.b.t].fixed){ ticker('🏛️ 市政府不能拆。'); return; }
+      if(tgt.b&&CB[tgt.b.t].fixed){ ticker(`${CB.cityhall.icon} ${CB.cityhall.name}不能拆。`); return; }
       ghost=tgt; sfx.pop(); ghostBanner(); return; }
     const k=placing.city, D=CB[k];
     if(k==='cable'||k==='cablebase'){ const cs=cableAtScreen(sx,sy); if(cs){ if(ghost&&ghost.k===k&&ghost.x===cs.x&&ghost.y===cs.y){ if(!ghost.msg) confirmGhost(); else sfx.bad(); return; } ghost={k,x:cs.x,y:cs.y,msg:placeCheck(k,cs.x,cs.y)}; sfx.pop(); ghostBanner(); return; } }
@@ -2983,7 +3021,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.25</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.26</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
