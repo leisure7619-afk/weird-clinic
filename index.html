@@ -517,7 +517,7 @@ function drawWeather(){
 // ================= 建造與擴建 =================
 function setPlacing(type){ placing=type; ghost=null; const b=$('banner'); $('bannerOK').classList.add('hidden');
   if(!type){ b.classList.remove('show'); return; }
-  if(type.city){ const D=CB[type.city]; $('bannerTxt').textContent=type.city==='road'?'用手指在地上拖曳鋪路（每格 $40，過河 $300）':type.city==='bulldoze'?'點要拆的建築（拖曳可以連續拆道路）':type.city==='cablebase'?'🚡 選下一站：山下路邊或另一個山頭':type.city==='cable'?`🚡 先選第一站（山頭或已有的纜車站），再選下一站（每站 $${fmt(costOf('cable'))}）`:`點發光的地方，先看預覽再蓋 ${D.icon} ${D.name}（$${fmt(costOf(type.city))}）`; $('bannerX').textContent='完成'; }
+  if(type.city){ const D=CB[type.city]; $('bannerTxt').textContent=type.city==='road'?'用手指在地上拖曳鋪路（每格 $40，過河 $300）':type.city==='bulldoze'?'點要拆的建築（拖曳可以連續拆道路）':type.city==='canal'?`從小溪或池塘旁邊開始，用手指拖曳挖 💧 水圳（每格 $${fmt(costOf('canal'))}）`:type.city==='cablebase'?'🚡 選下一站：山下路邊或另一個山頭':type.city==='cable'?`🚡 先選第一站（山頭或已有的纜車站），再選下一站（每站 $${fmt(costOf('cable'))}）`:`點發光的地方，先看預覽再蓋 ${D.icon} ${D.name}（$${fmt(costOf(type.city))}）`; $('bannerX').textContent='完成'; }
   b.classList.add('show'); }
 
 // ================= 搞怪城市 =================
@@ -603,7 +603,7 @@ function openChoices(){ const H=(S.meta&&S.meta.hist)||[], last=S.meta&&S.meta.l
 function openPick(){ if(!S.city.needOpen) return; const C=S.city.openC||(S.city.openC=openChoices()), cash=2000*upL('cash');
   queueModal({icon:'📜',title:'前任留下了什麼？',body:'<p>市府祕書遞來三份交接清單，選一個開局：</p>',buttons:C.map(k=>{ const O=OPENS[k]; return {label:`${O.icon} ${O.name}`,sub:`${O.desc.replace(/。$/,'')}（起始資金 $${fmt(O.money+cash)}）`,fn:()=>applyOpen(k)}; })}); }
 function openSlot(k){ const D=CB[k], n=citySize(); let best=null;
-  for(let y=1;y<n-D.w;y++) for(let x=1;x<n-D.w;x++){ if(!footFree(x,y,D.w)||!nearRoad(x,y,D.w)||spotsIn(x,y,D.w).length) continue; if(D.smell&&S.city.b.some(q=>CB[q.t].pop&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; if(D.pop&&S.city.b.some(q=>CB[q.t].smell&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; const d=Math.hypot(x+D.w/2-6,y+D.w/2-6)+(D.smell?-Math.hypot(x-6,y-6)*1.6:0); if(!best||d<best.d) best={x,y,d}; }
+  for(let y=1;y<n-D.w;y++) for(let x=1;x<n-D.w;x++){ if(!footFree(x,y,D.w)||!nearRoad(x,y,D.w)||spotsIn(x,y,D.w).length||(D.water&&!nearWater(x,y,D.w))) continue; if(D.smell&&S.city.b.some(q=>CB[q.t].pop&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; if(D.pop&&S.city.b.some(q=>CB[q.t].smell&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; const d=Math.hypot(x+D.w/2-6,y+D.w/2-6)+(D.smell?-Math.hypot(x-6,y-6)*1.6:0); if(!best||d<best.d) best={x,y,d}; }
   return best; }
 function applyOpen(k){ const O=OPENS[k], c=S.city; if(!O||!c.needOpen) return; delete c.needOpen; delete c.openC; c.open=k; S.meta.lastOpen=k;
   (O.r||[]).forEach(r=>{ const [x,y]=r.split(',').map(Number); if(!c.r.includes(r)&&!bAt(x,y)&&!blocked(x,y)){ c.r.push(r); ROADS.add(r); } });
@@ -660,7 +660,7 @@ const PLATS={
   books:{icon:'📚',name:'書香城市',diff:2,goal:t=>`人文達到 ${t}`,tgt:()=>Math.max(8,(CS.cult||0)+10),val:()=>CS.cult||0,why:()=>S.city.open==='school'?'大學城的學生愛看書':(CS.cult||0)>0?'市民開始愛逛書店和展覽':null},
   harvest:{icon:'🌾',name:'豐收年',diff:2,goal:t=>`一年收成達到 $${fmt(t)}`,tgt:()=>Math.max(12000,r100(Math.max(0,...Object.values(S.city.harv||{}))*1.6)),val:()=>(S.city.harv||{})[yearNo()]||0,need:()=>themeOf()==='farm',why:()=>'農村就是要靠收成'},
   factory:{icon:'🏭',name:'工業重鎮',need:()=>themeOf()==='city',diff:2,goal:t=>`工廠蓋到 ${t} 座`,tgt:()=>S.city.b.filter(b=>CB[b.t].cat==='ind').length+3,val:()=>S.city.b.filter(b=>CB[b.t].cat==='ind'&&!b.burnt).length,why:()=>S.city.open==='indus'?'老舊工業城，工廠收入 +30%':null},
-  power:{icon:'🌬️',name:'乾淨能源自主',diff:2,goal:t=>`不靠火力發電，發電量達到 ${t}`,tgt:()=>Math.max(150,r10((CS.pw?CS.pw.cap:0)*2)),val:()=>(CS.cnt||{}).coal?0:(CS.pw?CS.pw.cap:0),why:()=>spotWhy(['gust'])||(S.city.trait==='windy'?'本市特色是風很大':null)||(S.city.open==='green'?'綠能小鎮的傳統':null)}
+  power:{icon:'🌬️',name:'乾淨能源自主',need:()=>!themeDef().noPower,diff:2,goal:t=>`不靠火力發電，發電量達到 ${t}`,tgt:()=>Math.max(150,r10((CS.pw?CS.pw.cap:0)*2)),val:()=>(CS.cnt||{}).coal?0:(CS.pw?CS.pw.cap:0),why:()=>spotWhy(['gust'])||(S.city.trait==='windy'?'本市特色是風很大':null)||(S.city.open==='green'?'綠能小鎮的傳統':null)}
 };
 const platDiff=(id,t)=>id==='stage'?Math.min(3,t):PLATS[id].diff;
 function platOK(p){ const P=PLATS[p.id]; return P.ok?P.ok(p.tgt):P.val()>=p.tgt; }
@@ -759,12 +759,13 @@ function terr(x,y){
   if(TCLR.has(x+','+y)) return edge?'s':'g';
   if(M.rx>-50){ const a=riverX(y), b=riverX(y-1); if(x>=Math.min(a,b)&&x<=Math.max(a,b)+(M.rw||1)-1) return 'w'; }
   if(edge) return 's';
+  if(M.cks&&M.cks.has(x+','+y)) return 'w';
   for(const L of (M.lakes||[M.lake])){ const lx=(x-L[0])/L[2], ly=(y-L[1])/L[3]; if(lx*lx+ly*ly<1) return 'w'; }
   for(const h of M.hills){ const hx=x-h[0], hy=y-h[1]; if(hx*hx+hy*hy<h[2]+3*Math.sin(x*1.3+y)) return 'h'; }
   if(x+y>13&&Math.sin(x*.7+1.3+M.fo)+Math.cos(y*.6+M.fo*.7)+Math.sin((x+y)*.9)*.4>M.ft&&((x*7+y*13)%3)) return 'f';
   return 'g';
 }
-const nearWater=(x,y,w)=>{ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ if(a>=0&&c>=0&&a<w&&c<w) continue; const t=terr(x+a,y+c); if(t==='w'||t==='sea') return true; } return false; };
+const nearWater=(x,y,w)=>{ const fm=themeOf()==='farm'; for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ if(a>=0&&c>=0&&a<w&&c<w) continue; if((a===-1||a===w)&&(c===-1||c===w)) continue; const t=terr(x+a,y+c); if(t==='w'||t==='sea') return true; if(fm){ const q=bAt(x+a,y+c); if(q&&q.t==='canal') return true; } } return false; };
 const blocked=(x,y)=>{ const t=terr(x,y); return t==='w'||t==='h'||badAt(x,y); };
 function terrMigrate(){
   if(S.city.tv) { TCLR=new Set(S.city.tc||[]); return; }
@@ -829,14 +830,14 @@ function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const e
 const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋'],trash:['🗑️','垃圾'],water:['🚰','污水']};
 const LABOR=.65;
 function cityCalc(){
-  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
+  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(CB[b.t].noRoad||nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
   if(cityDirty2){ cityDirty2=false; computeCombos(); }
   if(themeOf()==='farm') farmPlan();
   const NK=nightK(), T=S.city.trait;
   let cult=0,pop=0,cap=0,jobs=0,trans=0,tour=0,hb=0,green=0,views=0,pcap=0,puse=0,praw=0; const cnt={}, tseen={}, sup={shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0}, hm=fxMul('home');
   S.city.b.forEach(b=>{ const D=CB[b.t]; cnt[b.t]=(cnt[b.t]||0)+1; if(!b.ok) return; pop+=b.occ||0; cap+=(D.pop||0)*hm; jobs+=D.jobs||0; trans+=D.trans||0; if(D.tour){ tour+=D.tour*(tseen[b.t]?.3:1); tseen[b.t]=(tseen[b.t]||0)+D.tour; } hb+=D.happy||0; green+=D.green||0; cult+=D.cult||0; if(b.view&&(D.pop||D.cat==='tour')) views++; puse+=D.pw||0; if(D.pwr){ const q=pwrOf(b); pcap+=q; if(!D.fixed) praw+=q; } });
   green+=3*(S.city.beau||0);
-  pcap=pcap*(1+.2*upL('green'))+fxSum('pw'); if(T==='eco') puse*=.75;
+  pcap=pcap*(1+.2*upL('green'))+fxSum('pw'); if(T==='eco') puse*=.75; if(themeDef().noPower) puse=0;
   const grace=(S.city.pgrace||0)>S.time, pr=grace||puse<1||puse<=pcap?1:pcap/puse, bf=.35+.65*pr;
   jobs+=fxSum('jobs');
   const labor=pop*LABOR, dep=pop-labor, staff=jobs?Math.min(1,labor/jobs):1, emp=Math.min(labor,jobs), un=Math.max(0,labor-emp), er=labor?emp/labor:1; // 約 65% 的人要上班，其餘是小孩、學生、退休
@@ -1003,11 +1004,12 @@ function cityUpdate(dt){
 const MAPS={
   coast:{name:'海港城',icon:'🌊',cost:0,desc:'上方是海，有沙灘可以蓋港口和海水浴場。',top:1,left:0,hills:[[24.5,24.5,26]],lake:[4.5,17.5,2.4,1.7],ft:1.15},
   bay:{name:'雙海灣',icon:'🏝️',cost:3,desc:'上方和左邊都是海，海景和沙灘加倍，但平地少一點。',top:1,left:1,hills:[[24.5,24.5,26]],lake:[20,9.5,2.2,1.6],ft:1.2},
+  farmland:{name:'大平原',icon:'🌾',cost:0,theme:'farm',desc:'沒有海，一大片平地，到處是小溪和田。',top:0,left:0,hills:[],lake:[25.5,25.5,1.3,1],ft:1.75},
   mountain:{name:'山城',icon:'⛰️',cost:4,desc:'沒有海、山多樹多，溫泉配山景特別賺，但蓋不了港口和海水浴場。',top:0,left:0,hills:[[24.5,24.5,30],[4.5,25.5,16],[26,4.5,14]],lake:[9.5,17.5,2.6,1.8],ft:.95}
 };
 let MC=null;
 function mapCfg(){ const m=(S&&S.city&&S.city.map)||{}, t=MAPS[m.type]?m.type:'coast', o=Object.assign({type:t},MAPS[t],{rx:m.rx??12,rp:m.rp??0,fo:m.fo??0});
-  if(m.land){ o.land=m.land; o.hills=MAPS[t].hills.concat(m.hills||[]); o.lakes=m.lakes||[MAPS[t].lake]; if(m.rw) o.rw=m.rw; if(m.ra!=null) o.ra=m.ra; if(m.ft!=null) o.ft=m.ft; } return o; }
+  if(m.ck) o.cks=new Set(m.ck); if(m.land){ o.land=m.land; o.hills=MAPS[t].hills.concat(m.hills||[]); o.lakes=m.lakes||[MAPS[t].lake]; if(m.rw) o.rw=m.rw; if(m.ra!=null) o.ra=m.ra; if(m.ft!=null) o.ft=m.ft; } return o; }
 // 每個新城市隨機一種地形，卸任換城市時不會跟上一個一樣
 const LANDS={
   plain:{icon:'🌾',name:'大平原',desc:'地很平、好蓋房子，但風景普通：觀光客 -10%'},
@@ -1016,8 +1018,15 @@ const LANDS={
   lakes:{icon:'💧',name:'千湖之鄉',desc:'湖泊很多，要繞著湖規劃；湖景住宅讓市民更開心'},
   forest:{icon:'🌲',name:'森林城市',desc:'樹林很多：空氣好，幸福度 +3'},
   valley:{icon:'🏔️',name:'山谷',desc:'兩邊是山、中間是河谷，城市越大越難往外長'},
+  creeks:{icon:'🐸',name:'小溪平原',desc:'好幾條小溪穿過平原。田要蓋在水邊，不夠的地方自己挖 💧 水圳'},
+  ponds:{icon:'🪷',name:'埤塘之鄉',desc:'到處是灌溉用的埤塘，小溪比較少。田蓋在埤塘旁，或挖 💧 水圳引水'},
   dry:{icon:'🏜️',name:'沒有河的城市',desc:'不用蓋橋，但污水只能靠污水處理廠，需求 +20%'}
 };
+// v2.27 農村的小溪：從地圖一邊彎彎曲曲流到另一邊（寬 1 格），避開鄉公所
+function genCreeks(n,R){ const out=new Set(), rest=[2,5,14,17,20].sort(()=>R()-.5), starts=[10+Math.floor(R()*2),10+Math.floor(R()*2),...rest];
+  for(let i=0;i<n;i++){ const hor=i%2===1, s0=starts[i], right=s0>=9; let x=s0, d=0; const put=(a,b)=>out.add(hor?b+','+a:a+','+b);
+    for(let y=0;y<30;y++){ const cl=v=>(y>=2&&y<=9)?(right?Math.max(v,9):Math.min(v,2)):v; x=cl(x); put(x,y); if(R()<.45) d=R()<.5?-1:1; const nx=cl(Math.max(1,Math.min(21,x+(R()<.55?d:0)))); if(nx!==x){ put(nx,y); x=nx; } } }
+  return [...out]; }
 function genLand(type,prev,pool){ const R=Math.random; let ks=(pool||Object.keys(LANDS)).filter(k=>k!==prev); if(!ks.length) ks=pool||Object.keys(LANDS); const land=ks[Math.floor(R()*ks.length)], m={land,hills:[],lakes:[]};
   const far=(x,y,r)=>Math.max(x,y)-r>13.5; // 不要擋到一開始的市區（0～13）
   const spot=r=>{ for(let i=0;i<40;i++){ const x=4+R()*25, y=4+R()*25; if(far(x,y,r)) return [x,y]; } return [24,24]; };
@@ -1030,6 +1039,8 @@ function genLand(type,prev,pool){ const R=Math.random; let ks=(pool||Object.keys
   else if(land==='forest'){ m.ft=.45; lake(1.5,2.4); }
   else if(land==='valley'){ m.hills.push([26.5+R()*1.5,6+R()*14,36],[6+R()*14,26.5+R()*1.5,36],[27,27,30]); m.ra=2; lake(1.4,2); }
   else if(land==='dry'){ m.rx=-99; lake(1.6,2.6); }
+  else if(land==='creeks'){ m.rx=-99; m.ft=1.75; m.ck=genCreeks(4,R); lake(1,1.4); }
+  else if(land==='ponds'){ m.rx=-99; m.ft=1.75; m.ck=genCreeks(1,R); for(let i=0,n=8+Math.floor(R()*3);i<n;i++) lake(.9,1.5); }
   return m; }
 const MCX=()=>MC||mapCfg();
 const hasSea=()=>{ const M=MCX(); return !!(M.top||M.left); };
@@ -1125,23 +1136,24 @@ const STAGESETS={
   ]};
 const THEMES={
   city:{hall:['🏛️','市政府','市長辦公的地方。點它打開市政。'],icon:'🏙️',name:'都市發展',tag:'從小村發展成國際都市',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
-  farm:{hall:['🏤','鄉公所','村長辦公的地方，矮矮的一層樓，門口有廣播喇叭。點它打開市政。'],icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,lands:['plain','river','lakes'],maps:['coast','bay'],
-    allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','school','lost','clinic','post','garbage','sewage','recycle','wind','solar','hydro','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
+  farm:{hall:['🏤','鄉公所','村長辦公的地方，矮矮的一層樓，門口有廣播喇叭。點它打開市政。'],icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,noPower:1,lands:['creeks','ponds'],maps:['farmland'],
+    allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','school','lost','clinic','post','garbage','sewage','recycle','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
 };
 const themeOf=()=>(S&&S.city&&S.city.theme)||'city', themeDef=()=>THEMES[themeOf()];
 function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme) return D.theme===t; const T=THEMES[t]; return !T.allow||T.allow.includes(k); }
 function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; const h=(THEMES[themeOf()]||THEMES.city).hall||THEMES.city.hall; Object.assign(CB.cityhall,{icon:h[0],name:h[1],sign:h[1],desc:h[2]}); }
 // ---- 農村建築 ----
 Object.assign(CB,{
-  rice:     {theme:'farm',crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。一年收兩次：6 月、11 月。收成時要 6 個人手（牛舍、農機可以少用人）。靠河或湖 +30%。'},
-  orchard:  {theme:'farm',crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。每年 7 月收成一次，一次收很多，要 8 個人手。靠水 +30%。'},
-  veg:      {theme:'farm',exp:25,jobs:2,green:1,cat:'farm',name:'菜園',icon:'🥬',cost:400,w:1,sign:'菜園',desc:'每天都有菜可以賣，錢不多但很穩定。'},
+  rice:     {theme:'farm',water:1,crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。要蓋在水邊（小溪、池塘或水圳）。一年收兩次：6 月、11 月，收成要 6 個人手。'},
+  orchard:  {theme:'farm',water:1,crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。要蓋在水邊。每年 7 月收成一次，一次收很多，要 8 個人手。'},
+  veg:      {theme:'farm',water:1,exp:25,jobs:2,green:1,cat:'farm',name:'菜園',icon:'🥬',cost:400,w:1,sign:'菜園',desc:'要蓋在水邊。每天都有菜可以賣，錢不多但很穩定。'},
   chicken:  {theme:'farm',exp:80,jobs:8,smell:1,cat:'farm',name:'養雞場',icon:'🐔',cost:3000,w:2,sign:'養雞場',desc:'2×2。雞蛋天天賣，但有點臭，別貼著住宅。'},
   mill:     {theme:'farm',exp:40,jobs:12,cat:'farm',name:'碾米廠',icon:'🍚',cost:6000,w:2,sign:'碾米廠',desc:'2×2。稻米收成 +25%。'},
   coop:     {theme:'farm',svc:'shop',cap:40,fee:3,jobs:6,cat:'farm',name:'農會直銷所',icon:'🧺',cost:1800,w:1,sign:'農會',desc:'市民買菜的地方，也幫農民賣東西：所有收成 +20%。'},
   bnb:      {theme:'farm',exp:30,tour:3,happy:1,cat:'farm',name:'田園民宿',icon:'🛏️',cost:2500,w:1,sign:'民宿',desc:'觀光客來住一晚，早上被雞叫醒。'},
   leisure:  {theme:'farm',svc:'fun',cap:60,fee:6,jobs:8,tour:4,happy:2,cat:'farm',name:'休閒農場',icon:'🐑',cost:8000,w:2,sign:'休閒農場',desc:'2×2。餵羊、擠牛奶、做 pizza，城市小孩最愛。'},
   farmhouse:{theme:'farm',rent:1.2,pop:8,cat:'home',name:'農舍',icon:'🏚️',cost:600,w:1,sign:'農舍',desc:'住 8 人，便宜又寬敞，門口曬著菜乾。'},
+  canal:    {theme:'farm',tool:1,noRoad:1,nosign:1,water:1,cat:'farm',name:'水圳',icon:'💧',cost:150,w:1,desc:'人工挖的灌溉水道，要接著小溪、池塘或別段水圳。田蓋在水圳旁邊就有水。'},
   oxbarn:   {theme:'farm',tool:1,jobs:1,cat:'farm',name:'牛舍',icon:'🐂',cost:800,w:1,sign:'牛舍',desc:'老黃牛幫忙犁田、拉車：4 格內的田收成只要一半人手，收成 +5%。'},
   tractor:  {theme:'farm',tool:1,jobs:3,cat:'farm',name:'農機行',icon:'🚜',cost:6000,w:1,sign:'農機行',desc:'出租耕耘機和割稻機：6 格內的田只要 1 個人顧機器，收成 +15%。每塊田每次收成油錢 $40。'},
   hcenter:  {theme:'farm',tool:1,jobs:6,cat:'farm',name:'中央採收中心',icon:'🏭',cost:25000,w:2,sign:'採收中心',desc:'2×2。大型聯合收割機開去全村每一塊田：不用人手，收成 +30%；田有 8 塊以上再 +10%。每塊田每次收成油錢 $100。'}
@@ -1197,14 +1209,14 @@ function farmLine(){ const H=farmHands(), n={}; H.F.forEach(b=>n[b.hm]=(n[b.hm]|
   return `<div class="kvrow" style="padding:6px 0;border-top:1px dashed var(--line);font-size:13px;color:var(--soft)">🚜 採收：${Object.keys(HM).filter(k=>n[k]).map(k=>`${HM[k].i} ${HM[k].n} ${n[k]} 塊`).join('・')}<br>收成要 ${H.need} 人，村裡能幫忙 ${H.have} 人${H.need>H.have?' ⚠️':' ✅'}${c?`・這季種 ${c.i}${c.n}`:''}</div>`; }
 // ---- 派令（取代選地圖） ----
 // v2.24 派令：每張預先抽好地形（地圖、地形、主題盡量都不一樣），卡片才不會看起來差不多
-function orderCards(){ const m=S.meta, maps=Object.keys(MAPS).filter(k=>m.maps[k]), prev=((m.hist||[]).slice(-1)[0]||{}).land, cand=[], out=[];
-  Object.keys(THEMES).forEach(th=>{ const T=THEMES[th]; maps.filter(k=>!T.maps||T.maps.includes(k)).forEach(mp=>(T.lands||Object.keys(LANDS)).filter(l=>l!==prev).forEach(ld=>cand.push({th,mp,ld}))); });
+function orderCards(){ const m=S.meta, maps=Object.keys(MAPS).filter(k=>m.maps[k]&&!MAPS[k].theme), prev=((m.hist||[]).slice(-1)[0]||{}).land, cand=[], out=[];
+  Object.keys(THEMES).forEach(th=>{ const T=THEMES[th]; (T.maps||maps).filter(k=>MAPS[k]&&(MAPS[k].theme===th||maps.includes(k))).forEach(mp=>(T.lands||Object.keys(LANDS)).filter(l=>l!==prev).forEach(ld=>cand.push({th,mp,ld}))); });
   shuffle(cand);
   const pen=o=>out.filter(x=>x.ld===o.ld).length*10+out.filter(x=>x.mp===o.mp).length*3+out.filter(x=>x.th===o.th).length*4;
   while(out.length<3){ let best=null, bs=1e9; for(const o of cand){ if(out.includes(o)) continue; const v=pen(o); if(v<bs){ bs=v; best=o; } } if(!best) break; out.push(best); }
   if(out.length&&!out.some(o=>o.th!=='city')){ const f=cand.find(o=>o.th!=='city'&&!out.some(x=>x.ld===o.ld)); if(f) out[out.length-1]=f; }
   return out; }
-function chooseMap(){ const m=S.meta; if(!S.city.orderC||S.city.orderC.some(o=>!o.ld)) S.city.orderC=orderCards(); const C=S.city.orderC, nm=Object.entries(MAPS).filter(([k])=>!m.maps[k]), oneMap=C.every(o=>o.mp===C[0].mp);
+function chooseMap(){ const m=S.meta; if(!S.city.orderC||S.city.orderC.some(o=>!o.ld)) S.city.orderC=orderCards(); const C=S.city.orderC, nm=Object.entries(MAPS).filter(([k,X])=>!m.maps[k]&&!X.theme), oneMap=C.every(o=>o.mp===C[0].mp);
   queueModal({icon:'📜',title:'中央的派令',body:`<p>你現在有 <b>🏅 ${m.md}</b> 枚柴犬勳章。選一張派令赴任：</p><div class="note">🎯 每個任務有自己的目標，${CAPY} 年內完成，越快評等越高、勳章越多<br>💰 起始資金依開局而定・🏅 勳章可以在名人堂換升級${nm.length?'':'和新地圖'}${nm.length?`<br>🗺️ 想換地圖？名人堂有 ${nm.map(([k,X])=>`${X.icon}${X.name}`).join('、')}`:''}</div>`,
     buttons:C.map(o=>{ const T=THEMES[o.th], M=MAPS[o.mp], L=LANDS[o.ld]; return {label:`${T.icon} ${T.name}・${L.icon} ${L.name}`,sub:`${oneMap?'':`${M.icon} ${M.name}・`}${L.desc}<br>${T.tag}・難度 ${'★'.repeat(T.star)}${'☆'.repeat(3-T.star)}・勳章 ×${T.mul}`,fn:()=>startNewCity(o.mp,o.th,o.ld)}; }).concat([{label:'🏅 先去名人堂',ghost:1,fn:()=>openSheet(fameHTML)}])}); }
 
@@ -1267,7 +1279,7 @@ function lockOf(k){ const D=CB[k], q=D.req||{}, r=[];
   if(D.wonder){ const n=S.meta.bp||0, i=WONDERS.indexOf(k); if(!(S.meta.wond||{})[k]) return [`🧩 藍圖碎片 ${Math.max(0,Math.min(BP_N,n-i*BP_N))}/${BP_N}`]; if(S.city.b.some(b=>b.t===k)) return ['每座城市限一座']; }
   if((D.sand||D.coast)&&!hasSea()) return ['這座城市沒有海'];
   if(q.pop&&CS.pop<q.pop) r.push(`👥 人口 ${q.pop}（現在 ${CS.pop}）`);
-  if(q.pwr&&(CS.pw?CS.pw.cap:0)<q.pwr) r.push(`⚡ 發電量 ${q.pwr}（現在 ${Math.round(CS.pw?CS.pw.cap:0)}）`);
+  if(q.pwr&&!themeDef().noPower&&(CS.pw?CS.pw.cap:0)<q.pwr) r.push(`⚡ 發電量 ${q.pwr}（現在 ${Math.round(CS.pw?CS.pw.cap:0)}）`);
   (q.has||[]).forEach(h=>{ if(!((CS.cnt||{})[h]>0)) r.push(`先蓋 ${CB[h].icon} ${CB[h].name}`); });
   return r.length?r:null; }
 const unlocked=k=>{ const D=CB[k]; if(!themeOK(k)) return false; if((D.sand||D.coast)&&!hasSea()) return false; if(D.wonder&&(!(S.meta.wond||{})[k]||S.city.b.some(b=>b.t===k))) return false; return !D.req||!!(S.city.unl&&S.city.unl[k]); };
@@ -1540,7 +1552,7 @@ const INCK={
   busbreak:{icon:'🚌',name:'公車拋錨',on:'road',need:()=>(CS.cnt.bus||0)>0,dur:30,cost:.1,ok:'拖吊車來了，公車恢復行駛。',miss:'公車停擺，大家走路上班',mfx:[{k:'sup',s:'move',m:.8,t:60},{k:'happy',n:-2,t:60}]},
   hornet:{icon:'🐝',name:'虎頭蜂窩',on:['park','bigpark','treeh','school'],dur:35,cost:.15,ok:'消防隊把蜂窩移走了，公園又能去了。',miss:'有人被叮了，公園暫時沒人敢去',mfx:[{k:'sup',s:'fun',m:.8,t:60},{k:'happy',n:-2,t:60}]},
   balloon:{icon:'🎈',name:'氣球卡在樹上',on:['park','bigpark','school','treeh'],dur:30,cost:0,ok:'你親自爬上樹拿下氣球，小朋友破涕為笑。',okfx:[{k:'happy',n:2,t:60}],miss:'小朋友哭著回家了'},
-  outage:{icon:'⚡',name:'變電箱跳電',on:'bld',dur:30,cost:.12,ok:'台電來修好了，燈又亮了。',miss:'停電一整區，店家少賺了',mfx:[{k:'rev',m:.9,t:45},{k:'happy',n:-2,t:45}]},
+  outage:{icon:'⚡',name:'變電箱跳電',need:()=>!themeDef().noPower,on:'bld',dur:30,cost:.12,ok:'台電來修好了，燈又亮了。',miss:'停電一整區，店家少賺了',mfx:[{k:'rev',m:.9,t:45},{k:'happy',n:-2,t:45}]},
   shiba:{icon:'🐕',name:'柴犬脫逃',on:'run',dur:28,cost:0,reward:.25,ok:'抓到了！飼主送你一盒鳳梨酥當謝禮。',okfx:[{k:'happy',n:2,t:60}],miss:'柴犬跑去隔壁城市了，飼主很難過',mfx:[{k:'happy',n:-1,t:60}]},
   treasure:{icon:'💰',name:'工地挖到寶',on:'grass',dur:30,cost:0,reward:.5,ok:'挖到一個古老的鴨子存錢筒，賣給博物館！',miss:'寶物被路過的鴨子叼走了'},
   cat:{icon:'🐈',name:'貓咪卡在屋頂',on:'bld',dur:30,cost:0,ok:'貓咪救下來了，貓派市民感動到流淚。',okfx:[{k:'happy',n:2,t:60}],miss:'貓咪自己跳下來，還瞪了大家一眼'},
@@ -1692,7 +1704,7 @@ function fameHTML(){ const m=S.meta, v=voteState(), T=TRAITS[S.city.trait], M=MA
   <h4>這座城市</h4><div class="item" style="display:block"><div class="nm">${M.icon} ${M.name}・${T?`${T.icon} ${T.name}`:'沒有特色的老城市'}</div><div class="ds">${T?T.desc:''}</div><div class="ds" style="margin-top:4px">任期 ${Math.min(TERM,v.terms)} / ${TERM} 年${S.city.done?'（已圓滿）':''}・${TERM} 年任期圓滿，結算多拿 🏅3${!S.city.settled?`<br>🎯 任務：${themeDef().icon} ${themeDef().name}・${S.city.mdone?'已完成，等中央調派':`${CAPY} 年內完成任務目標（看「市政」）`}`:''}</div>
     <div class="row">${S.city.settled?'<button class="btn" data-act="goMap">🗺️ 這座城市已結算，去選新土地</button>':''}<button class="btn ${confirmResign?'danger':'ghost'} ${S.city.settled?'hidden':''}" data-act="askResign">${confirmResign?`確定卸任？現在結算可拿 🏅${settleCalc(S.city.done?'full':'early').md}，這座城市會結束`:'卸任，帶著勳章去新城市'}</button></div></div>
   ${bpHTML()}<h4>永久升級</h4>${UPG.map(u=>{ const lv=upL(u.k), mx=lv>=u.max, c=u.cost[lv]; return `<div class="item"><div class="ic" style="background:#fff7e6">${u.icon}</div><div class="txt"><div class="nm">${u.name}${u.max>1?` Lv.${lv}/${u.max}`:lv?' ✅':''}</div><div class="ds">${u.desc}</div></div>${mx?'<div class="ds">已滿</div>':`<button class="btn" ${m.md<c?'disabled':''} data-act="buyUpg" data-arg="${u.k}">🏅 ${c}</button>`}</div>`; }).join('')}
-  <h4>新地圖</h4>${Object.entries(MAPS).map(([k,X])=>`<div class="item"><div class="ic" style="background:#eef5fd">${X.icon}</div><div class="txt"><div class="nm">${X.name}</div><div class="ds">${X.desc}</div></div>${m.maps[k]?'<div class="ds">✅</div>':`<button class="btn" ${m.md<X.cost?'disabled':''} data-act="buyMap" data-arg="${k}">🏅 ${X.cost}</button>`}</div>`).join('')}
+  <h4>新地圖</h4>${Object.entries(MAPS).filter(([,X])=>!X.theme).map(([k,X])=>`<div class="item"><div class="ic" style="background:#eef5fd">${X.icon}</div><div class="txt"><div class="nm">${X.name}</div><div class="ds">${X.desc}</div></div>${m.maps[k]?'<div class="ds">✅</div>':`<button class="btn" ${m.md<X.cost?'disabled':''} data-act="buyMap" data-arg="${k}">🏅 ${X.cost}</button>`}</div>`).join('')}
   ${m.hist.length?'<h4>歷任城市</h4>'+m.hist.slice(-8).reverse().map(h=>`<div class="item" style="padding:8px 10px"><div style="font-size:22px">${(MAPS[h.map]||MAPS.coast).icon}</div><div class="txt"><div class="nm" style="font-size:14px">${h.name?esc(h.name)+'・':''}${CITY_STAGES[h.stage].name}${h.trait&&TRAITS[h.trait]?'・'+TRAITS[h.trait].name:''}</div><div class="ds">${h.years} 年・人口 ${fmt(h.pop)}・${h.end==='recall'?'被罷免':h.end==='full'?'任期圓滿':'提早卸任'}・🏅+${h.md}</div></div></div>`).join(''):''}`; }
 function dexHTML(){ const d=S.meta.dex, n=COMBOS.filter(c=>d[c.id]).length, act=new Set(CMB.map(o=>o.C.id));
   return `<h2>📖 組合圖鑑</h2><div class="sub">已發現 ${n} / ${COMBOS.length}・把指定的建築蓋在彼此 2 格內就會觸發（地上會出現金框），換城市也會保留</div>
@@ -2057,6 +2069,11 @@ function drawFarmB(b,x,y,w){ const ph=clock, m=monthNo();
   if(b.t==='coop') return kit(x,y,1,{h:.42,wall:'#fff4e2',roof:'#3f8a56',awn:'#3f8a56',emo:'🧺',rows:1,cols:2});
   if(b.t==='bnb') return kit(x,y,1,{h:.45,wall:'#f3e3c3',rt:'gable',roof:'#8a5a36',emo:'🛏️',rows:1,cols:2});
   if(b.t==='farmhouse') return kit(x,y,1,{h:.4,wall:'#efe6d2',rt:'gy',roof:'#5a6b7a',rows:1,cols:2,fn:(X,Y,L)=>{ ln(P3(X+.05,Y+L+.12,.3),P3(X+L-.05,Y+L+.12,.3),'#8a6a4a',1); for(let k=0;k<4;k++){ const p=P3(X+.15+k*.17,Y+L+.12,.3); ln(p,{x:p.x,y:p.y+tw*.07},'#7a8a3a',2); } }});
+  if(b.t==='canal'){ cPlate(x,y,1,'#b9b2a3',0); const WC='#6fb3d6', isW=(i,j)=>{ const t=terr(i,j); if(t==='w'||t==='sea') return true; const q=bAt(i,j); return !!(q&&q.t==='canal'); };
+    poly([P3(x+.3,y+.3,0),P3(x+.7,y+.3,0),P3(x+.7,y+.7,0),P3(x+.3,y+.7,0)],WC);
+    if(isW(b.x-1,b.y)) poly([P3(x,y+.3,0),P3(x+.3,y+.3,0),P3(x+.3,y+.7,0),P3(x,y+.7,0)],WC); if(isW(b.x+1,b.y)) poly([P3(x+.7,y+.3,0),P3(x+1,y+.3,0),P3(x+1,y+.7,0),P3(x+.7,y+.7,0)],WC);
+    if(isW(b.x,b.y-1)) poly([P3(x+.3,y,0),P3(x+.7,y,0),P3(x+.7,y+.3,0),P3(x+.3,y+.3,0)],WC); if(isW(b.x,b.y+1)) poly([P3(x+.3,y+.7,0),P3(x+.7,y+.7,0),P3(x+.7,y+1,0),P3(x+.3,y+1,0)],WC);
+    const g=iso(x+.5,y+.5); circle(g.x+Math.sin(ph*2+b.x)*tw*.05,g.y,tw*.025,'rgba(255,255,255,.7)'); return P3(x+.5,y+.5,.05); }
   if(b.t==='oxbarn'){ const top=kit(x,y,1,{h:.42,wall:'#b5443a',rt:'gable',roof:'#7a2f28',rows:1,cols:1}); const p=iso(x+.8,y+.95); emoji('🐂',p.x,p.y-tw*.1,tw*.24); return top; }
   if(b.t==='tractor'){ const top=kit(x,y,1,{h:.45,wall:'#ece7dd',roof:'#3f8a56',awn:'#f2c14e',rows:1,cols:2}); const p=iso(x+.75,y+.98); emoji('🚜',p.x,p.y-tw*.1,tw*.24); return top; }
   if(b.t==='hcenter'){ const top=kit(x,y,2,{h:.62,wall:'#dfe3e6',rt:'gable',roof:'#4d7cc7',emo:'🌾',rows:1,fn:(X,Y,L)=>{ cyl(X+L*.88,Y+L*.15,.2,0,1.3,'#cfd3d8'); cyl(X+L*.88,Y+L*.45,.2,0,1.3,'#bfc5cb'); }}); combine(x+.6,y+1.65,0); return top; }
@@ -2189,7 +2206,7 @@ function drawCityB0(b,ox,oy){
     case 'shrine': case 'hydro': case 'coaster': top=drawSpecial(b,x,y,w); break;
     case 'cablebase':{ top=kit(x,y,1,{h:.38,wall:'#ece7dd',roof:'#c0392b',emo:'🚡',rows:1}); if(b.tx!=null){ const pb0=P3(x+.5,y+.2,.46), pb=P3(x+.5,y+.2,1.05); ln(pb0,pb,'#6b6b6b',Math.max(2,tw*.045)); const ta=rotAnchor(b.tx,b.ty,1), hz=hillZ({t:'cable',x:b.tx,y:b.ty,w:1}); ZOFF=hz; const pt=P3(ta[0]+.5,ta[1]+.5,.75); ZOFF=0; ln(pb,pt,'#444',1.5);
       for(let q=0;q<2;q++){ const f2=(clock*.1+q*.5)%1, g={x:pb.x+(pt.x-pb.x)*f2,y:pb.y+(pt.y-pb.y)*f2}; ln(g,{x:g.x,y:g.y+tw*.07},'#444',1.2); rrect(g.x-tw*.08,g.y+tw*.07,tw*.16,tw*.12,3,q?'#3f7ac0':'#e2574c'); rrect(g.x-tw*.055,g.y+tw*.09,tw*.11,tw*.045,2,'#cfe8ff'); } } break; }
-    case 'rice': case 'orchard': case 'veg': case 'chicken': case 'mill': case 'coop': case 'bnb': case 'farmhouse': case 'leisure': case 'oxbarn': case 'tractor': case 'hcenter': top=drawFarmB(b,x,y,w); break;
+    case 'rice': case 'orchard': case 'veg': case 'chicken': case 'mill': case 'coop': case 'bnb': case 'farmhouse': case 'leisure': case 'oxbarn': case 'tractor': case 'hcenter': case 'canal': top=drawFarmB(b,x,y,w); break;
     case 'lookout': case 'tea': case 'cable': case 'camp': case 'radio': case 'villa': top=drawHillB(b,x,y,w); break;
     case 'statue':{ cPlate(x,y,3,'#e9dfcb',.04); for(let i=0;i<3;i++) for(let j=0;j<3;j++) if((i+j)%2) cPlate(x+i,y+j,1,'#ddd1b9',.06);
       box(x+.55,y+.55,1.9,1.9,.12,'#cdbfa5'); box(x+.75,y+.75,1.5,1.5,.38,'#e2d6bf',.12); const pl=P3(x+1.5,y+2.26,.3); rrect(pl.x-tw*.28,pl.y-tw*.1,tw*.56,tw*.16,3,'#b89a5a'); if(tw>=26) txt('阿布',pl.x,pl.y-tw*.02,tw*.1,'#fff8e6',900);
@@ -2397,7 +2414,7 @@ function citySigns(tops){
   signA+=((tw>=SIGN_ON?1:0)-signA)*Math.min(1,dt*9); if(signA<.02){ signA=Math.max(0,signA); return; } const a=signA;
   const fs=Math.max(10,Math.min(16,tw*.14)), pad=fs*.45, es=fs*1.15, bh=fs*1.7, kept=[];
   ctx.font=`900 ${Math.round(fs)}px sans-serif`;
-  tops.filter(o=>o.b.t!=='road'&&!o.b.par).sort((p,q)=>q.d-p.d).forEach(o=>{
+  tops.filter(o=>o.b.t!=='road'&&!o.b.par&&!CB[o.b.t].nosign).sort((p,q)=>q.d-p.d).forEach(o=>{
     const D=CB[o.b.t], nm=bigName(o.b)||D.sign||D.name, tw2=ctx.measureText(nm).width, bw=tw2+es+pad*2.4;
     const bx=o.top.x-bw/2, by=o.top.y-bh-fs*.5;
     if(bx>W||bx+bw<0||by>H||by+bh<0) return;
@@ -2586,13 +2603,13 @@ function cityPlace(k,x,y,o){ o=o||{};
   const D=CB[k];
   if(k==='road'){ if(x<0||y<0||x>=citySize()||y>=citySize()||isRoad(x,y)||bAt(x,y)) return false; const tt=terr(x,y); if(tt==='h'){ ticker('⛰️ 山坡不能鋪路，改蓋 🚡 纜車站把山上的設施接起來。'); return false; } if(badAt(x,y)){ ticker('🔧 這裡有前任留下的爛攤子，點它先處理。'); return false; } const cost=tt==='w'?300:D.cost; if(S.money<cost){ ticker('💸 錢不夠鋪路了。'); return false; } S.money-=cost; if(tt==='w'&&!S.city.bridge){ S.city.bridge=1; ticker('🌉 第一座橋完工！鴨子們從橋下游過去表示祝賀。'); } S.city.r.push(x+','+y); ROADS.add(x+','+y); cityDirty=true; groundVer++; sfx.pop(); return true; }
   if(D.sand&&terr(x,y)!=='s'){ ticker('🏖️ 這個要蓋在海邊的沙灘上。'); sfx.bad(); return false; }
-  if(D.water&&!nearWater(x,y,D.w)){ ticker('💧 要貼著河或湖蓋。'); sfx.bad(); return false; }
+  if(D.water&&!nearWater(x,y,D.w)){ ticker(themeOf()==='farm'?'💧 要貼著小溪、池塘或水圳蓋。':'💧 要貼著河或湖蓋。'); sfx.bad(); return false; }
   if(D.coast&&!coastOK(x,y)){ ticker('⚓ 港口要貼著海邊的沙灘蓋，靠著海才能停船。'); sfx.bad(); return false; }
   if(!footFree(x,y,D.w,k)){ ticker(D.hill?'⛰️ 這個要整塊蓋在山坡上。':blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
-  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!o.final:(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
+  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!o.final:(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!D.noRoad&&!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   const rate=rateBuild(k,x,y);
   const tk=k==='mrt'?trackAdd(x,y):0, cost=(o.cost||costOf(k))+tk*TRACK_COST; if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
-  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars,bt:S.time}; if(exB){ nb.par=bkey(exB); } S.city.b.push(nb); groundVer++; cityPops.push({b:nb,stars:rate.stars,life:3.2}); cityDirty=true; cityCalc(); sfx.build(); bump('money');
+  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars,bt:S.time}; if(exB){ nb.par=bkey(exB); } S.city.b.push(nb); groundVer++; cityDirty=true; cityCalc(); if(o.quiet||D.noRoad){ sfx.pop(); saveLocal(); return true; } cityPops.push({b:nb,stars:rate.stars,life:3.2}); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
   const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,exB?`${D.name}擴建成大間店！（${extCount(exB)}/2）・市民滿意度 ${st}`:`${o.ai?'🤖 AI 代蓋：':''}${D.name}完工・市民滿意度 ${st}`,tk?`高架軌道 +${tk} 格（$${fmt(tk*TRACK_COST)}）・${rate.why}`:rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
   saveLocal(); return true;
@@ -2603,13 +2620,13 @@ function cityBulldoze(x,y,o){ groundVer++; o=o||{};
   if(isRoad(x,y)){ S.city.r=S.city.r.filter(k=>k!==x+','+y); ROADS.delete(x+','+y); S.money+=10; cityDirty=true; sfx.pop(); cars=cars.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); peds=peds.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); }
 }
 let lastDragTile='';
-function cityDrag(sx,sy){ if(!(placing&&(placing.city==='road'||placing.city==='bulldoze'))) return false; const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y), k=x+','+y; if(k===lastDragTile) return true; lastDragTile=k; if(placing.city==='road') cityPlace('road',x,y); else if(isRoad(x,y)) cityBulldoze(x,y); return true; }
+function cityDrag(sx,sy){ if(!(placing&&(placing.city==='road'||placing.city==='bulldoze'||placing.city==='canal'))) return false; const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y), k=x+','+y; if(k===lastDragTile) return true; lastDragTile=k; if(placing.city==='road') cityPlace('road',x,y); else if(placing.city==='canal'){ if(!placeCheck('canal',x,y)) cityPlace('canal',x,y,{quiet:1}); } else if(isRoad(x,y)) cityBulldoze(x,y); return true; }
 var ghost=null;
 function placeCheck(k,x,y,noMoney){ const D=CB[k]; if(k==='cablebase') return baseCheck(x,y,noMoney); if(k==='cable'){ const e=bAt(x,y); if(e&&e.t==='cable'&&!noMoney) return ''; } if(k!=='road'&&!themeOK(k)) return '這個任務用不到';
-  if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘'; if(D.water&&!nearWater(x,y,D.w)) return '💧 要貼著河或湖';
+  if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘'; if(D.water&&!nearWater(x,y,D.w)) return themeOf()==='farm'?'💧 要貼著小溪、池塘或水圳':'💧 要貼著河或湖';
   if(!footFree(x,y,D.w,k)){ for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++) if(!tileOK(k,x+a,y+d)&&!isRoad(x+a,y+d)&&!bAt(x+a,y+d)) return badAt(x+a,y+d)?'🔧 有爛攤子，先點它處理':D.hill?'⛰️ 要整塊蓋在山坡上':'🌊 有水或山坡，蓋不了'; if(D.coast){ let r=0,bb=0; for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++){ if(isRoad(x+a,y+d)) r=1; if(bAt(x+a,y+d)) bb=1; } return `⚓ 沙灘往內 ${D.w} 排要空著（${r&&bb?'有道路和建築':r?'有道路':'有建築'}擋住）`; } return '這裡空間不夠'; }
   if(k==='cable'){ }
-  else if(!nearRoad(x,y,D.w)&&!expandBase(k,x,y)&&!(D.hill||D.hillOK)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路';
+  else if(!D.noRoad&&!nearRoad(x,y,D.w)&&!expandBase(k,x,y)&&!(D.hill||D.hillOK)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路';
   else if((D.hill||D.hillOK)&&!nearRoad(x,y,D.w)&&!nearCable(x,y,D.w)) return '🚡 要貼著道路或纜車站'; if(noMoney) return ''; if(S.money<costOf(k)+(k==='mrt'?trackAdd(x,y)*TRACK_COST:0)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠（含軌道）'; return ''; }
 // 單指按著拖移要蓋的建築（紅框／綠框跟著手指走）
 function ghostDragTo(sx,sy){ const k=placing&&placing.city, D=CB[k]; if(!D||!gest||!gest.gd) return; if(k==='cable'||k==='cablebase'){ const cs=cableAtScreen(sx,sy); if(cs){ if(!ghost||ghost.x!==cs.x||ghost.y!==cs.y){ ghost={k,x:cs.x,y:cs.y,msg:placeCheck(k,cs.x,cs.y)}; ghostBanner(); sfx.pop&&sfx.pop(); } return; } } const w=toWorld(sx,sy), G=gest.gd; let ax,ay;
@@ -2737,7 +2754,7 @@ function cityTap(sx,sy){
   if(!(placing&&placing.city)&&(abuTap(sx,sy)||wildTap(sx,sy))) return;
   if(!(placing&&placing.city)){ const sp=spotAtScreen(sx,sy); if(sp){ spotTap(sp); return; } }
   if(placing&&placing.city){
-    if(placing.city==='road'){ cityPlace('road',x,y); return; }
+    if(placing.city==='road'||placing.city==='canal'){ cityPlace(placing.city,x,y); return; }
     if(placing.city==='bulldoze'){ const b=buildingAtScreen(sx,sy)||bAt(x,y); const tgt=b?{bull:1,b}:isRoad(x,y)?{bull:1,x,y}:null;
       if(!tgt){ ghost=null; setPlacing(placing); return; }
       if(ghost&&ghost.bull&&((tgt.b&&ghost.b===tgt.b)||(!tgt.b&&!ghost.b&&ghost.x===x&&ghost.y===y))){ confirmGhost(); return; }
@@ -2811,7 +2828,7 @@ function cityBHTML(){
 function cityDemolish(){ const b=citySel; if(!b) return; cityBulldoze(b.x,b.y); closeSheet(); saveLocal(); }
 // ---- v2.15 建設選單：分頁重整＋推薦 ----
 const BTABS=[['rec','⭐ 推薦'],['farm','🌾 農業'],['home','🏠 住宅'],['shop','🛒 購物美食'],['tour','🎡 休閒觀光'],['culture','📚 文化'],['work','🏭 工作產業'],['traffic','🚌 交通'],['public','🏛️ 公共服務'],['power','⚡ 能源']];
-const TAB_HINT={farm:'🌾 稻田一年收兩次（6 月、11 月），果園 7 月收。靠河或湖的田收成 +30%，農會和碾米廠會再加成。',culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
+const TAB_HINT={farm:'🌾 田要蓋在小溪、池塘旁邊；水不夠的地方先挖 💧 水圳（接著小溪一格一格挖過去）。稻田 6、11 月收，果園 7 月收。',culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
 const tabOf=D=>D.cat==='tech'||D.cat==='ind'?'work':D.cat;
 const SVC_LBL={shop:'🛒購物',move:'🚏交通',fun:'🎡休閒',edu:'🏫教育',help:'🚓協助',trash:'🗑️垃圾',water:'🚰污水'};
 const NEED_B={shop:['coop','conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['veg','chicken','rice','startup','pearl','bento','conv','noodle','soy','toy'],staff:['farmhouse','sky','tower','apt','treeh','house'],home:['farmhouse','sky','tower','apt','treeh','house','villa'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
@@ -2903,7 +2920,7 @@ function cityGovHTML(){
     <div class="row"><button class="btn" ${ok?'':'disabled'} data-act="stageUp">申請升格</button></div></div>`; }
   else up=`<div class="item done"><div class="ic">🏆</div><div class="txt"><div class="nm">${st.name}</div><div class="ds">已經是最高等級的城市了！</div></div></div>`;
   return `<h2>📊 市政</h2><div class="sub">${st.name}・${st.mayor}・本市免稅，一切使用者付費</div>
-    <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>市民滿意度<b style="color:#f2b544">${'★'.repeat(Math.round(CS.happy/20))}<span style="color:#e2d6c4">${'☆'.repeat(5-Math.round(CS.happy/20))}</span></b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div><div>⚡ 用電 / 發電<b style="color:${CS.pw.ratio<1?'var(--bad)':'var(--ink)'}">${Math.round(CS.pw.use)} / ${Math.round(CS.pw.cap)}${CS.pw.grace?' 🔌借電中':''}</b></div><div>🔗 運作中的組合<b>${CMB.length} 組</b></div><div>人文<b>📚 ${CS.cult||0}</b></div><div>人文加成<b>😊+${Math.round(Math.min(10,(CS.cult||0)*.5))}　📷+${Math.round(Math.min(.3,(CS.cult||0)*.01)*100)}%</b></div></div>
+    <div class="kv"><div>城市每分鐘淨利<b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">💰 ${cityRate()<0?'-':''}$${fmt(Math.abs(cityRate()*60))}</b></div><div>市民滿意度<b style="color:#f2b544">${'★'.repeat(Math.round(CS.happy/20))}<span style="color:#e2d6c4">${'☆'.repeat(5-Math.round(CS.happy/20))}</span></b></div><div>人口<b>👥 ${fmt(CS.pop)} / ${fmt(CS.cap)}</b></div><div>有工作<b>💼 ${fmt(CS.emp)} 人（${Math.round(CS.er*100)}%）</b></div><div>工作機會<b>🏢 ${fmt(CS.jobs)}</b></div><div>每 10 秒觀光客<b>📷 ${fmt(CS.tourists)}</b></div>${themeDef().noPower?'':`<div>⚡ 用電 / 發電<b style="color:${CS.pw.ratio<1?'var(--bad)':'var(--ink)'}">${Math.round(CS.pw.use)} / ${Math.round(CS.pw.cap)}${CS.pw.grace?' 🔌借電中':''}</b></div>`}<div>🔗 運作中的組合<b>${CMB.length} 組</b></div><div>人文<b>📚 ${CS.cult||0}</b></div><div>人文加成<b>😊+${Math.round(Math.min(10,(CS.cult||0)*.5))}　📷+${Math.round(Math.min(.3,(CS.cult||0)*.01)*100)}%</b></div></div>
     <div class="row" style="margin:0 0 8px"><button class="btn ghost" data-act="openDex">📖 組合圖鑑 ${COMBOS.filter(c=>S.meta.dex[c.id]).length}/${COMBOS.length}</button><button class="btn ghost" data-act="openFame">🏅 名人堂 ${S.meta.md}</button></div>
     ${missionHTML()}${voteHTML()}${platHTML()}${misHTML()}${evHTML()}${fxHTML()}${spendHTML()}
     <div class="item" style="display:block;padding:8px 12px"><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>💰 收入</span><b>+$${fmt(cityGross()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0"><span>🔧 維護費＋薪水</span><b style="color:var(--bad)">-$${fmt(cityUpkeep()*60)} / 分</b></div><div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0 0;border-top:1px dashed #efe3d2;margin-top:4px"><span>📈 淨利</span><b style="color:${cityRate()>=0?'var(--good)':'var(--bad)'}">${cityRate()>=0?'+':'-'}$${fmt(Math.abs(cityRate()*60))} / 分</b></div>${losers()}</div>
@@ -2930,7 +2947,7 @@ function cityIntro(){
   if(S.city.needOpen&&!S.city.spots) S.city.spots=genSpots();
   if(S.city.intro&&S.city.needOpen){ openPick(); return; }
   if(!S.city.intro){ S.city.intro=1; S.city.noHosp=1; S.city.v25=1; const T=TRAITS[S.city.trait], M=MCX(), SP=(S.city.spots||[]).map(s=>SPOTS[s.k]);
-    queueModal({icon:M.icon,title:'恭喜當選村長！',body:`<p>這次的土地是「<b>${M.name}</b>」。把這個小村發展成全世界最怪、最賺錢的城市吧！</p>${LANDS[M.land]?`<div class="note" style="text-align:center"><b>地形：${LANDS[M.land].icon} ${LANDS[M.land].name}</b><br>${LANDS[M.land].desc}</div>`:''}${T?`<div class="note" style="text-align:center"><b>本市特色：${T.icon} ${T.name}</b><br>${T.desc}</div>`:''}<div class="note">💰 免稅，所有設施使用者付費<br>⚡ 建築要用電，記得蓋發電廠<br>🔗 某些建築蓋在一起有隱藏組合<br>🗓️ ${TERM} 年一任，每年年底選舉<br>🧑‍💼 不知道做什麼，看上面的副市長<br>🎯 任務：${themeDef().icon} ${themeDef().name}（目標在「市政」）</div>${SP.length?`<div class="note"><b>地圖上的特殊地點</b><br>${SP.map(P=>`${P.icon} ${P.name}`).join('、')}<br>點地圖上的圖示看說明，🔧 是前任留下的爛攤子</div>`:''}`,buttons:[{label:S.city.needOpen?'看交接清單':'上任！',fn:openPick}]}); return; }
+    queueModal({icon:M.icon,title:'恭喜當選村長！',body:`<p>這次的土地是「<b>${M.name}</b>」。把這個小村發展成全世界最怪、最賺錢的城市吧！</p>${LANDS[M.land]?`<div class="note" style="text-align:center"><b>地形：${LANDS[M.land].icon} ${LANDS[M.land].name}</b><br>${LANDS[M.land].desc}</div>`:''}${T?`<div class="note" style="text-align:center"><b>本市特色：${T.icon} ${T.name}</b><br>${T.desc}</div>`:''}<div class="note">💰 免稅，所有設施使用者付費<br>${themeDef().noPower?'🌾 鄉下不用管電，專心種田就好':'⚡ 建築要用電，記得蓋發電廠'}<br>🔗 某些建築蓋在一起有隱藏組合<br>🗓️ ${TERM} 年一任，每年年底選舉<br>🧑‍💼 不知道做什麼，看上面的副市長<br>🎯 任務：${themeDef().icon} ${themeDef().name}（目標在「市政」）</div>${SP.length?`<div class="note"><b>地圖上的特殊地點</b><br>${SP.map(P=>`${P.icon} ${P.name}`).join('、')}<br>點地圖上的圖示看說明，🔧 是前任留下的爛攤子</div>`:''}`,buttons:[{label:S.city.needOpen?'看交接清單':'上任！',fn:openPick}]}); return; }
   if(!S.city.v25){ S.city.v25=1; queueModal({icon:'⚡',title:'市政大改革！',body:`<p>新的市政制度上路了：</p><div class="note">⚡ <b>電力</b>：建築要用電，電不夠會停電。${S.city.pgift?`隔壁城市先借電 10 分鐘，另外補助 <b>$${fmt(S.city.pgift)}</b> 讓你蓋發電廠（在 🏗️ 建設 → ⚡ 能源）`:'在 🏗️ 建設 → ⚡ 能源 蓋發電廠'}<br>🔒 <b>新建築解鎖</b>：看人口、發電量、有沒有先蓋前置建築<br>📋 <b>市政決策</b>：議會會不定期送提案，可能有陷阱<br>🔗 <b>隱藏組合</b>：某些建築蓋在一起收入大增<br>🏅 <b>任期與勳章</b>：${TERM} 年一任，連任、組合、卸任結算都拿勳章，可以換永久升級</div>`,buttons:[{label:'了解！'}]}); delete S.city.pgift; }
   if(!S.city.noHosp){ S.city.noHosp=1; queueModal({icon:'🏛️',title:'醫院改建成市政府',body:'<p>怪病醫院搬去隔壁城市了，原地蓋起了氣派的市政府，門口還有一座柴犬雕像。</p><div class="note">🏛️ 點市政府就能打開市政<br>⚙️ 音效和重新開始在「設定」</div>',buttons:[{label:'好'}]}); }
 }
@@ -3021,7 +3038,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.26</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.27</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
