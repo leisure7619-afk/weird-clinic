@@ -603,7 +603,7 @@ function openChoices(){ const H=(S.meta&&S.meta.hist)||[], last=S.meta&&S.meta.l
 function openPick(){ if(!S.city.needOpen) return; const C=S.city.openC||(S.city.openC=openChoices()), cash=2000*upL('cash');
   queueModal({icon:'📜',title:'前任留下了什麼？',body:'<p>市府祕書遞來三份交接清單，選一個開局：</p>',buttons:C.map(k=>{ const O=OPENS[k]; return {label:`${O.icon} ${O.name}`,sub:`${O.desc.replace(/。$/,'')}（起始資金 $${fmt(O.money+cash)}）`,fn:()=>applyOpen(k)}; })}); }
 function openSlot(k){ const D=CB[k], n=citySize(); let best=null;
-  for(let y=1;y<n-D.w;y++) for(let x=1;x<n-D.w;x++){ if(!footFree(x,y,D.w)||!nearRoad(x,y,D.w)||spotsIn(x,y,D.w).length||(D.water&&!nearWater(x,y,D.w))) continue; if(D.smell&&S.city.b.some(q=>CB[q.t].pop&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; if(D.pop&&S.city.b.some(q=>CB[q.t].smell&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; const d=Math.hypot(x+D.w/2-6,y+D.w/2-6)+(D.smell?-Math.hypot(x-6,y-6)*1.6:0); if(!best||d<best.d) best={x,y,d}; }
+  for(let y=1;y<n-D.w;y++) for(let x=1;x<n-D.w;x++){ if(!footFree(x,y,D.w)||!(roadFree(k)||nearRoad(x,y,D.w))||spotsIn(x,y,D.w).length||(D.water&&!nearWater(x,y,D.w))) continue; if(D.smell&&S.city.b.some(q=>CB[q.t].pop&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; if(D.pop&&S.city.b.some(q=>CB[q.t].smell&&gapOf(x,y,D.w,q.x,q.y,BW(q))<=1)) continue; const d=Math.hypot(x+D.w/2-6,y+D.w/2-6)+(D.smell?-Math.hypot(x-6,y-6)*1.6:0); if(!best||d<best.d) best={x,y,d}; }
   return best; }
 function applyOpen(k){ const O=OPENS[k], c=S.city; if(!O||!c.needOpen) return; delete c.needOpen; delete c.openC; c.open=k; S.meta.lastOpen=k;
   (O.r||[]).forEach(r=>{ const [x,y]=r.split(',').map(Number); if(!c.r.includes(r)&&!bAt(x,y)&&!blocked(x,y)){ c.r.push(r); ROADS.add(r); } });
@@ -765,6 +765,7 @@ function terr(x,y){
   if(x+y>13&&Math.sin(x*.7+1.3+M.fo)+Math.cos(y*.6+M.fo*.7)+Math.sin((x+y)*.9)*.4>M.ft&&((x*7+y*13)%3)) return 'f';
   return 'g';
 }
+const roadFree=k=>{ const D=CB[k]; return !!(D&&(D.noRoad||(D.water&&D.theme==='farm'))); };
 const nearWater=(x,y,w)=>{ const fm=themeOf()==='farm'; for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ if(a>=0&&c>=0&&a<w&&c<w) continue; if((a===-1||a===w)&&(c===-1||c===w)) continue; const t=terr(x+a,y+c); if(t==='w'||t==='sea') return true; if(fm){ const q=bAt(x+a,y+c); if(q&&q.t==='canal') return true; } } return false; };
 const blocked=(x,y)=>{ const t=terr(x,y); return t==='w'||t==='h'||badAt(x,y); };
 function terrMigrate(){
@@ -830,7 +831,7 @@ function nearRoad(x,y,w){ for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ const e
 const SVC={shop:['🛒','購物'],move:['🚏','交通'],fun:['🎡','休閒'],edu:['🏫','教育'],help:['🚓','協尋'],trash:['🗑️','垃圾'],water:['🚰','污水']};
 const LABOR=.65;
 function cityCalc(){
-  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(CB[b.t].noRoad||nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
+  if(cityDirty){ const sm=S.city.b.filter(q=>CB[q.t].smell), nz=S.city.b.filter(q=>CB[q.t].noise); S.city.b.forEach(b=>{ b.ok=!b.burnt&&(roadFree(b.t)||nearRoad(b.x,b.y,BW(b))||(b.t==='cable'&&cableOK(b))); }); S.city.b.forEach(b=>{ if(!b.ok&&!b.burnt&&hillZ(b)&&nearCable(b.x,b.y,BW(b))) b.ok=true; }); for(let pass=0;pass<2;pass++) S.city.b.forEach(b=>{ if(!b.ok&&b.par&&!b.burnt){ const bs=baseOf(b); if(bs&&bs.ok&&touches(b.x,b.y,BW(b),bs.x,bs.y,BW(bs))||S.city.b.some(q=>q.par===b.par&&q!==b&&q.ok&&touches(b.x,b.y,BW(b),q.x,q.y,BW(q)))&&bs&&bs.ok) b.ok=true; } }); S.city.b.forEach(b=>{ b.view=viewOf(b); const D=CB[b.t]; b.smell=(D.pop||D.cat==='tour'||D.cat==='shop')&&sm.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; b.noise=D.pop&&nz.some(q=>b.x<=q.x+BW(q)+1&&q.x<=b.x+BW(b)+1&&b.y<=q.y+BW(q)+1&&q.y<=b.y+BW(b)+1)?1:0; }); cityDirty=false; cityDirty2=true; }
   if(cityDirty2){ cityDirty2=false; computeCombos(); }
   if(themeOf()==='farm') farmPlan();
   const NK=nightK(), T=S.city.trait;
@@ -1144,9 +1145,9 @@ function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme
 function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; const h=(THEMES[themeOf()]||THEMES.city).hall||THEMES.city.hall; Object.assign(CB.cityhall,{icon:h[0],name:h[1],sign:h[1],desc:h[2]}); }
 // ---- 農村建築 ----
 Object.assign(CB,{
-  rice:     {theme:'farm',water:1,crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。要蓋在水邊（小溪、池塘或水圳）。一年收兩次：6 月、11 月，收成要 6 個人手。'},
-  orchard:  {theme:'farm',water:1,crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。要蓋在水邊。每年 7 月收成一次，一次收很多，要 8 個人手。'},
-  veg:      {theme:'farm',water:1,exp:25,jobs:2,green:1,cat:'farm',name:'菜園',icon:'🥬',cost:400,w:1,sign:'菜園',desc:'要蓋在水邊。每天都有菜可以賣，錢不多但很穩定。'},
+  rice:     {theme:'farm',water:1,crop:900,jobs:4,green:2,cat:'farm',name:'稻田',icon:'🌾',cost:1200,w:2,sign:'稻田',desc:'2×2。靠水就好，不用接路。一年收兩次：6 月、11 月，收成要 6 個人手。'},
+  orchard:  {theme:'farm',water:1,crop:2400,jobs:5,green:3,cat:'farm',name:'果園',icon:'🍊',cost:2000,w:2,sign:'果園',desc:'2×2。靠水就好，不用接路。每年 7 月收成一次，一次收很多，要 8 個人手。'},
+  veg:      {theme:'farm',water:1,exp:25,jobs:2,green:1,cat:'farm',name:'菜園',icon:'🥬',cost:400,w:1,sign:'菜園',desc:'靠水就好，不用接路。每天都有菜可以賣，錢不多但很穩定。'},
   chicken:  {theme:'farm',exp:80,jobs:8,smell:1,cat:'farm',name:'養雞場',icon:'🐔',cost:3000,w:2,sign:'養雞場',desc:'2×2。雞蛋天天賣，但有點臭，別貼著住宅。'},
   mill:     {theme:'farm',exp:40,jobs:12,cat:'farm',name:'碾米廠',icon:'🍚',cost:6000,w:2,sign:'碾米廠',desc:'2×2。稻米收成 +25%。'},
   coop:     {theme:'farm',svc:'shop',cap:40,fee:3,jobs:6,cat:'farm',name:'農會直銷所',icon:'🧺',cost:1800,w:1,sign:'農會',desc:'市民買菜的地方，也幫農民賣東西：所有收成 +20%。'},
@@ -2606,10 +2607,10 @@ function cityPlace(k,x,y,o){ o=o||{};
   if(D.water&&!nearWater(x,y,D.w)){ ticker(themeOf()==='farm'?'💧 要貼著小溪、池塘或水圳蓋。':'💧 要貼著河或湖蓋。'); sfx.bad(); return false; }
   if(D.coast&&!coastOK(x,y)){ ticker('⚓ 港口要貼著海邊的沙灘蓋，靠著海才能停船。'); sfx.bad(); return false; }
   if(!footFree(x,y,D.w,k)){ ticker(D.hill?'⛰️ 這個要整塊蓋在山坡上。':blocked(x,y)?'🌊 這裡是水或山坡，蓋不了。':'這裡蓋不下，換個位置吧。'); return false; }
-  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!o.final:(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!D.noRoad&&!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
+  const exB=expandBase(k,x,y); const cabOK=k==='cable'?!!o.final:(D.hill||D.hillOK)&&nearCable(x,y,D.w); if(!roadFree(k)&&!nearRoad(x,y,D.w)&&!exB&&!cabOK){ if(D.hill||D.hillOK){ ticker(k==='cable'?'🚡 6 格內要有平地的道路，纜線才拉得過去。':'🚡 山上沒有路，要貼著纜車站蓋（或蓋在山腳的路邊）。'); sfx.bad(); return false; } ticker(EXPAND.has(k)?'🛣️ 要蓋在路旁邊，或貼著同一種建築擴建（最多 +2）。':'🛣️ 要蓋在路旁邊才會運作喔。'); sfx.bad(); return false; }
   const rate=rateBuild(k,x,y);
   const tk=k==='mrt'?trackAdd(x,y):0, cost=(o.cost||costOf(k))+tk*TRACK_COST; if(S.money<cost){ ticker(S.money<0?'💸 市庫赤字中，先想辦法賺錢吧！':'💸 錢不夠了。'); sfx.bad(); return false; }
-  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars,bt:S.time}; if(exB){ nb.par=bkey(exB); } S.city.b.push(nb); groundVer++; cityDirty=true; cityCalc(); if(o.quiet||D.noRoad){ sfx.pop(); saveLocal(); return true; } cityPops.push({b:nb,stars:rate.stars,life:3.2}); sfx.build(); bump('money');
+  S.money-=cost; const nb={t:k,x,y,occ:0,w:D.w,paid:cost,stars:rate.stars,bt:S.time}; if(exB){ nb.par=bkey(exB); } S.city.b.push(nb); groundVer++; cityDirty=true; cityCalc(); if(o.quiet||k==='canal'){ sfx.pop(); saveLocal(); return true; } cityPops.push({b:nb,stars:rate.stars,life:3.2}); sfx.build(); bump('money');
   const c=P3(x+D.w/2,y+D.w/2,1); floats.push({c:1,text:D.icon,x:c.x,y:c.y,life:1,color:'#3fae7a'});
   const st='★'.repeat(rate.stars)+'☆'.repeat(5-rate.stars); toast(D.icon,exB?`${D.name}擴建成大間店！（${extCount(exB)}/2）・市民滿意度 ${st}`:`${o.ai?'🤖 AI 代蓋：':''}${D.name}完工・市民滿意度 ${st}`,tk?`高架軌道 +${tk} 格（$${fmt(tk*TRACK_COST)}）・${rate.why}`:rate.why); if(rate.stars>=4) sfx.fan(); ticker(rate.stars>=4?`🎉 ${D.name}開張，市民排隊來道謝！`:rate.stars<=1?`🤔 ${D.name}開張了…市民路過看了一眼就走了。`:`🏗️ ${D.icon} ${D.name}完工！剪綵的時候鴨子也來了。`);
   saveLocal(); return true;
@@ -2620,13 +2621,24 @@ function cityBulldoze(x,y,o){ groundVer++; o=o||{};
   if(isRoad(x,y)){ S.city.r=S.city.r.filter(k=>k!==x+','+y); ROADS.delete(x+','+y); S.money+=10; cityDirty=true; sfx.pop(); cars=cars.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); peds=peds.filter(a=>!(a.x===x&&a.y===y)&&!(a.nx===x&&a.ny===y)); }
 }
 let lastDragTile='';
-function cityDrag(sx,sy){ if(!(placing&&(placing.city==='road'||placing.city==='bulldoze'||placing.city==='canal'))) return false; const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y), k=x+','+y; if(k===lastDragTile) return true; lastDragTile=k; if(placing.city==='road') cityPlace('road',x,y); else if(placing.city==='canal'){ if(!placeCheck('canal',x,y)) cityPlace('canal',x,y,{quiet:1}); } else if(isRoad(x,y)) cityBulldoze(x,y); return true; }
+// v2.28 鋪路／挖水圳手感：拖曳時鎖定方向（沿著格線走直線），手指偏離超過 1 格才轉彎；跳格會自動補齊
+let RDG=null;
+function cityDrag(sx,sy){ if(!(placing&&(placing.city==='road'||placing.city==='bulldoze'||placing.city==='canal'))) return false; const w=toWorld(sx,sy);
+  if(placing.city==='bulldoze'){ const x=Math.floor(w.x), y=Math.floor(w.y), k=x+','+y; if(k===lastDragTile) return true; lastDragTile=k; if(isRoad(x,y)) cityBulldoze(x,y); return true; }
+  const k0=placing.city, put=(x,y)=>{ const k=x+','+y; if(k===lastDragTile) return; lastDragTile=k; if(k0==='road') cityPlace('road',x,y); else if(!placeCheck('canal',x,y)) cityPlace('canal',x,y,{quiet:1}); };
+  if(!RDG){ const rr=cv.getBoundingClientRect(), s0=gest&&gest.sx!=null?toWorld(gest.sx-rr.left,gest.sy-rr.top):w; RDG={x:Math.floor(s0.x),y:Math.floor(s0.y),ax:null}; put(RDG.x,RDG.y); }
+  const step=(ax,to)=>{ const d=Math.sign(to-RDG[ax]); while(RDG[ax]!==to){ RDG[ax]+=d; put(RDG.x,RDG.y); } };
+  for(let g=0;g<2;g++){ const dx=w.x-(RDG.x+.5), dy=w.y-(RDG.y+.5);
+    if(!RDG.ax){ if(Math.max(Math.abs(dx),Math.abs(dy))<.65) return true; RDG.ax=Math.abs(dx)>=Math.abs(dy)?'x':'y'; }
+    const along=RDG.ax==='x'?w.x:w.y, perp=RDG.ax==='x'?dy:dx; step(RDG.ax,Math.floor(along));
+    if(Math.abs(perp)>1.15) RDG.ax=RDG.ax==='x'?'y':'x'; else break; }
+  return true; }
 var ghost=null;
 function placeCheck(k,x,y,noMoney){ const D=CB[k]; if(k==='cablebase') return baseCheck(x,y,noMoney); if(k==='cable'){ const e=bAt(x,y); if(e&&e.t==='cable'&&!noMoney) return ''; } if(k!=='road'&&!themeOK(k)) return '這個任務用不到';
   if(D.sand&&terr(x,y)!=='s') return '🏖️ 要蓋在沙灘上'; if(D.coast&&!coastOK(x,y)) return '⚓ 要貼著海邊的沙灘'; if(D.water&&!nearWater(x,y,D.w)) return themeOf()==='farm'?'💧 要貼著小溪、池塘或水圳':'💧 要貼著河或湖';
   if(!footFree(x,y,D.w,k)){ for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++) if(!tileOK(k,x+a,y+d)&&!isRoad(x+a,y+d)&&!bAt(x+a,y+d)) return badAt(x+a,y+d)?'🔧 有爛攤子，先點它處理':D.hill?'⛰️ 要整塊蓋在山坡上':'🌊 有水或山坡，蓋不了'; if(D.coast){ let r=0,bb=0; for(let a=0;a<D.w;a++) for(let d=0;d<D.w;d++){ if(isRoad(x+a,y+d)) r=1; if(bAt(x+a,y+d)) bb=1; } return `⚓ 沙灘往內 ${D.w} 排要空著（${r&&bb?'有道路和建築':r?'有道路':'有建築'}擋住）`; } return '這裡空間不夠'; }
   if(k==='cable'){ }
-  else if(!D.noRoad&&!nearRoad(x,y,D.w)&&!expandBase(k,x,y)&&!(D.hill||D.hillOK)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路';
+  else if(!roadFree(k)&&!nearRoad(x,y,D.w)&&!expandBase(k,x,y)&&!(D.hill||D.hillOK)) return EXPAND.has(k)?'🛣️ 要貼著道路，或貼著同種建築擴建':'🛣️ 要貼著道路';
   else if((D.hill||D.hillOK)&&!nearRoad(x,y,D.w)&&!nearCable(x,y,D.w)) return '🚡 要貼著道路或纜車站'; if(noMoney) return ''; if(S.money<costOf(k)+(k==='mrt'?trackAdd(x,y)*TRACK_COST:0)) return S.money<0?'💸 市庫赤字中':'💸 錢不夠（含軌道）'; return ''; }
 // 單指按著拖移要蓋的建築（紅框／綠框跟著手指走）
 function ghostDragTo(sx,sy){ const k=placing&&placing.city, D=CB[k]; if(!D||!gest||!gest.gd) return; if(k==='cable'||k==='cablebase'){ const cs=cableAtScreen(sx,sy); if(cs){ if(!ghost||ghost.x!==cs.x||ghost.y!==cs.y){ ghost={k,x:cs.x,y:cs.y,msg:placeCheck(k,cs.x,cs.y)}; ghostBanner(); sfx.pop&&sfx.pop(); } return; } } const w=toWorld(sx,sy), G=gest.gd; let ax,ay;
@@ -2828,7 +2840,7 @@ function cityBHTML(){
 function cityDemolish(){ const b=citySel; if(!b) return; cityBulldoze(b.x,b.y); closeSheet(); saveLocal(); }
 // ---- v2.15 建設選單：分頁重整＋推薦 ----
 const BTABS=[['rec','⭐ 推薦'],['farm','🌾 農業'],['home','🏠 住宅'],['shop','🛒 購物美食'],['tour','🎡 休閒觀光'],['culture','📚 文化'],['work','🏭 工作產業'],['traffic','🚌 交通'],['public','🏛️ 公共服務'],['power','⚡ 能源']];
-const TAB_HINT={farm:'🌾 田要蓋在小溪、池塘旁邊；水不夠的地方先挖 💧 水圳（接著小溪一格一格挖過去）。稻田 6、11 月收，果園 7 月收。',culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
+const TAB_HINT={farm:'🌾 田只要靠著小溪、池塘就好，不用接路；水不夠的地方先挖 💧 水圳（接著小溪一格一格挖過去）。稻田 6、11 月收，果園 7 月收。',culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
 const tabOf=D=>D.cat==='tech'||D.cat==='ind'?'work':D.cat;
 const SVC_LBL={shop:'🛒購物',move:'🚏交通',fun:'🎡休閒',edu:'🏫教育',help:'🚓協助',trash:'🗑️垃圾',water:'🚰污水'};
 const NEED_B={shop:['coop','conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['veg','chicken','rice','startup','pearl','bento','conv','noodle','soy','toy'],staff:['farmhouse','sky','tower','apt','treeh','house'],home:['farmhouse','sky','tower','apt','treeh','house','villa'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
@@ -2959,7 +2971,7 @@ const ptrs=new Map(); let gest=null, sayStaff=null, panHintT=0;
 cv.addEventListener('pointerdown',e=>{
   ensureAudio(); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(ptrs.size===1){ gest={sx:e.clientX,sy:e.clientY,moved:false,lx:e.clientX,ly:e.clientY,mouse:e.pointerType==='mouse'}; lastDragTile='';
+  if(ptrs.size===1){ gest={sx:e.clientX,sy:e.clientY,moved:false,lx:e.clientX,ly:e.clientY,mouse:e.pointerType==='mouse'}; lastDragTile=''; RDG=null;
     if(mode==='city'&&placing&&placing.city&&CB[placing.city]&&placing.city!=='road'){ const r=cv.getBoundingClientRect(), w=toWorld(e.clientX-r.left,e.clientY-r.top), g=ghost&&!ghost.bull&&ghost.k===placing.city?ghost:null; gest.gd={wx:w.x,wy:w.y,ox:g?g.x:null,oy:g?g.y:null}; } }
   else if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; gest={pinch:Math.hypot(a.x-b.x,a.y-b.y),ang:Math.atan2(b.y-a.y,b.x-a.x),mx:(a.x+b.x)/2,my:(a.y+b.y)/2,moved:true}; }
 });
@@ -2980,7 +2992,7 @@ function endPtr(e){
   if(!ptrs.has(e.pointerId)) return;
   ptrs.delete(e.pointerId);
   if(gest&&!gest.moved&&!gest.pinch&&ptrs.size===0){ const r=cv.getBoundingClientRect(); cityTap(e.clientX-r.left,e.clientY-r.top); }
-  if(ptrs.size===0) gest=null; else if(ptrs.size===1){ const [p]=[...ptrs.values()]; gest={sx:p.x,sy:p.y,lx:p.x,ly:p.y,moved:true,hinted:1}; }
+  if(ptrs.size===0){ gest=null; RDG=null; } else if(ptrs.size===1){ RDG=null; const [p]=[...ptrs.values()]; gest={sx:p.x,sy:p.y,lx:p.x,ly:p.y,moved:true,hinted:1}; }
 }
 cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);
 cv.addEventListener('wheel',e=>{ e.preventDefault(); const r=cv.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX-r.left,e.clientY-r.top); },{passive:false});
@@ -3038,7 +3050,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.27</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.28</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
