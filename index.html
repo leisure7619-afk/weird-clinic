@@ -621,7 +621,7 @@ function setFee(k){ if(!FEES[k]||S.city.fee===k) return; S.city.fee=k; cityDirty
 function buyVoucher(){ const c=vouCost(); if(S.money<c||(S.city.vouT||0)>S.time) return; S.money-=c; S.city.vouT=S.time+YEAR; S.city.fx.push({k:'happy',n:10,until:S.time+240,lb:'🎫 消費券'},{k:'dem',m:1.25,until:S.time+240,lb:''}); voteState().bonus=(voteState().bonus||0)+3; sfx.fan(); toast('🎫','消費券發下去了！','4 分鐘內市民更愛消費、心情變好・支持率 +3'); ticker('🎫 市民拿著消費券衝去夜市，老闆笑到合不攏嘴。'); saveLocal(); refreshSheet(); }
 function buyBeauty(){ const lv=S.city.beau||0, c=beauCost(); if(lv>=BEAU.length||S.money<c) return; S.money-=c; S.city.beau=lv+1; sfx.build(); toast('🌸',`城市美化：${BEAU[lv]}`,`幸福度 +2、綠意 +3（目前 Lv.${lv+1}/${BEAU.length}）`); ticker(`🌸 ${BEAU[lv]}完工，市民邊走邊拍照。`); saveLocal(); refreshSheet(); }
 function buyLand(){ const c=landCost(); if(citySize()>=30||S.money<c) return; S.money-=c; S.city.xland=(S.city.xland||0)+1; groundVer++; cityDirty=true; lastCityKey=''; cityCalc(); sfx.build(); toast('🗺️',`土地擴張到 ${citySize()}×${citySize()}`,'推土機把新土地整平了'); ticker('🚜 新土地到手！地主拿了錢就去環島了。'); if(Math.random()<.4) spotOnLand(); saveLocal(); refreshSheet(); }
-function spotOnLand(){ const c=S.city; if(!c.spots) return; const n=citySize(), k=pick(Object.keys(SPOTS).filter(q=>SPOTS[q].good)); for(let t=0;t<200;t++){ const x=1+Math.floor(Math.random()*(n-2)), y=1+Math.floor(Math.random()*(n-2)); if(x<n-2&&y<n-2) continue; if(spotFree(x,y,1,c.spots)){ c.spots.push({k,x,y}); ticker(`${SPOTS[k].icon} 新土地上發現了「${SPOTS[k].name}」！`); return; } } }
+function spotOnLand(){ const c=S.city; if(!c.spots||!goodSpots().length) return; const n=citySize(), k=pick(goodSpots()); for(let t=0;t<200;t++){ const x=1+Math.floor(Math.random()*(n-2)), y=1+Math.floor(Math.random()*(n-2)); if(x<n-2&&y<n-2) continue; if(spotFree(x,y,1,c.spots)){ c.spots.push({k,x,y}); ticker(`${SPOTS[k].icon} 新土地上發現了「${SPOTS[k].name}」！`); return; } } }
 function donate(){ const c=donCost(); if(S.money<c) return; S.money-=c; S.city.don=(S.city.don||0)+1; S.meta.md+=1; sfx.fan(); toast('🐕','捐款給柴犬保育基金會',`柴犬勳章 +1（換城市也會保留）`); ticker('🐕 基金會寄來一張感謝卡，上面蓋了一個肉球印。'); saveLocal(); refreshSheet(); }
 function spendHTML(){ const c=S.city, F=feeOf(), lv=c.beau||0, vt=(c.vouT||0)-S.time, n=citySize(), btn=(act,cost,dis,lab)=>`<button class="btn" ${dis||S.money<cost?'disabled':''} data-act="${act}">${lab||'$'+fmt(cost)}</button>`;
   return `<h4>💸 用錢的地方</h4>
@@ -704,12 +704,12 @@ function spotMul(b){ let m=1; spotOfB(b).forEach(s=>{ const P=SPOTS[s.k]; if(P.m
 function spotHappy(){ let h=0; (S.city.spots||[]).forEach(s=>{ if(s.done) return; if(s.k==='shell') h-=2; if(s.k==='relic'){ const b=S.city.b.find(q=>s.x>=q.x&&s.x<q.x+BW(q)&&s.y>=q.y&&s.y<q.y+BW(q)); if(b&&b.t!=='museum') h-=SPOTS.relic.angry; } }); return h; }
 function spotFree(x,y,w,L){ const n=citySize(); if(x<1||y<1||x+w>n-1||y+w>n-1) return false; for(let a=-1;a<=w;a++) for(let c=-1;c<=w;c++){ if(a>=0&&c>=0&&a<w&&c<w){ const t=terr(x+a,y+c); if(t==='w'||t==='h'||t==='s'||isRoad(x+a,y+c)||bAt(x+a,y+c)) return false; } }
   if(x<9&&y<9&&x+w>3&&y+w>3) return false; return !L.some(s=>Math.abs(s.x-x)<4&&Math.abs(s.y-y)<4); }
-function genSpots(){ const L=[], good=Object.keys(SPOTS).filter(k=>SPOTS[k].good), bad=Object.keys(SPOTS).filter(k=>SPOTS[k].bad);
+function genSpots(){ const L=[], good=goodSpots(), bad=Object.keys(SPOTS).filter(k=>SPOTS[k].bad);
   const ng=2+(Math.random()<.5?1:0), nb=1+(Math.random()<.5?1:0), want=[...shuf(good).slice(0,ng),...shuf(bad).slice(0,nb)];
   want.forEach(k=>{ const w=SPOTS[k].w||1, n=citySize(); for(let t=0;t<200;t++){ const x=1+Math.floor(Math.random()*(n-2-w)), y=1+Math.floor(Math.random()*(n-2-w)); if(spotFree(x,y,w,L)){ L.push({k,x,y}); break; } } });
   return L; }
 function shuf(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function spotOnStage(){ const c=S.city; if(!c.spots) return; const old=CITY_STAGES[c.stage-1].size, n=citySize(), k=pick(Object.keys(SPOTS).filter(q=>SPOTS[q].good));
+function spotOnStage(){ const c=S.city; if(!c.spots||!goodSpots().length) return; const old=CITY_STAGES[c.stage-1].size, n=citySize(), k=pick(goodSpots());
   for(let t=0;t<200;t++){ const x=1+Math.floor(Math.random()*(n-2)), y=1+Math.floor(Math.random()*(n-2)); if(x<old&&y<old) continue; if(spotFree(x,y,1,c.spots)){ c.spots.push({k,x,y}); ticker(`${SPOTS[k].icon} 新土地上發現了「${SPOTS[k].name}」！`); return; } } }
 function spotLabel(s){ const P=SPOTS[s.k]; return P.on?`蓋 ${CB[P.on].icon} ${CB[P.on].name}`:P.cat==='tour'?'蓋觀光設施':P.cat==='shop'?'蓋商店':''; }
 function spotDeco(list){ (S.city.spots||[]).forEach(s=>{ if(s.done) return; const P=SPOTS[s.k], w=spW(s); if(P.good&&bAt(s.x,s.y)) return; const an=rotAnchor(s.x,s.y,w);
@@ -731,7 +731,7 @@ function spotAtScreen(sx,sy){ let best=null,bd=1e9; (S.city.spots||[]).forEach(s
 function spotTap(s){ const P=SPOTS[s.k];
   if(P.good){ const k=P.on, can=k&&unlocked(k); queueModal({icon:P.icon,title:P.name,body:`<p>${P.desc}</p>${k&&!can?`<div class="note">🔒 ${CB[k].icon} ${CB[k].name}還沒解鎖：${(lockOf(k)||['再等一下']).join('、')}</div>`:''}`,buttons:[...(can?[{label:`在這裡蓋 ${CB[k].icon} ${CB[k].name}（$${fmt(costOf(k))}）`,fn:()=>{ setPlacing({city:k}); ghost=bestAnchor(k,s.x+.5,s.y+.5); ghostBanner(); }}]:[]),{label:'知道了',ghost:1}]}); return; }
   const B=[{label:`${P.fixTxt}（$${fmt(P.fix)}）`,sub:'收拾爛攤子會拿到 🧩 藍圖碎片',dis:S.money<P.fix,fn:()=>spotFix(s,null)}];
-  if(P.alt){ const D=CB[P.alt.k], ok=nearRoad(s.x,s.y,2); B.push({label:`${P.alt.txt}（$${fmt(P.alt.cost)}）`,sub:ok?`比新蓋便宜（新蓋要 $${fmt(costOf(P.alt.k))}）・也會拿到 🧩`:'要先在旁邊鋪路',dis:!ok||S.money<P.alt.cost,fn:()=>spotFix(s,P.alt)}); }
+  if(P.alt&&themeOK(P.alt.k)){ const D=CB[P.alt.k], ok=nearRoad(s.x,s.y,2); B.push({label:`${P.alt.txt}（$${fmt(P.alt.cost)}）`,sub:ok?`比新蓋便宜（新蓋要 $${fmt(costOf(P.alt.k))}）・也會拿到 🧩`:'要先在旁邊鋪路',dis:!ok||S.money<P.alt.cost,fn:()=>spotFix(s,P.alt)}); }
   B.push({label:'先放著',ghost:1}); queueModal({icon:P.icon,title:P.name,body:`<p>${P.desc}</p>`,buttons:B}); }
 function spotFix(s,alt){ const P=SPOTS[s.k], c=alt?alt.cost:P.fix; if(S.money<c){ sfx.bad(); return; } S.money-=c; s.done=1;
   if(alt){ const D=CB[alt.k]; S.city.b.push({t:alt.k,x:s.x,y:s.y,w:D.w,occ:0,paid:c,bt:S.time}); }
@@ -802,7 +802,7 @@ const citySize=()=>Math.min(30,CITY_STAGES[S.city.stage].size+(S.city.xland||0))
 const cityZoom=()=>Math.max(.6,Math.min(1.3,14/citySize()));
 const isRoad=(x,y)=>ROADS.has(x+','+y);
 const OLDW={park:1,school:1,museum:1,onsen:1,solar:1};
-function cityRebuild(){ setTheme(); groundVer++; MC=mapCfg(); cityMigrate(); rot=S.city.rot||0; S.city.b.forEach(b=>{ if(b.t==='hospital') b.t='cityhall'; }); S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); if(!S.city.hrfix){ S.city.hrfix=1; const bad=S.city.r.filter(k=>{ const [x,y]=k.split(',').map(Number); return terr(x,y)==='h'; }); if(bad.length){ S.city.r=S.city.r.filter(k=>!bad.includes(k)); S.money+=bad.length*CB.road.cost*3; setTimeout(()=>toast('⛰️','山路拆掉了，山坡長回來了',`退還 $${fmt(bad.length*CB.road.cost*3)}・山上改用纜車站接通`),1500); } } ROADS=new Set(S.city.r); cityDirty=true; }
+function cityRebuild(){ setTheme(); groundVer++; MC=mapCfg(); cityMigrate(); if(S.city.spots) S.city.spots=S.city.spots.filter(s=>s.done||!SPOTS[s.k]||spotUsable(s.k)||S.city.b.some(b=>s.x>=b.x&&s.x<b.x+BW(b)&&s.y>=b.y&&s.y<b.y+BW(b))); rot=S.city.rot||0; S.city.b.forEach(b=>{ if(b.t==='hospital') b.t='cityhall'; }); S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); if(!S.city.hrfix){ S.city.hrfix=1; const bad=S.city.r.filter(k=>{ const [x,y]=k.split(',').map(Number); return terr(x,y)==='h'; }); if(bad.length){ S.city.r=S.city.r.filter(k=>!bad.includes(k)); S.money+=bad.length*CB.road.cost*3; setTimeout(()=>toast('⛰️','山路拆掉了，山坡長回來了',`退還 $${fmt(bad.length*CB.road.cost*3)}・山上改用纜車站接通`),1500); } } ROADS=new Set(S.city.r); cityDirty=true; }
 const BW=b=>b.w||CB[b.t].w;
 const gapOf=(ax,ay,aw,bx,by,bw)=>Math.max(0,bx-(ax+aw),ax-(bx+bw),by-(ay+aw),ay-(by+bw));
 function nearPop(x,y,w,R){ let n=0; S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok!==false&&!h.burnt&&gapOf(x,y,w,h.x,h.y,BW(h))<=R) n+=h.occ||0; }); return n; }
@@ -1141,7 +1141,13 @@ const THEMES={
     allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','vschool','lost','clinic','post','garbage','sewage','recycle','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
 };
 const themeOf=()=>(S&&S.city&&S.city.theme)||'city', themeDef=()=>THEMES[themeOf()];
-function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme) return D.theme===t; const T=THEMES[t]; return !T.allow||T.allow.includes(k); }
+function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; const T=THEMES[t]; return (D.theme?D.theme===t:(!T.allow||T.allow.includes(k)))&&mapCan(k); }
+// v2.30 地圖上根本沒有的地形（山坡、海、水），需要它的建築就不出現在建設選單
+function mapHas(t){ const M=MCX(); if(!M._has){ M._has={}; for(let y=0;y<30;y++) for(let x=0;x<30;x++) M._has[terr(x,y)]=1; } return !!M._has[t]; }
+function mapCan(k){ const D=CB[k]; if(D.hill&&!mapHas('h')) return false; if((D.sand||D.coast)&&!hasSea()) return false; if(D.water&&!mapHas('w')&&!hasSea()) return false; return true; }
+// 好地點只出現這座城市真的蓋得出來的（例如農村不用電，就不會有風口）
+function spotUsable(k){ const P=SPOTS[k]; if(!P.good) return true; if(P.on) return themeOK(P.on); if(P.cat) return Object.keys(CB).some(q=>CB[q].cat===P.cat&&CB[q].svc&&themeOK(q)); return true; }
+const goodSpots=()=>Object.keys(SPOTS).filter(k=>SPOTS[k].good&&spotUsable(k));
 function setTheme(){ CITY_STAGES=STAGESETS[themeOf()]||STAGESETS.city; const h=(THEMES[themeOf()]||THEMES.city).hall||THEMES.city.hall; Object.assign(CB.cityhall,{icon:h[0],name:h[1],sign:h[1],desc:h[2]}); }
 // ---- 農村建築 ----
 Object.assign(CB,{
@@ -1360,7 +1366,7 @@ const DECS=[
     optDem(w,w?`拆掉最賠錢的 ${CB[w.t].icon} ${CB[w.t].name}`:'',3,'賠錢的建築拆掉了，市庫鬆了一口氣。'),
     optPol('商圈行銷補助（3 分鐘）',P*.6,3,[{k:'rev',s:'shop',m:1.3,t:180,lb:'📣 商圈行銷'},{k:'rev',s:'tour',m:1.3,t:180}],'商店街掛滿彩旗，客人變多了。'),
     optTrap('找網紅業配',P*.5,'網紅來拍了 30 秒就走了，一個客人都沒帶來。')]}; }},
-  {id:'power',w:()=>CS.pw&&(CS.pw.ratio<1||CS.pw.use>CS.pw.cap*.9)?4:0,make:P=>({icon:'⚡',title:'電快不夠用了',text:`台搞電力公司：「用電 ${Math.round(CS.pw.use)}，發電只有 ${Math.round(CS.pw.cap)}，再不想辦法就要輪流停電了。」`,opts:[
+  {id:'power',w:()=>!themeDef().noPower&&CS.pw&&(CS.pw.ratio<1||CS.pw.use>CS.pw.cap*.9)?4:0,make:P=>({icon:'⚡',title:'電快不夠用了',text:`台搞電力公司：「用電 ${Math.round(CS.pw.use)}，發電只有 ${Math.round(CS.pw.cap)}，再不想辦法就要輪流停電了。」`,opts:[
     optBuild(unlocked('fusion')&&CS.pw.use>500?'fusion':'coal','AI 把發電廠蓋在離住宅遠一點的地方，電夠用了。'),
     optPol('向隔壁城市買電（4 分鐘）',P*.7,3,[{k:'pw',n:Math.max(30,Math.round(CS.pw.use-CS.pw.cap+30)),t:240,lb:'🔌 外購電力'}],'隔壁城市的電接過來了，就是電費有點貴。'),
     optTrap('呼籲市民隨手關燈',P*.3,'大家關燈了，然後摸黑踩到柴犬。用電量一點都沒變。')]})},
@@ -2827,7 +2833,7 @@ function cityBHTML(){
   if(b.stars!==undefined) kv.push(['蓋好時的市民滿意度','★'.repeat(b.stars)+'☆'.repeat(5-b.stars)]);
   if(D.svc&&LOCAL_SVC[D.svc]) kv.push(['附近居民',`${Math.round(b.near||0)} 人`]);
   if(!D.fixed){ const inc=(b.rev||0)*M*(protest?.8:1), up=(b.up||upOf(b))*6, net=inc-up; kv.push(['每分鐘收入',`$${fmt(inc)}`]); kv.push(['🔧 維護費',`-$${fmt(up)} / 分`]); kv.push(['淨利',Math.abs(net)<1?'打平 $0 / 分':`<span style="color:${net>=0?'var(--good)':'var(--bad)'}">${net>=0?'+':'-'}$${fmt(Math.abs(net))} / 分</span>`]); }
-  if(D.pwr) kv.push(['⚡ 發電',`${Math.round(pwrOf(b)*(1+.2*upL('green')))}${b.t==='wind'&&pwrOf(b)>D.pwr?'（風大 +50%）':''}`]); else if(D.pw) kv.push(['⚡ 用電',`${D.pw}`]);
+  if(D.pwr) kv.push(['⚡ 發電',`${Math.round(pwrOf(b)*(1+.2*upL('green')))}${b.t==='wind'&&pwrOf(b)>D.pwr?'（風大 +50%）':''}`]); else if(D.pw&&!themeDef().noPower) kv.push(['⚡ 用電',`${D.pw}`]);
   if(b.cb&&b.cb.length) kv.push(['🔗 組合',`${b.cb.map(id=>COMBO_BY[id].icon+' '+COMBO_BY[id].name).join('、')}・收入 +${Math.round((b.cm-1)*100)}%`]);
   if(b.t==='mrt'){ const m=transit.mrt, ms=mrtOk(); kv.push(['🛤️ 路線',m?`${m.ring?'環線':'直線來回'}・${ms.length} 站・軌道 ${m.tiles} 格`:'只有 1 站，還沒通車（客人很少）']); if(m) kv.push(['軌道維護（全線）',`$${fmt(m.tiles*TRACK_UP*6)} / 分，各站分攤`]); kv.push(['乘客倍率',`×${(ms.length>=2?Math.min(1.6,.6+.2*ms.length):.3).toFixed(1)}（站越多越高）`]); }
   if(b.mrtB) kv.push(['🚇 捷運商圈','收入 +30%']);
@@ -2858,7 +2864,7 @@ function cityBuildHTML(){ const pw=CS.pw||{cap:0,use:0};
   const cnt=t=>Object.keys(CB).filter(k=>{ const D=CB[k]; return !D.fixed&&k!=='hospital'&&tabOf(D)===t&&unlocked(k); }).length, has=t=>Object.keys(CB).some(k=>{ const D=CB[k]; return !D.fixed&&k!=='hospital'&&tabOf(D)===t&&themeOK(k); });
   const tabs=`<div class="btabs" id="btabs">${BTABS.filter(([k])=>k==='rec'||has(k)).map(([k,l])=>`<button class="${cityTab===k?'on':''}" data-act="setCityTab" data-arg="${k}">${l}${k==='rec'?'':`<i>${cnt(k)}</i>`}</button>`).join('')}</div>`;
   let body; if(cityTab==='rec') body=recHTML(); else { const hint=TAB_HINT[cityTab]?`<div class="ds" style="margin:0 4px 8px">${TAB_HINT[cityTab]}</div>`:''; const all=Object.keys(CB).filter(k=>{ const D=CB[k]; return !D.fixed&&k!=='hospital'&&tabOf(D)===cityTab&&themeOK(k); }), on=all.filter(unlocked), off=all.filter(k=>!unlocked(k)); body=hint+(on.length?on.map(bCard).join(''):'<div class="ds" style="margin:6px 4px 10px">這一類還沒有能蓋的，看下面的解鎖條件</div>')+lockList(off); }
-  return `<div class="bhead"><h2>🏗️ 建設</h2><span>💰 ${fmt(S.money)}　⚡ ${Math.round(pw.use)}/${Math.round(pw.cap)}${CS.cult?`　📚 ${CS.cult}`:''}</span></div>${tabs}${body}<div class="ds" style="text-align:center;margin-top:6px">同一種蓋越多越貴（+12%）</div>`; }
+  return `<div class="bhead"><h2>🏗️ 建設</h2><span>💰 ${fmt(S.money)}${themeDef().noPower?'':`　⚡ ${Math.round(pw.use)}/${Math.round(pw.cap)}`}${CS.cult?`　📚 ${CS.cult}`:''}</span></div>${tabs}${body}<div class="ds" style="text-align:center;margin-top:6px">同一種蓋越多越貴（+12%）</div>`; }
 function setCityTab(k){ cityTab=k; refreshSheet(); const sh=document.querySelector('.sheet'); if(sh) sh.scrollTop=0; const on=document.querySelector('#btabs .on'); if(on) on.scrollIntoView({inline:'center',block:'nearest'}); }
 function pickCity(k){ closeSheet(); setPlacing({city:k}); }
 function voteHTML(){ const v=voteState(), c=S.city.crisis, ap=approval(), l=c?c.left:v.next-S.time, mm=`${Math.floor(Math.max(0,l)/60)}:${String(Math.floor(Math.max(0,l)%60)).padStart(2,'0')}`;
@@ -3052,7 +3058,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.29</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.30</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
