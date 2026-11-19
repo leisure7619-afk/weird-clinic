@@ -805,6 +805,20 @@ const OLDW={park:1,school:1,museum:1,onsen:1,solar:1};
 function cityRebuild(){ setTheme(); groundVer++; MC=mapCfg(); cityMigrate(); if(S.city.spots) S.city.spots=S.city.spots.filter(s=>s.done||!SPOTS[s.k]||spotUsable(s.k)||S.city.b.some(b=>s.x>=b.x&&s.x<b.x+BW(b)&&s.y>=b.y&&s.y<b.y+BW(b))); rot=S.city.rot||0; S.city.b.forEach(b=>{ if(b.t==='hospital') b.t='cityhall'; }); S.city.b.forEach(b=>{ if(!b.w) b.w=OLDW[b.t]||CB[b.t].w; }); terrMigrate(); if(!S.city.hrfix){ S.city.hrfix=1; const bad=S.city.r.filter(k=>{ const [x,y]=k.split(',').map(Number); return terr(x,y)==='h'; }); if(bad.length){ S.city.r=S.city.r.filter(k=>!bad.includes(k)); S.money+=bad.length*CB.road.cost*3; setTimeout(()=>toast('⛰️','山路拆掉了，山坡長回來了',`退還 $${fmt(bad.length*CB.road.cost*3)}・山上改用纜車站接通`),1500); } } ROADS=new Set(S.city.r); cityDirty=true; }
 const BW=b=>b.w||CB[b.t].w;
 const gapOf=(ax,ay,aw,bx,by,bw)=>Math.max(0,bx-(ax+aw),ax-(bx+bw),by-(ay+aw),ay-(by+bw));
+// v2.31 交通可達：離住家太遠的商店、休閒、觀光設施，要有公車（兩頭都有站）、捷運或纜車才去得了；不然只有自己開車的人會去
+const ACC_FAR=.45, STOPS=['bus','bike'];
+function accPrep(){ const H={}; STOPS.forEach(t=>H[t]=S.city.b.filter(q=>q.t===t&&q.ok&&!q.burnt&&nearPop(q.x,q.y,1,4)>=8)); return H; }
+function accOf(b,H){ const D=CB[b.t]; if(!D.svc||!b.ok) return {a:1}; H=H||accPrep(); const w=BW(b), near=nearPop(b.x,b.y,w,4);
+  if(STOPS.includes(b.t)){ if(near>=5) return {a:1,k:'home'}; const dest=S.city.b.find(q=>q.ok&&q!==b&&CB[q.t].svc&&(CB[q.t].svc==='fun'||CB[q.t].svc==='shop')&&gapOf(b.x,b.y,1,q.x,q.y,BW(q))<=3);
+    return dest&&H[b.t].some(q=>q!==b)?{a:1,k:'dest',d:dest}:{a:.1,k:dest?'nohome':'none'}; }
+  if(!(D.svc==='fun'||D.svc==='shop')) return {a:1};
+  if(near>=8) return {a:1,k:'walk'};
+  for(const t of STOPS){ const st=S.city.b.find(q=>q.t===t&&q.ok&&!q.burnt&&gapOf(b.x,b.y,w,q.x,q.y,1)<=3); if(st&&H[t].some(q=>q!==st)) return {a:1,k:t}; }
+  if(mrtOk().length>=2&&mrtOk().some(q=>gapOf(b.x,b.y,w,q.x,q.y,2)<=3)) return {a:1,k:'mrt'};
+  if(hillZ(b)>0&&nearCable(b.x,b.y,w)) return {a:1,k:'cable'};
+  return {a:ACC_FAR,k:'far'}; }
+function accText(b){ const r=accOf(b), d=r.d&&CB[r.d.t]; return {walk:'🚶 走路就到',home:'🏠 住家旁，有人搭',bus:'🚏 有公車到',bike:'🚲 騎單車到',mrt:'🚇 有捷運到',cable:'🚡 有纜車到',dest:`🚏 載客去${d?d.icon+d.name:'景點'}`,
+  far:`🚗 太遠又沒公車，客人 -${Math.round((1-ACC_FAR)*100)}%`,nohome:'😶 沒人搭：住家旁也要一站',none:'😶 沒人搭：附近沒住家也沒景點'}[r.k]||''; }
 function nearPop(x,y,w,R){ let n=0; S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok!==false&&!h.burnt&&gapOf(x,y,w,h.x,h.y,BW(h))<=R) n+=h.occ||0; }); return n; }
 function svcNear(x,y,w,svc,R){ return S.city.b.some(q=>{ const D=CB[q.t]; return D.svc===svc&&q.ok&&gapOf(x,y,w,q.x,q.y,BW(q))<=R; }); }
 const LOCAL_SVC={shop:1,fun:1,edu:1,move:1};
@@ -853,6 +867,7 @@ function cityCalc(){
   Object.keys(gdem).forEach(g=>{ const sv=g.split(':')[0], sp=gsup[g]||0; if(OPT_GRP(g)&&!sp) return; dem[sv]+=gdem[g]; gsat[g]=gdem[g]<1?1:Math.min(1,sp/gdem[g]); });
   const sat={}, inc={rent:0,shop:0,move:0,fun:0,edu:0,help:0,trash:0,water:0,exp:0,power:0};
   Object.keys(dem).forEach(k=>sat[k]=dem[k]<1?1:Math.min(1,sup[k]/dem[k]));
+  const AH=accPrep(); S.city.b.forEach(b=>{ b.acc=CB[b.t].svc?accOf(b,AH).a:1; });
   const wsum={}; S.city.b.forEach(b=>{ const D=CB[b.t]; if(!b.ok||!D.svc) return; const loc=LOCAL_SVC[D.svc]&&FREQ[b.t]!=='rare'; b.near=LOCAL_SVC[D.svc]?nearPop(b.x,b.y,BW(b),4):0; b.wgt=(loc?.5+Math.min(1,b.near/30):1)*(1+2*(b.nov||0)); wsum[b.grp]=(wsum[b.grp]||0)+b.cap*b.wgt; });
   let covS=0,covF=0; S.city.b.forEach(h=>{ if(!CB[h.t].pop||!h.ok||!(h.occ>0)) return; const w=BW(h); if(svcNear(h.x,h.y,w,'shop',4)) covS+=h.occ; if(svcNear(h.x,h.y,w,'fun',4)) covF+=h.occ; }); covS=pop?covS/pop:1; covF=pop?covF/pop:1;
   const sur=Math.max(0,pcap-puse);
@@ -860,7 +875,7 @@ function cityCalc(){
     let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf; if(line&&(D.cat==='shop'||D.cat==='tour')&&D.svc&&MS.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,2)<=3)){ m*=1.3; b.mrtB=1; }
     if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK); if(T==='food'&&b.t==='market') m*=1.5; if(b.hot>S.time) m*=2; if(D.cat==='ind'&&S.city.open==='indus') m*=1.3; if(b.t==='pearl'&&S.city.b.some(q=>q.t==='bubble'&&q.ok&&gapOf(b.x,b.y,1,q.x,q.y,1)<=2)) m*=1.3; if(b.t==='rlab'&&S.city.b.some(q=>q.t==='chip'&&q.ok&&gapOf(b.x,b.y,2,q.x,q.y,3)<=2)) m*=1.4; if(S.city.spots) m*=spotMul(b); if(T==='rainy'&&weather.type==='rain'&&(b.t==='conv'||b.t==='mall'||b.t==='museum')) m*=1.5; if(T==='windy'&&b.t==='bike') m*=.7; if(T==='slow'&&D.cat==='tech') m*=.8;
     if(D.rent){ const r=(b.occ||0)*er*D.rent*viewMult(b)*m*FEE.r; b.rev+=r; inc.rent+=r; }
-    if(D.svc){ const g=b.grp, tot=Math.min(gdem[g]||0,gsup[g]||0); b.served=wsum[g]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[g]):0; b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m*FEE.r; b.rev+=r; inc[D.svc]+=r; }
+    if(D.svc){ const g=b.grp, tot=Math.min(gdem[g]||0,gsup[g]||0); b.served=(wsum[g]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[g]):0)*(b.acc??1); b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m*FEE.r; b.rev+=r; inc[D.svc]+=r; }
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b))*m; b.rev+=r; inc.exp+=r; }
     if(D.pwr&&!D.fixed&&praw>0){ const r=(Math.min(puse,pcap)*.2+sur*.12)*pwrOf(b)/praw; b.rev+=r; inc.power+=r; } });
   const pk=pop>40?1:0;
@@ -2592,7 +2607,8 @@ function rateBuild(k,x,y){
     why=need<.15?(lack(D.svc)>=1?`需要${SVC[D.svc][1]}的只有 ${Math.round(lack(D.svc))} 人，這間收得下 ${D.cap} 人，太大間會很冷清`:`${SVC[D.svc][1]}已經夠了，市民沒那麼需要`):cn>.5&&near>=5?`附近 ${Math.round(unc)} 位居民本來沒地方${D.svc==='shop'?'買東西':'休閒'}，現在有了`:nearN<.2&&!D.tour?'附近幾乎沒有住戶，生意會很冷清':nearN<.6?`附近住戶不多（${Math.round(near)} 人），生意普通`:`附近有 ${Math.round(near)} 位居民，${ls>.3?`正缺${SVC[D.svc][1]}`:'會常來光顧'}`;
     if(need>=.15&&jobNeed>ls&&jobNeed>.3) why+='，還能創造工作';
     const fq=FREQ[k]; if(fq==='rare'||fq==='weekly'){ const same=S.city.b.filter(q=>q.t===k).length; need=same?.18:fq==='rare'?.7:.5; place=Math.max(place,.75); why=same?`已經有 ${same} 間了，${fq==='rare'?'大家偶爾才去，':''}第 ${same+1} 間生意會被分掉`:fq==='rare'?'城市第一座！剛開幕人潮多，之後主要靠觀光客':'第一間百貨，市民每週會來逛一次'; }
-    if(nearMrt) why='捷運站旁人潮多（收入 +30%）・'+why; }
+    if(nearMrt) why='捷運站旁人潮多（收入 +30%）・'+why;
+    if((D.svc==='fun'||D.svc==='shop')&&!nearMrt){ const r=accOf({t:k,x,y,w,ok:1}); if(r.k==='far'){ place*=.7; why+='・離住家太遠又沒公車，旁邊和住家附近都要有站，客人才會多'; } } }
   else if(D.svc==='trash'||D.svc==='water'){ const thr=D.svc==='trash'?40:80, ls=Math.min(1,lack(D.svc)/D.cap*1.2); need=CS.pop<thr*.6?.15:ls; if(D.smell&&homes2) place=.25;
     why=(D.smell&&homes2)?'離住宅太近，附近會很臭':need<=.15?(CS.pop<thr*.6?'人口還少，現在還用不到':`${SVC[D.svc][1]}處理量已經夠了`):(D.smell&&homes2)?'離住宅太近，附近會很臭':'正好解決市民的煩惱，位置也不錯'; }
   else if(D.svc==='help'){ need=Math.min(1,lack('help')/D.cap); place=.6+.4*nearN; why=need<.15?'迷路的人不多，暫時用不到':'迷路的人終於有地方求救了'; }
@@ -2829,6 +2845,7 @@ function cityBHTML(){
   if(D.svc){ kv.push(['客人',`${Math.round(b.served||0)} / ${Math.round(D.cap)} 人`]); kv.push(['單價',`$${D.fee}`]); kv.push(['狀況',!b.ok?'未營業':b.busy?'🔥 大排長龍':(b.served||0)<D.cap*.5?'😴 有點冷清':'🙂 生意不錯']); }
   if(D.exp) kv.push(['產品外銷',D.jobs&&CS.staff<1?`員工只來 ${Math.round(CS.staff*100)}%`:'全力生產']);
   if(D.crop&&themeOf()==='farm'){ farmPlan(); const M=HM[b.hm||'hand']; kv.push(['採收方式',`${M.i} ${M.n}・要 ${M.one?1:Math.round(HANDS[b.t]*M.h)} 人${M.m>1?`・收成 +${Math.round((M.m-1)*100)}%`:''}`]); }
+  if(D.svc&&b.ok){ const at=accText(b); if(at) kv.push(['交通',at]); }
   if(D.jobs) kv.push(['工作機會',`${D.jobs} 個`]);
   if(b.stars!==undefined) kv.push(['蓋好時的市民滿意度','★'.repeat(b.stars)+'☆'.repeat(5-b.stars)]);
   if(D.svc&&LOCAL_SVC[D.svc]) kv.push(['附近居民',`${Math.round(b.near||0)} 人`]);
@@ -2899,6 +2916,8 @@ function deputyAdvice(){
   const opp=ns.filter(n=>!n.urgent&&needGain(n)>=1).sort((a,b)=>needGain(b)-needGain(a))[0];
   if(opp) L.push({lv:1,t:`商機：「${opp.say}」→ ${NEED_SHORT[opp.k]||opp.h}，每分鐘約多賺 <b>$${fmt(needGain(opp))}</b>`,go:()=>goBuild(NEED_TAB[opp.k]||'shop')});
   if(themeOf()==='farm'){ const H=farmHands(); if(H.F.length&&H.need>H.have) L.push({lv:1,t:`收成人手不夠：要 <b>${H.need} 人</b>、村裡只有 ${H.have} 人能幫忙。${farmTip(H)}`,go:()=>goBuild('farm')}); }
+  { const far=S.city.b.filter(b=>b.ok&&b.acc!=null&&b.acc<1&&!STOPS.includes(b.t)); if(far.length){ const f=far[0], D=CB[f.t]; L.push({lv:1,t:`${D.icon} <b>${D.name}</b>離住家太遠又沒公車，客人少一半。旁邊蓋 🚏 公車站，住家附近也要有一站。`,go:()=>{ camX=f.x; camY=f.y; }}); }
+    const dead=S.city.b.filter(b=>b.ok&&b.acc!=null&&b.acc<.5&&STOPS.includes(b.t)); if(dead.length){ const f=dead[0]; L.push({lv:1,t:`${CB[f.t].icon} 有一站${CB[f.t].name}沒人搭：${accOf(f).k==='nohome'?'住家附近也要有一站，乘客才上得了車':'附近沒有住家也沒有景點'}。`,go:()=>{ camX=f.x; camY=f.y; }}); } }
   const lose=S.city.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pwr&&!CB[b.t].crop&&!CB[b.t].tool&&!b.burnt&&((b.rev||0)*PAYM()-(b.up||0))<-1);
   if(lose.length>=2){ const k=lose[0].t; L.push({lv:1,t:`有 <b>${lose.length} 棟在賠錢</b>（像${CB[k].name}），客人不夠就別再蓋同一種`,go:()=>openSheet(cityGovHTML)}); }
   const nx=CITY_STAGES[S.city.stage+1]; if(nx&&!stageReady()){ const c=stageChecks(S.city.stage+1).find(c=>!c.ok); if(c) L.push({lv:0,t:`主線：升格「${nx.name}」還差 <b>${c.t}</b>（${c.v}）。`,go:()=>openSheet(cityGovHTML)}); }
@@ -3058,7 +3077,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.30</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.31</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
