@@ -874,7 +874,7 @@ function cityNeeds(){
   if(d.shop>3&&s.shop<.85) v.push({k:'shop',w:1-s.shop,i:'🛒',t:'買東西要排隊',h:'多開幾間店（便利商店、飲料店、夜市）',say:'店裡排好長…'});
   if(d.move>5&&s.move<.85) v.push({k:'move',w:1-s.move,i:'🚏',t:'公車擠不上去',h:'蓋公車站、單車站或捷運',say:'公車又客滿了'});
   if(d.fun>3&&s.fun<.85) v.push({k:'fun',w:1-s.fun,i:'🌳',t:'假日沒地方去',h:'蓋公園或觀光設施',say:'好想去公園'});
-  if(CS.pop>40&&s.edu<.85) v.push({k:'edu',w:(1-s.edu)*.8,i:'🏫',t:'小孩沒學校讀',h:S.city.stage<1?'升格成小鎮後可以蓋學校':'蓋一間學校',say:'小孩要上學'});
+  if(CS.pop>40&&s.edu<.85) v.push({k:'edu',w:(1-s.edu)*.8,i:'🏫',t:'小孩沒學校讀',h:themeOf()==='farm'?'蓋一間小學分校':S.city.stage<1?'升格成小鎮後可以蓋學校':'蓋一間學校',say:'小孩要上學'});
   if(CS.pop>60&&s.help<.6) v.push({k:'help',w:(1-s.help)*.4,i:'🚓',t:'迷路的人變多了',h:S.city.stage<1?'升格成小鎮後可以蓋協尋中心':'蓋迷路協尋中心',say:'這裡是哪裡？'});
   if(CS.pw&&CS.pw.ratio<1) v.push({k:'power',urgent:1,w:8.5,i:'⚡',t:`停電了！（用電 ${Math.round(CS.pw.use)}／發電 ${Math.round(CS.pw.cap)}）`,h:'快蓋發電廠。停電時收入變少、市民很不爽',say:'又停電了！'});
   else if(CS.pw&&CS.pw.use>CS.pw.cap*.85&&CS.pw.use>10) v.push({k:'power',w:1.2,i:'🔌',t:`電快不夠了（${Math.round(CS.pw.use)}／${Math.round(CS.pw.cap)}）`,h:'再蓋一座發電廠，不然新建築一蓋就停電',say:'電燈一閃一閃的'});
@@ -1138,7 +1138,7 @@ const STAGESETS={
 const THEMES={
   city:{hall:['🏛️','市政府','市長辦公的地方。點它打開市政。'],icon:'🏙️',name:'都市發展',tag:'從小村發展成國際都市',desc:'從小村一路發展成國際都市。',short:[['🏡','村'],['🏘️','鎮'],['🏙️','市'],['🌆','大都會'],['🌏','國際都市']],mul:1.2,star:3,popK:150},
   farm:{hall:['🏤','鄉公所','村長辦公的地方，矮矮的一層樓，門口有廣播喇叭。點它打開市政。'],icon:'🌾',name:'田園農村',tag:'種稻種水果，讓年輕人回鄉',desc:'種稻、種水果、辦休閒農場，讓年輕人願意回鄉。最多發展到模範農村。',short:[['🌱','小村'],['🌾','農村'],['🏅','模範農村']],mul:1,star:2,popK:40,noPower:1,lands:['creeks','ponds'],maps:['farmland'],
-    allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','school','lost','clinic','post','garbage','sewage','recycle','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
+    allow:['road','cityhall','bus','bike','house','treeh','villa','conv','bubble','market','bento','bakery','park','bigpark','vschool','lost','clinic','post','garbage','sewage','recycle','shrine','book','library','onsen','beach','lighthouse','tea','camp','lookout','cable','radio','shiba','statue','fire','gym','museum']}
 };
 const themeOf=()=>(S&&S.city&&S.city.theme)||'city', themeDef=()=>THEMES[themeOf()];
 function themeOK(k){ const D=CB[k], t=themeOf(); if(!D) return false; if(D.theme) return D.theme===t; const T=THEMES[t]; return !T.allow||T.allow.includes(k); }
@@ -1154,6 +1154,7 @@ Object.assign(CB,{
   bnb:      {theme:'farm',exp:30,tour:3,happy:1,cat:'farm',name:'田園民宿',icon:'🛏️',cost:2500,w:1,sign:'民宿',desc:'觀光客來住一晚，早上被雞叫醒。'},
   leisure:  {theme:'farm',svc:'fun',cap:60,fee:6,jobs:8,tour:4,happy:2,cat:'farm',name:'休閒農場',icon:'🐑',cost:8000,w:2,sign:'休閒農場',desc:'2×2。餵羊、擠牛奶、做 pizza，城市小孩最愛。'},
   farmhouse:{theme:'farm',rent:1.2,pop:8,cat:'home',name:'農舍',icon:'🏚️',cost:600,w:1,sign:'農舍',desc:'住 8 人，便宜又寬敞，門口曬著菜乾。'},
+  vschool:  {theme:'farm',svc:'edu',cap:20,fee:4,cat:'public',name:'小學分校',icon:'🏫',cost:2500,w:1,happy:4,jobs:4,sign:'分校',desc:'全校 20 個學生，老師兼校工兼校車司機。下課去田裡抓青蛙。'},
   canal:    {theme:'farm',tool:1,noRoad:1,nosign:1,water:1,cat:'farm',name:'水圳',icon:'💧',cost:150,w:1,desc:'人工挖的灌溉水道，要接著小溪、池塘或別段水圳。田蓋在水圳旁邊就有水。'},
   oxbarn:   {theme:'farm',tool:1,jobs:1,cat:'farm',name:'牛舍',icon:'🐂',cost:800,w:1,sign:'牛舍',desc:'老黃牛幫忙犁田、拉車：4 格內的田收成只要一半人手，收成 +5%。'},
   tractor:  {theme:'farm',tool:1,jobs:3,cat:'farm',name:'農機行',icon:'🚜',cost:6000,w:1,sign:'農機行',desc:'出租耕耘機和割稻機：6 格內的田只要 1 個人顧機器，收成 +15%。每塊田每次收成油錢 $40。'},
@@ -1493,7 +1494,7 @@ const GPROB=[
   {k:'fun',w:()=>(CS.dem.fun||0)>=5?.3+2*(1-(CS.sat.fun??1)):0,b:['park','bigpark','museum','ferris','duck'],
     t:['週末沒地方去','{place}太無聊了','小朋友放假在家吵翻天'],q:['週末只能在家看柴犬睡覺，看了八小時。','這裡無聊到連鴨子都搬走了。','孩子說再不出門他要把沙發拆了。'],
     fix:['每週末辦市集和表演','開放學校操場給市民玩'],cheap:'在路口放一台扭蛋機',sup:'fun',ok:'週末熱鬧多了，大家都出門玩。'},
-  {k:'edu',w:()=>CS.pop>=60?.3+2*(1-(CS.sat.edu??1)):0,b:['school'],
+  {k:'edu',w:()=>CS.pop>=60?.3+2*(1-(CS.sat.edu??1)):0,b:['school','vschool'],
     t:['教室擠到要輪流坐','{place}沒有學校','補習班比學校還多'],q:['一間教室 60 個學生，老師要用麥克風。','小孩上學要搭兩班公車，比我上班還遠。','我家孩子說他最喜歡的老師是 YouTube。'],
     fix:['補助課後照顧班','增聘老師、小班教學'],cheap:'發每人一本鴨子字典',sup:'edu',ok:'孩子們有地方讀書了，家長也鬆了一口氣。'},
   {k:'help',w:()=>CS.pop>=50?.25+2*(1-(CS.sat.help??1)):0,b:['lost'],
@@ -2138,6 +2139,7 @@ function kit(x,y,w,s){ const i=s.inset??.12, X=x+i, Y=y+i, L=w-2*i, h=s.h||.5; l
   if(s.fn) s.fn(X,Y,L,h);
   return P3(x+w/2,y+w/2,rz+.2); }
 const KIT={
+  vschool:{h:.38,wall:'#f6efdc',rt:'gable',roof:'#d06a4c',emo:'🏫',rows:1,cols:2},
   book:{h:.45,wall:'#f3e3c3',rt:'gable',roof:'#6b8f71',awn:'#3f7a55',emo:'📚',rows:1,cols:2},
   library:{h:.6,wall:'#ece5d6',roof:'#b9ab8f',emo:'📖',rows:2,fn:(X,Y,L,h)=>{ for(let k=0;k<6;k++) box(X+.08+k*(L-.2)/5,Y+L+.02,.06,.06,h,'#fffaf0'); box(X-.04,Y+L-.02,L+.08,.18,.06,'#d9cfba',h); }},
   gallery:{h:.75,wall:'#fbfbfb',roof:'#d8d8d8',wc:'rgba(150,195,230,.95)',rows:1,cols:3,emo:'🖼️',fn:(X,Y,L,h)=>{ box(X+L*.15,Y+L*.15,L*.4,L*.4,.25,'#f08a3c',h+.07); }},
@@ -2581,7 +2583,7 @@ function rateBuild(k,x,y){
     why=CS.unemp?'失業的人還很多，先開店或開公司比較好':smellNear?'旁邊有垃圾場或污水廠，住起來很臭':(sN&&fN)?'附近有商店又有公園，住起來超方便':sN?'附近有商店，但沒有公園可以散步':fN?'附近有公園，但買東西要走很遠':'附近沒有商店和公園，住戶有點不方便'; }
   else if(LOCAL_SVC[D.svc]){ const ls=Math.min(1,lack(D.svc)/D.cap); let unc=0; if(D.svc==='shop'||D.svc==='fun') S.city.b.forEach(h=>{ if(CB[h.t].pop&&h.ok&&gapOf(x,y,w,h.x,h.y,BW(h))<=4&&!svcNear(h.x,h.y,BW(h),D.svc,4)) unc+=h.occ||0; }); const cn=Math.min(1,unc/DIV); need=Math.max(ls,cn,jobNeed*.8); if(D.tour) need=Math.max(need,.45); if(D.svc==='edu'&&CS.pop<40) need=Math.min(need,.2);
     place=.25+.75*nearN; if(D.cat==='tour'&&viewOf({t:k,x,y,w})) place=Math.min(1,place+.25); const nearMrt=(D.cat==='shop'||D.cat==='tour')&&mrtOk().length>=2&&mrtOk().some(q=>gapOf(x,y,w,q.x,q.y,2)<=3); if(nearMrt) place=Math.min(1,place+.3); if(D.tour&&!LOCAL_SVC[D.svc]) place=1; if(smellNear) place*=.6;
-    why=need<.15?`${SVC[D.svc][1]}已經夠了，市民沒那麼需要`:cn>.5&&near>=5?`附近 ${Math.round(unc)} 位居民本來沒地方${D.svc==='shop'?'買東西':'休閒'}，現在有了`:nearN<.2&&!D.tour?'附近幾乎沒有住戶，生意會很冷清':nearN<.6?`附近住戶不多（${Math.round(near)} 人），生意普通`:`附近有 ${Math.round(near)} 位居民，${ls>.3?`正缺${SVC[D.svc][1]}`:'會常來光顧'}`;
+    why=need<.15?(lack(D.svc)>=1?`需要${SVC[D.svc][1]}的只有 ${Math.round(lack(D.svc))} 人，這間收得下 ${D.cap} 人，太大間會很冷清`:`${SVC[D.svc][1]}已經夠了，市民沒那麼需要`):cn>.5&&near>=5?`附近 ${Math.round(unc)} 位居民本來沒地方${D.svc==='shop'?'買東西':'休閒'}，現在有了`:nearN<.2&&!D.tour?'附近幾乎沒有住戶，生意會很冷清':nearN<.6?`附近住戶不多（${Math.round(near)} 人），生意普通`:`附近有 ${Math.round(near)} 位居民，${ls>.3?`正缺${SVC[D.svc][1]}`:'會常來光顧'}`;
     if(need>=.15&&jobNeed>ls&&jobNeed>.3) why+='，還能創造工作';
     const fq=FREQ[k]; if(fq==='rare'||fq==='weekly'){ const same=S.city.b.filter(q=>q.t===k).length; need=same?.18:fq==='rare'?.7:.5; place=Math.max(place,.75); why=same?`已經有 ${same} 間了，${fq==='rare'?'大家偶爾才去，':''}第 ${same+1} 間生意會被分掉`:fq==='rare'?'城市第一座！剛開幕人潮多，之後主要靠觀光客':'第一間百貨，市民每週會來逛一次'; }
     if(nearMrt) why='捷運站旁人潮多（收入 +30%）・'+why; }
@@ -2843,7 +2845,7 @@ const BTABS=[['rec','⭐ 推薦'],['farm','🌾 農業'],['home','🏠 住宅'],
 const TAB_HINT={farm:'🌾 田只要靠著小溪、池塘就好，不用接路；水不夠的地方先挖 💧 水圳（接著小溪一格一格挖過去）。稻田 6、11 月收，果園 7 月收。',culture:'📚 人文越高，市民越開心、觀光客越多。不一定要蓋，蓋了城市更有特色。',work:'💼 創造工作、外銷賺錢。有些工廠會臭，離住宅遠一點。',tour:'🎡 市民放假去的地方，也吸引觀光客。',power:'⚡ 電不夠會停電，用不完的電賣給隔壁城市。'};
 const tabOf=D=>D.cat==='tech'||D.cat==='ind'?'work':D.cat;
 const SVC_LBL={shop:'🛒購物',move:'🚏交通',fun:'🎡休閒',edu:'🏫教育',help:'🚓協助',trash:'🗑️垃圾',water:'🚰污水'};
-const NEED_B={shop:['coop','conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['veg','chicken','rice','startup','pearl','bento','conv','noodle','soy','toy'],staff:['farmhouse','sky','tower','apt','treeh','house'],home:['farmhouse','sky','tower','apt','treeh','house','villa'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
+const NEED_B={shop:['coop','conv','bubble','bento','bakery','market','mall'],move:['bus','bike','mrt'],fun:['park','shiba','gym','ktv','cinema','bigpark'],edu:['vschool','school','library'],help:['lost','clinic'],trash:['garbage','recycle'],water:['sewage'],power:['wind','hydro','solar','coal'],job:['veg','chicken','rice','startup','pearl','bento','conv','noodle','soy','toy'],staff:['farmhouse','sky','tower','apt','treeh','house'],home:['farmhouse','sky','tower','apt','treeh','house','villa'],smell:['recycle'],ruin:[],debt:['startup','pearl','post'],protest:['park','shrine','gym']};
 function bCard(k){ const D=CB[k], c=costOf(k);
   const tags=[D.svc?`${SVC_LBL[D.svc]} ${D.cap}人`:'',D.pop?`👥住 ${D.pop} 人`:'',D.exp?`📦外銷 $${D.exp}`:'',D.pwr?`⚡發電 ${D.pwr}`:'',D.jobs?`💼${D.jobs}`:'',D.cult?`📚人文+${D.cult}`:'',D.tour?`📷+${D.tour}`:'',D.happy?`😊+${D.happy}`:'',D.green?`🌿+${D.green}`:'',D.w>1?`${D.w}×${D.w}`:'',D.smell?'💨會臭':'',D.noise?'🔊會吵':'',D.water?'💧要靠水':'',D.hill?(k==='cable'?'⛰️山頭連山下或山頭連山頭':'⛰️山坡・要貼路或纜車站'):'',D.hillOK?'⛰️山坡也能蓋':'',D.sand?'🏖️沙灘':''].filter(Boolean).join(' ');
   return `<div class="item bitem"><div class="ic" style="background:#eef5fd">${icoH(D.icon)}</div><div class="txt"><div class="nm">${D.name}</div><div class="tg">${tags}</div><div class="ds clamp">${D.desc}</div></div><button class="btn" ${S.money<c?'disabled':''} data-act="pickCity" data-arg="${k}">$${fmt(c)}${k!=='road'?`<small>維護 ${fmt(upOf({t:k})*6)}/分</small>`:''}</button></div>`; }
@@ -3050,7 +3052,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.28</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.29</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
