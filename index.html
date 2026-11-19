@@ -1791,7 +1791,7 @@ function wildTick(dt){ const W=WILDS[themeOf()]; if(!W||!S.city||!shibaReady()){
     const st=Math.min(l,.45*dt); d.x+=dx/l*st; d.y+=dy/l*st; }); }
 function wildDeco(list){ WILD.forEach(d=>list.push({d:dep(d.x,d.y)+.01,fn:()=>{ const q=R2(d.x,d.y), c=P3(q[0],q[1],0), t=R2(d.tx,d.ty), tc=P3(t[0],t[1],0);
   const moving=!isNight()&&d.idle<=0&&Math.hypot(d.tx-d.x,d.ty-d.y)>.03; if(moving&&Math.abs(tc.x-c.x)>.5) d.dir=tc.x>c.x?1:-1;
-  const h=dogH()*.72; if(moving) drawShibaSpr(c.x,c.y,h,d.col,walkAct(d.seed),d.dir,walkBob(h,d.seed)); else drawShibaSpr(c.x,c.y,h,d.col,isNight()?'sleep':d.pose,d.dir,0); d._sx=c.x; d._sy=c.y-h*.5; }})); }
+  const h=tw*.3; if(moving) drawShibaSpr(c.x,c.y,h,d.col,walkAct(d.seed),d.dir,walkBob(h,d.seed)); else drawShibaSpr(c.x,c.y,h,d.col,isNight()?'sleep':d.pose,d.dir,0); d._sx=c.x; d._sy=c.y-h*.5; }})); }
 function wildTap(sx,sy){ const W=WILDS[themeOf()]; if(!W) return false; const d=WILD.find(d=>d._sx!=null&&Math.hypot(sx-d._sx,sy-d._sy)<Math.max(22,dogH()*.7)); if(!d) return false;
   sfx.pop(); ticker(`🐕 ${W.name}：${isNight()?pick(['（睡著了，還在打呼）','zzz…雞腿…zzz']):pick(W.lines)}`); if(!isNight()){ d.idle=3; d.pose='sit'; } return true; }
 function abuPos(){ const A=ABU, dx=A.nx-A.x, dy=A.ny-A.y, l=.42*A.side; return {x:A.x+dx*A.t+.5+(-dy)*l, y:A.y+dy*A.t+.5+dx*l}; }
@@ -2493,13 +2493,20 @@ function drawRobot(p){
   ctx.strokeStyle='#8a8f99'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(c.x,c.y-s*.65-bob); ctx.lineTo(c.x,c.y-s*.75-bob); ctx.stroke(); circle(c.x,c.y-s*.77-bob,s*.025,'#e2574c');
   ctx.strokeStyle='#8a5a36'; ctx.beginPath(); ctx.moveTo(c.x+s*.1,c.y-s*.3-bob); ctx.lineTo(c.x+s*.18+Math.sin(clock*10)*s*.04,c.y); ctx.stroke();
 }
-function dogPos(p){ const t=Math.max(0,Math.min(1,p.t-.18)), lane=.36*p.side+.14*p.side; const dx=p.nx-p.x, dy=p.ny-p.y; return {x:p.x+dx*t+.5+(-dy)*lane, y:p.y+dy*t+.5+dx*lane}; }
+function dogPos(p){ const t=Math.max(0,Math.min(1,p.t+.24)), lane=.36*p.side+.08*p.side; const dx=p.nx-p.x, dy=p.ny-p.y; return {x:p.x+dx*t+.5+(-dy)*lane, y:p.y+dy*t+.5+dx*lane}; }
 function drawPed(p){
   if(p.k==='robot') return drawRobot(p);
   const q=agentPos(p,.36*p.side); p.px=q.x; p.py=q.y; const L=p.look;
-  if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1, mv=!p.wt, dh=dogH(); if(mv) p.dpose=null; else if(!p.dpose) p.dpose=pickIdle();
-    ctx.strokeStyle='#c0392b'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(h.x+f*tw*.08,h.y-tw*.3); ctx.quadraticCurveTo((h.x+c.x)/2,(h.y+c.y)/2-tw*.05,c.x+f*dh*.3,c.y-dh*.5); ctx.stroke(); drawDog(c.x,c.y,p.dcol||'red',mv,f,{pose:p.dpose},p.seed); p.dx=d.x; p.dy=d.y; }
+  // v2.32 遛狗：柴犬約到人的大腿高、走在人的前面一點，牽繩從人手上垂到背上的胸背帶，誰比較前面誰後畫
+  let dogDraw=null;
+  if(p.dog){ const d=dogPos(p), c=iso(d.x,d.y), h=iso(q.x,q.y), nx=iso(p.nx+.5,p.ny+.5), f=nx.x>h.x?1:-1, mv=!p.wt, dh=tw*.26; if(mv) p.dpose=null; else if(!p.dpose) p.dpose=pickIdle();
+    const act=mv?walkAct(p.seed):p.dpose, bob=mv?walkBob(dh,p.seed):0, im=(SHIBA_IMG[p.dcol||'red']||SHIBA_IMG.red||{})[act], ar=im&&im.naturalWidth?im.naturalWidth/im.naturalHeight:1.1, ih=dh*(im&&im.naturalHeight?im.naturalHeight/SHIBA_REF:1), dw=ih*ar;
+    const ps=tw*.85*((L&&L.h)||1), hand={x:h.x+(c.x>=h.x?1:-1)*ps*.14, y:h.y-ps*.24}, back={x:c.x-f*dw*.05, y:c.y-ih*.62-bob};
+    const leash=()=>{ ctx.strokeStyle='#b8322a'; ctx.lineWidth=Math.max(1.2,tw*.014); ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(hand.x,hand.y); ctx.quadraticCurveTo((hand.x+back.x)/2,Math.max(hand.y,back.y)+tw*.035,back.x,back.y); ctx.stroke(); circle(hand.x,hand.y,Math.max(1.5,tw*.016),'#7a2a22'); };
+    dogDraw=()=>{ if(mv) drawShibaSpr(c.x,c.y,dh,p.dcol||'red',act,f,bob); else drawShibaSpr(c.x,c.y,dh,p.dcol||'red',act,f,0); };
+    p.dx=d.x; p.dy=d.y; p._leash=leash; p._dogFront=c.y>h.y; if(!p._dogFront){ dogDraw(); leash(); } }
   drawPerson(q.x,q.y,{look:L,skin:L.skin,hair:L.hairCol,shirt:L.topCol,pants:L.bottomCol,walk:p.wt?0:1,phase:p.phase,seed:p.seed,scale:.85,bubble:p.sick||(p.k==='tour'&&Math.floor(clock/2+p.seed)%3===0?'📷':p.k==='alien'?'👽':null)});
+  if(p.dog&&p._dogFront){ dogDraw(); p._leash(); }
 }
 let groundVer=0, vigG=null, vigK='';
 const gC={cv:document.createElement('canvas'),key:'',cx:0,cy:0,tw:0,W:0,H:0};
@@ -3089,7 +3096,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.32</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.33</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
