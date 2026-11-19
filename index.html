@@ -2092,11 +2092,7 @@ function drawFarmB(b,x,y,w){ const ph=clock, m=monthNo();
   if(b.t==='coop') return kit(x,y,1,{h:.42,wall:'#fff4e2',roof:'#3f8a56',awn:'#3f8a56',emo:'🧺',rows:1,cols:2});
   if(b.t==='bnb') return kit(x,y,1,{h:.45,wall:'#f3e3c3',rt:'gable',roof:'#8a5a36',emo:'🛏️',rows:1,cols:2});
   if(b.t==='farmhouse') return kit(x,y,1,{h:.4,wall:'#efe6d2',rt:'gy',roof:'#5a6b7a',rows:1,cols:2,fn:(X,Y,L)=>{ ln(P3(X+.05,Y+L+.12,.3),P3(X+L-.05,Y+L+.12,.3),'#8a6a4a',1); for(let k=0;k<4;k++){ const p=P3(X+.15+k*.17,Y+L+.12,.3); ln(p,{x:p.x,y:p.y+tw*.07},'#7a8a3a',2); } }});
-  if(b.t==='canal'){ cPlate(x,y,1,'#b9b2a3',0); const WC='#6fb3d6', isW=(i,j)=>{ const t=terr(i,j); if(t==='w'||t==='sea') return true; const q=bAt(i,j); return !!(q&&q.t==='canal'); };
-    poly([P3(x+.3,y+.3,0),P3(x+.7,y+.3,0),P3(x+.7,y+.7,0),P3(x+.3,y+.7,0)],WC);
-    if(isW(b.x-1,b.y)) poly([P3(x,y+.3,0),P3(x+.3,y+.3,0),P3(x+.3,y+.7,0),P3(x,y+.7,0)],WC); if(isW(b.x+1,b.y)) poly([P3(x+.7,y+.3,0),P3(x+1,y+.3,0),P3(x+1,y+.7,0),P3(x+.7,y+.7,0)],WC);
-    if(isW(b.x,b.y-1)) poly([P3(x+.3,y,0),P3(x+.7,y,0),P3(x+.7,y+.3,0),P3(x+.3,y+.3,0)],WC); if(isW(b.x,b.y+1)) poly([P3(x+.3,y+.7,0),P3(x+.7,y+.7,0),P3(x+.7,y+1,0),P3(x+.3,y+1,0)],WC);
-    const g=iso(x+.5,y+.5); circle(g.x+Math.sin(ph*2+b.x)*tw*.05,g.y,tw*.025,'rgba(255,255,255,.7)'); return P3(x+.5,y+.5,.05); }
+  if(b.t==='canal') return drawCanal(b,x,y,ph);
   if(b.t==='oxbarn'){ const top=kit(x,y,1,{h:.42,wall:'#b5443a',rt:'gable',roof:'#7a2f28',rows:1,cols:1}); const p=iso(x+.8,y+.95); emoji('🐂',p.x,p.y-tw*.1,tw*.24); return top; }
   if(b.t==='tractor'){ const top=kit(x,y,1,{h:.45,wall:'#ece7dd',roof:'#3f8a56',awn:'#f2c14e',rows:1,cols:2}); const p=iso(x+.75,y+.98); emoji('🚜',p.x,p.y-tw*.1,tw*.24); return top; }
   if(b.t==='hcenter'){ const top=kit(x,y,2,{h:.62,wall:'#dfe3e6',rt:'gable',roof:'#4d7cc7',emo:'🌾',rows:1,fn:(X,Y,L)=>{ cyl(X+L*.88,Y+L*.15,.2,0,1.3,'#cfd3d8'); cyl(X+L*.88,Y+L*.45,.2,0,1.3,'#bfc5cb'); }}); combine(x+.6,y+1.65,0); return top; }
@@ -2104,6 +2100,19 @@ function drawFarmB(b,x,y,w){ const ph=clock, m=monthNo();
     [['🐑',.5,1.4],['🐑',1.1,1.6],['🐄',1.5,1.25],['🧒',.95,1.05]].forEach(([e,a,c],i)=>{ const p=iso(x+a+Math.sin(ph*.5+i)*.05,y+c); emoji(e,p.x,p.y-tw*.12,tw*.22); }); return P3(x+1,y+1,.8); }
   return null; }
 
+// v2.32 水圳：參考台灣農田的混凝土水圳——草地上一條窄窄的水泥溝，兩側水泥邊、裡面流水，接到田的地方有小水門
+function drawCanal(b,x,y,ph){ const isW=(i,j)=>{ const t=terr(i,j); if(t==='w'||t==='sea') return 1; const q=bAt(i,j); return q&&q.t==='canal'?2:0; };
+  const c0=R2(b.x+.5,b.y+.5), arms=[], fields=[];
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{ const c1=R2(b.x+dx+.5,b.y+dy+.5), d=[Math.round(c1[0]-c0[0]),Math.round(c1[1]-c0[1])]; const w=isW(b.x+dx,b.y+dy); if(w) arms.push(d); else { const q=bAt(b.x+dx,b.y+dy); if(q&&CB[q.t].crop) fields.push(d); } });
+  const hw=.15, rim=.06, Q=(x0,y0,x1,y1,z,col)=>poly([P3(x+x0,y+y0,z),P3(x+x1,y+y0,z),P3(x+x1,y+y1,z),P3(x+x0,y+y1,z)],col);
+  const rect=(d,e)=>{ const m=.5, a=hw+e; if(!d) return [m-a,m-a,m+a,m+a]; const [dx,dy]=d; return dx>0?[m-a,m-a,1,m+a]:dx<0?[0,m-a,m+a,m+a]:dy>0?[m-a,m-a,m+a,1]:[m-a,0,m+a,m+a]; };
+  const parts=[null,...arms];
+  parts.forEach(d=>{ const r=rect(d,rim); Q(r[0],r[1],r[2],r[3],.025,'#c9c6bd'); });
+  parts.forEach(d=>{ const r=rect(d,0); Q(r[0],r[1],r[2],r[3],.025,'#4f93b8'); });
+  parts.forEach(d=>{ const r=rect(d,0), horiz=d?d[0]!==0:false; if(!d||horiz) Q(r[0],r[1],r[2],r[1]+.06,.025,'#7d8a92'); if(!d||!horiz) Q(r[0],r[1],r[0]+.06,r[3],.025,'#8d989f'); });
+  arms.forEach((d,i)=>{ for(let k=0;k<2;k++){ const t=((ph*.35+k*.5+i*.23+(b.x+b.y)*.17)%1), along=.5+(d[0]||d[1])*(t*.5), px=d[0]?along:.5+(k?.05:-.05), py=d[1]?along:.5+(k?.05:-.05); const p=P3(x+px,y+py,.03); circle(p.x,p.y,tw*.018,'rgba(220,240,255,.85)'); } });
+  if(fields.length&&(b.x+b.y)%2===0){ const d=fields[0], gx=.5+d[0]*(hw+rim*.5), gy=.5+d[1]*(hw+rim*.5); box(x+gx-.05,y+gy-.05,.1,.1,.16,'#9aa3a8',.02); const w=P3(x+gx,y+gy,.24); circle(w.x,w.y,tw*.035,'#d9473b'); circle(w.x,w.y,tw*.014,'#9aa3a8'); }
+  return P3(x+.5,y+.5,.05); }
 // 收成月田裡的採收畫面：依採收方式換人、牛、耕耘機、聯合收割機
 function combine(X,Y,z){ box(X,Y,.55,.36,.26,'#f2c14e',z); box(X+.3,Y+.04,.22,.26,.22,'#3f8a56',z+.26); box(X-.12,Y-.02,.12,.4,.08,'#c99a2a',z+.04); }
 function drawHarvest(b,x,y,ph){ const hm=b.hm||'hand', t=(ph*.06+((b.x*7+b.y*3)%10)/10)%1, row=Math.floor(t*3), u=t*3-row, ux=row%2?1-u:u, X=x+.2+ux*1.3, Y=y+.3+row*.55;
@@ -2494,7 +2503,7 @@ function drawPed(p){
 }
 let groundVer=0, vigG=null, vigK='';
 const gC={cv:document.createElement('canvas'),key:'',cx:0,cy:0,tw:0,W:0,H:0};
-const HEST={coal:1.5,wind:1.7,fusion:1.2,house:.8,apt:1.6,tower:3.0,treeh:1.3,conv:1,bubble:1.2,market:.8,mall:1.9,startup:1.0,solar:.3,robot:1.4,ai:1.4,park:.15,bigpark:.15,museum:1.0,onsen:.9,ferris:2.0,beach:.4,lighthouse:1.6,duck:1.8,school:1.2,lost:1,garbage:.5,sewage:.5,recycle:1,stadium:.8,port:1.4,airport:1.0,mrt:1.1,balloon:.9,bus:.7,bike:.3,cityhall:1.6,shiba:1.1,fire:1};
+const HEST={canal:.01,rice:.01,veg:.01,orchard:.6,coal:1.5,wind:1.7,fusion:1.2,house:.8,apt:1.6,tower:3.0,treeh:1.3,conv:1,bubble:1.2,market:.8,mall:1.9,startup:1.0,solar:.3,robot:1.4,ai:1.4,park:.15,bigpark:.15,museum:1.0,onsen:.9,ferris:2.0,beach:.4,lighthouse:1.6,duck:1.8,school:1.2,lost:1,garbage:.5,sewage:.5,recycle:1,stadium:.8,port:1.4,airport:1.0,mrt:1.1,balloon:.9,bus:.7,bike:.3,cityhall:1.6,shiba:1.1,fire:1};
 const hsh=(x,y)=>{ let h=(x*374761393+y*668265263)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
 function groundKey(){ return [ROTV,citySize(),seasonOf(monthNo()),groundVer,Math.round(baseTw),W,H].join('|'); }
 function drawGroundStatic(){
@@ -2615,6 +2624,9 @@ function rateBuild(k,x,y){
   else if(k==='fire'){ const st=S.city.b.filter(q=>q.t==='fire'); const cand=S.city.b.filter(q=>!CB[q.t].fixed&&q.t!=='fire'); const unc=cand.filter(q=>!st.some(f=>gapOf(q.x,q.y,BW(q),f.x,f.y,1)<=6)), cov=cand.filter(q=>gapOf(q.x,q.y,BW(q),x,y,1)<=6&&unc.includes(q)).length; need=cand.length?Math.min(1,cov/6):0; place=1; why=cov?`能保護附近 ${cov} 棟還沒有消防保護的建築`:'附近已經有消防局，或附近沒有建築'; }
   else if(D.pwr){ const p=CS.pw||{cap:0,use:0}, short=Math.max(0,p.use-p.cap), soon=p.use>p.cap*.8; need=short>0?1:soon?.7:.3; place=(D.smell&&homes2)?.25:1; if(k==='wind'&&viewOf({t:k,x,y,w})&&['sea','hill'].includes(viewOf({t:k,x,y,w}))) place=1;
     why=(D.smell&&homes2)?'離住宅太近，煙會飄進家裡':short>0?'正在停電，大家等這座發電廠等好久了':soon?'電快不夠了，這座來得剛好':'電還夠用，多的電可以賣給隔壁城市'; }
+  else if(themeOf()==='farm'&&(D.crop||k==='veg')){ const me={t:k,x,y,w}, ok=t=>S.city.b.filter(q=>q.t===t&&q.ok&&!q.burnt);
+    const hm=ok('hcenter').length?'central':ok('tractor').some(q=>farmGap(q,me)<=6)?'tractor':ok('oxbarn').some(q=>farmGap(q,me)<=4)?'ox':'hand', M=HM[hm], H=farmHands(), extra=D.crop?(M.one?1:Math.round(HANDS[k]*M.h)):0, enough=!D.crop||H.have>=H.need+extra;
+    need=enough?1:.55; place={central:1,tractor:1,ox:.9,hand:.8}[hm]; why=!D.crop?'每天都有菜可以賣':enough?`${M.i} ${M.n}採收，人手夠，收成沒問題`:`收成要 ${extra} 個人手，村裡快不夠了，蓋 🐂 牛舍或 🚜 農機行`; }
   else if(D.exp||D.jobs){ need=D.jobs?Math.max(jobNeed,.15):.35; place=(D.noise&&homes2)?.6:1; why=D.jobs?(jobNeed>.3?`創造 ${D.jobs} 個工作，失業的人有救了`:'工作機會已經很多，現在缺的是人'):'穩定賺外地的錢，市民沒什麼感覺'; }
   else { need=.4; why='對城市有一點幫助'; }
   if(D.happy) need=Math.min(1,need+D.happy*.03);
@@ -3077,7 +3089,7 @@ function citySetHTML(){
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.31</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.32</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
