@@ -64,7 +64,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}body.gapfix nav{padding-bottom:4px}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
-body.godm header .top,body.godm header .row2{display:none!important}#godTop{pointer-events:auto;align-self:stretch;max-width:520px;background:rgba(255,253,248,.96);border:2px solid var(--line);border-radius:16px;padding:6px 12px 8px;display:flex;flex-direction:column;gap:4px}#godTop .gt1{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--soft)}#godTop .gt2,#godTop .gs,#gPw{display:flex;align-items:center;gap:8px}#godTop .gb,#gPw .gb{position:relative;flex:1;height:14px;background:#efe6d6;border-radius:7px;overflow:visible}#godTop .gb i,#gPw .gb i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;transition:width .3s}#godTop .gb u{position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1px;background:#3fae7a;border-radius:2px}#godTop #gAp{font-size:20px;font-weight:900;min-width:54px;text-align:right}#godTop .gs{font-size:12px;font-weight:800;color:#c0392b}#godTop .gs .gb{height:8px}#godTop .gs b{min-width:54px;text-align:right}#gPw{padding:0 14px 6px;font-size:13px;font-weight:900;color:#7a4fc0}#gPw .gb{height:10px;background:#ece3f7}#gPw i{background:#9b6dd6}#gPw b{min-width:26px;text-align:right}
+body.godm header .top,body.godm header .row2{display:none!important}#godTop{pointer-events:auto;align-self:stretch;max-width:520px;background:rgba(255,253,248,.96);border:2px solid var(--line);border-radius:16px;padding:6px 12px 8px;display:flex;flex-direction:column;gap:4px}#godTop .gt1{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--soft)}#godTop .gt2,#godTop .gs,#gPw{display:flex;align-items:center;gap:8px}#godTop .gb,#gPw .gb{position:relative;flex:1;height:14px;background:#efe6d6;border-radius:7px;overflow:visible}#godTop .gb i,#gPw .gb i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;transition:width .3s}#godTop .gb u{position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1px;background:#3fae7a;border-radius:2px}#godTop #gAp{font-size:20px;font-weight:900;min-width:54px;text-align:right}#gFx{display:flex;flex-direction:column;gap:3px}#gFx:empty{display:none}#gFx .fr{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--ink)}#gFx .fr span{flex:none}#gFx .fr em{flex:1;font-style:normal;font-weight:700;color:var(--soft);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#gFx .fr b{flex:none;font-size:12px;color:#7a4fc0}#gFx .fr.new{animation:frIn .9s ease-out}@keyframes frIn{0%{background:#f1e8fb}100%{background:transparent}}
+#godTop .gs{font-size:12px;font-weight:800;color:#c0392b}#godTop .gs .gb{height:8px}#godTop .gs b{min-width:54px;text-align:right}#gPw{padding:0 14px 6px;font-size:13px;font-weight:900;color:#7a4fc0}#gPw .gb{height:10px;background:#ece3f7}#gPw i{background:#9b6dd6}#gPw b{min-width:26px;text-align:right}
 #navG{gap:3px;padding-left:5px;padding-right:5px}#navG button i{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;font-weight:900;color:#7a4fc0}#navG button.off{opacity:.42}#navG button.fit::after{content:'👍';position:absolute;top:-7px;left:-3px;font-size:15px}.hint{animation:hintb .8s ease-in-out infinite;border-color:#9b6dd6!important}@keyframes hintb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}.gfl{position:absolute;z-index:6;font-weight:900;font-size:20px;pointer-events:none;text-shadow:0 1px 0 #fff,0 -1px 0 #fff,1px 0 0 #fff,-1px 0 0 #fff;animation:gfl 1.4s ease-out forwards}@keyframes gfl{0%{transform:translateY(6px) scale(.8);opacity:0}20%{transform:translateY(0) scale(1.15);opacity:1}100%{transform:translateY(-16px);opacity:0}}#navG button.aim{border-color:#9b6dd6;background:#f1e8fb;box-shadow:0 3px 0 #c9b3ea}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;font-weight:900}
@@ -147,7 +148,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
         </div>
       </div>
       <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span><button class="chipbtn hidden" id="godPw"></button><button class="chipbtn hidden" id="godSus"></button></div>
-      <div id="godTop" class="hidden"><div class="gt1"><span>🤖 支持率・壓到 50% 就贏</span><span id="gEl"></span></div><div class="gt2"><div class="gb"><i id="gApF"></i><u></u></div><b id="gAp"></b></div><div class="gs hidden" id="gSusR"><span>👀 懷疑</span><div class="gb"><i id="gSusF"></i></div><b id="gSus"></b></div></div>
+      <div id="godTop" class="hidden"><div class="gt1"><span>🤖 支持率・壓到 50% 就贏</span><span id="gEl"></span></div><div class="gt2"><div class="gb"><i id="gApF"></i><u></u></div><b id="gAp"></b></div><div id="gFx"></div><div class="gs hidden" id="gSusR"><span>👀 懷疑</span><div class="gb"><i id="gSusF"></i></div><b id="gSus"></b></div></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -2995,7 +2996,7 @@ function deputyTick(dt){
   depT-=dt; if(depT>0) return; depT=.5;
   depList=S.god?godAdvice():deputyAdvice(); const top=depList[0]; const urgent=top.lv>=3;
   const key=depList.map(a=>a.t.replace(/[0-9:,]+/g,'')).join('|');
-  if(key!==depKey){ depKey=key; depIdx=0; } else if(!urgent&&(Math.floor(clock)%7===0)) depIdx=(depIdx+1)%Math.min(3,depList.length);
+  if(key!==depKey){ depKey=key; depIdx=0; } else if(!urgent&&!S.god&&(Math.floor(clock)%7===0)) depIdx=(depIdx+1)%Math.min(3,depList.length);
   const a=depList[Math.min(depIdx,depList.length-1)];
   if($('depTxt').innerHTML!==a.t) $('depTxt').innerHTML=a.t;
   el.classList.toggle('urgent',a.lv>=3); el.classList.toggle('good',!!a.good&&a.lv<3);
@@ -3096,10 +3097,10 @@ function hud(){
 let tickTimer=null;
 let HSIM=false;
 function ticker(msg){ if(HSIM&&mode==='city') return; const el=$('ticker'); el.textContent=msg; el.classList.add('flash'); clearTimeout(tickTimer); tickTimer=setTimeout(()=>el.classList.remove('flash'),600); }
-function toast(icon,title,sub){ if(S&&S.god&&!TOASTOK) return;
+function toast(icon,title,sub,dur){ if(S&&S.god&&!TOASTOK) return;
   const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icoH(icon)}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
   $('toast').appendChild(el); sfx.pop();
-  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },dur||2800);
 }
 function openSheet(fn){ sheetFn=fn; $('sheetBody').innerHTML=fn(); $('sheetWrap').classList.remove('hidden'); }
 function refreshSheet(){ if(sheetFn&&!$('sheetWrap').classList.contains('hidden')) $('sheetBody').innerHTML=sheetFn(); }
@@ -3135,7 +3136,7 @@ function citySetHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     <div class="toggle"><span>🌙 日夜變化</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
     <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.40</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.41</div>`;
   return `<h2>⚙️ 設定</h2><div class="sub">${CITY_STAGES[S.city.stage].name}・${CITY_STAGES[S.city.stage].mayor}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>當市長第<b>${yearNo()} 年</b></div><div>人口<b>👥 ${fmt(CS.pop)}</b></div><div>建築<b>🏢 ${S.city.b.length} 棟</b></div><div>道路<b>🛣️ ${ROADS.size} 格</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div><div>完成任務<b>🎯 ${S.city.misDone||0} 個</b></div></div>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
@@ -3144,7 +3145,7 @@ function citySetHTML(){
     <div class="row"><button class="btn ghost" data-act="godStart">😈 破壞神模式：搞垮 AI 市長的城市</button></div>
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.40</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.41</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
@@ -3198,8 +3199,11 @@ const GOD_TIPS=['💡 市民越不爽，😈 回得越快','💡 小偷別放在
 const aiPer=()=>AI_PER[S.god.per]||AI_PER.vain;
 const godEff=k=>{ const g=S.god; return Math.max(.35,Math.pow(.75,g.used[k]||0))*(g.shrine?.75:1); };
 const godFx=(k,o)=>S.city.fx.push(Object.assign({k},o));
-function godToast(i,t,s){ TOASTOK=1; toast(i,t,s); TOASTOK=0; }
-function aiSay(m){ const g=S.god; ticker('🤖 '+m); g.log.unshift(m); g.log.length=Math.min(g.log.length,6); }
+// 破壞神模式的提示一次只出一張、停久一點，才看得清楚
+let gtQ=[], gtBusy=0;
+function godToast(i,t,s){ if(gtQ.length>=3) gtQ.shift(); gtQ.push([i,t,s]); if(!gtBusy) gtNext(); }
+function gtNext(){ const m=gtQ.shift(); if(!m){ gtBusy=0; return; } gtBusy=1; TOASTOK=1; toast(m[0],m[1],m[2],3600); TOASTOK=0; setTimeout(gtNext,3900); }
+function aiSay(m,quiet){ const g=S.god; if(!quiet){ ticker('🤖 '+m); g.loud={m,t:S.time}; } g.log.unshift(m); g.log.length=Math.min(g.log.length,6); }
 // 民怨：市民把怪事算在市長頭上，直接扣支持率；會慢慢被淡忘，市長處理得好也會消一點
 function blame(n){ const g=S.god; g.blame=Math.max(-10,Math.min(70,(g.blame||0)+n)); if(Math.abs(n)>=1) voteFloat(-Math.round(n)); }
 function voteFloat(v){ const c=S.god?$('gAp'):$('voteChip'), st=$('stage'); if(!c||c.offsetParent===null) return; const r=c.getBoundingClientRect(), s0=st.getBoundingClientRect(), el=document.createElement('div'); el.className='gfl'; el.style.left=Math.round(r.right-s0.left-30)+'px'; el.style.top=Math.round(r.top-s0.top-14)+'px'; el.style.color=v<0?'#e2574c':'#3fae7a'; el.textContent=(v>0?'+':'')+v; st.appendChild(el); setTimeout(()=>el.remove(),1400); }
@@ -3221,7 +3225,7 @@ function aiStep(seed){ const g=S.god, P=aiPer(), c=S.city;
     if(L&&L.n<0){ cityBulldoze(L.b.x,L.b.y); aiSay(`市庫赤字，拆掉賠錢的${CB[L.b.t].name}`); return 1; } return 0; }
   const res=seed?0:P.reserve; let tries=0, full=0;
   for(const k of aiWants()){ if(S.money<costOf(k)+res) continue; if(++tries>6) break; const sp=aiSpot(k); if(!sp||sp.stars<(AI_MUST.has(k)?0:2)||godBlocked(sp.x,sp.y,CB[k].w)){ full++; continue; }
-    if(cityPlace(k,sp.x,sp.y,{quiet:1,ai:1})){ g.want=(g.want||[]).filter(q=>q!==k); if(!seed) aiSay(`蓋了 ${CB[k].icon} ${CB[k].name}`); return 1; } }
+    if(cityPlace(k,sp.x,sp.y,{quiet:1,ai:1})){ g.want=(g.want||[]).filter(q=>q!==k); if(!seed) aiSay(`蓋了 ${CB[k].icon} ${CB[k].name}`,1); return 1; } }
   return full&&S.money>=200+res&&roadFront()<10?aiRoad(seed):0; }
 function roadFront(){ const n=citySize(); let c=0; for(let x=0;x<n;x++) for(let y=0;y<n;y++) if(freeTile(x,y)&&nearRoad(x,y,1)) c++; return c; }
 function aiRoad(seed){ const n=citySize(), cx=6.5, cy=6.5, ok=(x,y)=>x>=0&&y>=0&&x<n&&y<n&&!isRoad(x,y)&&!bAt(x,y)&&!blocked(x,y)&&!['sea','s'].includes(terr(x,y))&&!godBlocked(x,y,1); let best=null;
@@ -3229,17 +3233,17 @@ function aiRoad(seed){ const n=citySize(), cx=6.5, cy=6.5, ok=(x,y)=>x>=0&&y>=0&
     DIRS.forEach(([dx,dy])=>{ for(const L of [4,3]){ let good=true; const T=[];
       for(let i=1;i<=L;i++){ const tx=x+dx*i, ty=y+dy*i; if(!ok(tx,ty)||isRoad(tx+dy,ty+dx)||isRoad(tx-dy,ty-dx)){ good=false; break; } T.push([tx,ty]); }
       if(!good) continue; const m=T[T.length>>1], sc=Math.hypot(m[0]-cx,m[1]-cy)+Math.random()*2.5-L*.3; if(!best||sc<best.sc) best={T,sc}; break; } }); });
-  if(!best) return aiRoadBFS(seed); let k=0; best.T.forEach(([x,y])=>{ if(cityPlace('road',x,y)) k++; }); if(k&&!seed) aiSay(`鋪了一段 ${k} 格的新路`); return k?1:0; }
+  if(!best) return aiRoadBFS(seed); let k=0; best.T.forEach(([x,y])=>{ if(cityPlace('road',x,y)) k++; }); if(k&&!seed) aiSay(`鋪了一段 ${k} 格的新路`,1); return k?1:0; }
 // 路口都被房子堵住時：從現有道路沿著空地找一條通往大片空地的小路
 function aiRoadBFS(seed){ const prev=new Map(), Q=[], open=(x,y)=>{ let c=0; for(let a=-2;a<=2;a++) for(let b=-2;b<=2;b++) if(freeTile(x+a,y+b)) c++; return c; };
   ROADS.forEach(k=>{ const [x,y]=k.split(',').map(Number); DIRS.forEach(([dx,dy])=>{ const a=x+dx, b=y+dy, kk=a+','+b; if(freeTile(a,b)&&!prev.has(kk)){ prev.set(kk,null); Q.push([a,b]); } }); });
   for(let i=0;i<Q.length;i++){ const [x,y]=Q[i];
-    if(open(x,y)>=12){ const path=[]; let k=x+','+y; while(k){ path.push(k.split(',').map(Number)); k=prev.get(k); } if(path.length>12) return 0; let n=0; path.reverse().forEach(([a,b])=>{ if(cityPlace('road',a,b)) n++; }); if(n&&!seed) aiSay(`開了一條 ${n} 格的小路通往空地`); return n?1:0; }
+    if(open(x,y)>=12){ const path=[]; let k=x+','+y; while(k){ path.push(k.split(',').map(Number)); k=prev.get(k); } if(path.length>12) return 0; let n=0; path.reverse().forEach(([a,b])=>{ if(cityPlace('road',a,b)) n++; }); if(n&&!seed) aiSay(`開了一條 ${n} 格的小路通往空地`,1); return n?1:0; }
     DIRS.forEach(([dx,dy])=>{ const a=x+dx, b=y+dy, kk=a+','+b; if(freeTile(a,b)&&!prev.has(kk)){ prev.set(kk,x+','+y); Q.push([a,b]); } }); }
   return 0; }
 
 // ---- 進出模式（市長的城市先存在旁邊，回來原封不動） ----
-function cityRuntimeReset(){ WILD.length=0; wildKey=''; INC.length=0; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1; godAim=null; godFitT=0; setPlacing(null);
+function cityRuntimeReset(){ WILD.length=0; wildKey=''; INC.length=0; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1; godAim=null; godFitT=0; gtQ=[]; setPlacing(null);
   resetRuntime(); rot=S.city.rot||0; ROTV=rot; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey=''; groundVer++; cityDirty=true; }
 function setGodUI(on){ $('navC').classList.toggle('hidden',on); $('navG').classList.toggle('hidden',!on); document.body.classList.toggle('godm',on); $('godTop').classList.toggle('hidden',!on); $('gPw').classList.toggle('hidden',!on);
   document.querySelector('#deputy .dav').textContent=on?'😈':'🧑‍💼'; lastMoney=null; lastCityKey=''; godKey=''; depKey=''; layout(); }
@@ -3302,24 +3306,24 @@ function siteSpot(){ const n=citySize(); let best=null; for(let x=0;x<n-1;x++) f
 const godLook=(top,bot,hair)=>{ const L=genLook(); return Object.assign(L,{age:'adult',h:1,topCol:top,bottomCol:bot,hairCol:hair}); };
 function godDo(k,x,y,sb){ const effTxt=p=>p<100?`🧠 AI 學乖了，效果 ${p}%`:''; const g=S.god, R=aiPer().react, P=GODP[k], e=Math.min(1,godEff(k)*(k==='rumor'&&g.per==='vain'?1.25:1)), nid=()=>(g.id=(g.id||1)+1), pc=Math.round(e*100);
   if(k==='storm'){ const snow=seasonOf(monthNo())==='winter', nm=snow?'暴風雪':'豪雨', T=60, lb=(snow?'❄️ ':'⛈️ ')+nm;
-    g.tm=g.tm||{}; g.tm.storm=S.time; weather={type:snow?'snow':'rain',t:T}; godFx('sup',{s:'move',m:1-.45*e,until:S.time+T,lb}); godFx('rev',{s:'shop',m:1-.35*e,until:S.time+T}); godFx('tour',{m:1-.5*e,until:S.time+T}); godFx('happy',{n:-Math.round(9*e),until:S.time+T});
-    blame(9*e); godPay(k); g.rq.push({k,t:S.time+14*R}); godToast(P.icon,`${nm}來了！`,effTxt(pc)); ticker(snow?'❄️ 暴風雪！市民被困在家裡，只能看電視罵市長。':'⛈️ 豪雨下不停！騎樓淹水，公車開成了船。'); return true; }
+    g.tm=g.tm||{}; g.tm.storm=S.time; g.tm.snow=snow; g.tm.spc=pc; weather={type:snow?'snow':'rain',t:T}; godFx('sup',{s:'move',m:1-.45*e,until:S.time+T,lb}); godFx('rev',{s:'shop',m:1-.35*e,until:S.time+T}); godFx('tour',{m:1-.5*e,until:S.time+T}); godFx('happy',{n:-Math.round(9*e),until:S.time+T});
+    blame(9*e); godPay(k); g.rq.push({k,t:S.time+14*R}); ticker(snow?'❄️ 暴風雪！市民被困在家裡，只能看電視罵市長。':'⛈️ 豪雨下不停！騎樓淹水，公車開成了船。'); return true; }
   if(k==='rumor'){ const D=CB[sb.t], cat=D.cat, Rm=RUMOR[cat]||['🤨','偷偷漲價'], T=75, id=nid();
     godFx('rev',{s:cat,m:1-.55*e,until:S.time+T,lb:'🗣️ 謠言',gid:id}); godFx('happy',{n:-2,until:S.time+T,gid:id}); if(cat==='home') godFx('home',{m:1-.2*e,until:S.time+T,gid:id});
-    g.ent.push({id,k:'rumor',cat,icon:Rm[0],until:S.time+T}); const fuel=protest; blame(7*e*(fuel?2:1)); if(fuel) setTimeout(()=>gCombo('fuel'),900); godPay(k); g.rq.push({k,id,t:S.time+(g.per==='vain'?28:20)*R});
-    godToast(Rm[0],`「${D.name}${Rm[1]}」`,effTxt(pc)||`${CATNM[cat]||'同類建築'}都沒人去了`); return true; }
+    g.ent.push({id,k:'rumor',cat,icon:Rm[0],until:S.time+T,t0:S.time,pc,say:Rm[1]}); const fuel=protest; blame(7*e*(fuel?2:1)); if(fuel) setTimeout(()=>gCombo('fuel'),900); godPay(k); g.rq.push({k,id,t:S.time+(g.per==='vain'?28:20)*R});
+    return true; }
   if(k==='shiba'){ const r=roadNear2(x,y); if(!r) return false; const T=70, id=nid(), tiles=[r], seen=new Set([r+'']);
     for(let i=0;i<tiles.length&&tiles.length<7;i++){ const [a,b]=tiles[i]; DIRS.forEach(([dx,dy])=>{ const q=[a+dx,b+dy]; if(isRoad(q[0],q[1])&&!seen.has(q+'')&&Math.hypot(q[0]-r[0],q[1]-r[1])<=3){ seen.add(q+''); tiles.push(q); } }); }
     const dogs=tiles.slice(0,7).map(([a,b])=>({x:a+.25+Math.random()*.5,y:b+.25+Math.random()*.5,col:pick(['red','red','sesame','black','white']),dir:Math.random()<.5?1:-1,pose:pick(['sleep','sleep','sit'])}));
     const wet=stormOn(); let n=0; S.city.b.forEach(b=>{ if(CB[b.t].fixed||b.burnt) return; if(tiles.some(([a,c])=>gapOf(b.x,b.y,BW(b),a,c,wet?2:1)<=1)){ b.jam=S.time+T; b.jamM=1-(wet?.8:.5)*e; b.jg=id; n++; } });
-    godFx('sup',{s:'move',m:1-.25*e,until:S.time+T,gid:id}); g.ent.push({id,k:'dogs',dogs,until:S.time+T}); blame(3*e*(wet?2.5:1)); godPay(k); if(wet) setTimeout(()=>gCombo('wetdog'),900); g.rq.push({k,id,t:S.time+30*R});
-    godToast('🐕','柴犬在馬路上曬太陽',effTxt(pc)||`${n} 間店沒人進得去`); ticker('🐕 一群柴犬躺在馬路中間，車子只能停下來等，市民邊塞車邊拍照。'); return true; }
-  if(k==='tempt'){ godPay(k); const p=aiPer().acc*Math.pow(.7,g.used.tempt-1); g.rq.push({k,t:S.time+6,ok:Math.random()<p}); godToast('🤝','建商去找市長了','看他收不收…'); return true; }
-  if(k==='thief'){ const r=roadNear2(x,y); if(!r) return false; g.ent.push({id:nid(),k:'thief',px:r[0],py:r[1],nx:r[0],ny:r[1],t:1,x:r[0]+.5,y:r[1]+.5,until:S.time+90,e,hit:0,stT:1,look:godLook('#2c2f38','#1d1f24','#1e1e1e'),seed:Math.random()*9}); godPay(k);
-    godToast('🦹','小偷進城了',effTxt(Math.round(e*100))); return true; }
+    godFx('sup',{s:'move',m:1-.25*e,until:S.time+T,gid:id}); g.ent.push({id,k:'dogs',dogs,until:S.time+T,t0:S.time,n,pc}); blame(3*e*(wet?2.5:1)); godPay(k); if(wet) setTimeout(()=>gCombo('wetdog'),900); g.rq.push({k,id,t:S.time+30*R});
+    ticker('🐕 一群柴犬躺在馬路中間，車子只能停下來等，市民邊塞車邊拍照。'); return true; }
+  if(k==='tempt'){ godPay(k); const p=aiPer().acc*Math.pow(.7,g.used.tempt-1); g.rq.push({k,t:S.time+6,t0:S.time,ok:Math.random()<p}); return true; }
+  if(k==='thief'){ const r=roadNear2(x,y); if(!r) return false; g.ent.push({id:nid(),k:'thief',px:r[0],py:r[1],nx:r[0],ny:r[1],t:1,x:r[0]+.5,y:r[1]+.5,until:S.time+90,e,hit:0,stT:1,look:godLook('#2c2f38','#1d1f24','#1e1e1e'),seed:Math.random()*9,t0:S.time}); godPay(k);
+    return true; }
   if(k==='scam'){ const s=scamSpot(x,y); if(!s) return false; const id=nid(), dt0=rumorOn(); if(dt0) setTimeout(()=>gCombo('distrust'),900); godFx('rev',{m:1-(dt0?.4:.25)*e,until:S.time+9999,lb:'📞 詐騙集團',gid:id}); godFx('happy',{n:-Math.round(4*e),until:S.time+9999,gid:id});
     g.ent.push({id,k:'scam',tx:s[0],ty:s[1],w:1,t0:S.time,look:godLook('#2b3550','#2b3550','#2a2a2a'),e:e*(dt0?1.6:1)}); blame(4*e*(dt0?2:1)); godPay(k); g.rq.push({k,id,t:S.time+Math.max(20,55*R/(1+.5*(g.used.scam-1)))});
-    godToast('📞','假說明會開張了',effTxt(Math.round(e*100))||'居民的錢被騙走了'); return true; }
+    return true; }
   return false; }
 function aiReact(r){ const g=S.god, ent=id=>g.ent.find(e=>e.id===id), cut=(id,t=S.time)=>S.city.fx.forEach(f=>{ if(f.gid===id) f.until=Math.min(f.until,t); });
   if(r.k==='storm'){ const c=P10(Math.max(300,netPerMin()*.5)); S.money-=c; blame(-2); aiSay(`市長穿雨衣到現場視察，花 $${fmt(c)} 加蓋排水溝`); }
@@ -3381,7 +3385,18 @@ function godHud(){ const g=S.god; if(!g) return;
   const key=Object.keys(GODP).map(k=>`${g.pw>=GODP[k].cost?1:0}${(g.cd[k]||0)>S.time?1:0}${godAim===k?1:0}`).join('')+'|'+Math.floor(g.pw)+'|'+Math.round(g.sus)+'|'+g.tut+'|'+Object.keys(godFits()).filter(k=>!godFits()[k].hide).join(''); if(key===godKey) return; godKey=key;
   document.querySelectorAll('#navG [data-gp]').forEach(btn=>{ const k=btn.dataset.gp, P=GODP[k]; btn.classList.toggle('off',g.pw<P.cost||(g.cd[k]||0)>S.time); btn.classList.toggle('aim',godAim===k); btn.classList.toggle('hint',g.tut===1&&k==='storm'); const F=godFits()[k]; btn.classList.toggle('fit',!!F&&!F.hide&&g.tut!==1); });
   const pw=Math.max(0,Math.floor(g.pw)); $('gPwF').style.width=pw+'%'; $('gPwN').textContent=pw; const su=Math.round(g.sus); $('gSusR').classList.toggle('hidden',su<20); $('gSusF').style.width=su+'%'; $('gSusF').style.background=su>=70?'#e2574c':'#f2a33a'; $('gSus').textContent=su+'%'; $('godTop').classList.toggle('hint',g.tut===2); }
-function godTopTick(){ if(!S.god) return; const v=voteState(), ap=approval(), t=Math.max(0,v.next-S.time), el=`🗳️ ${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} 開票`; if($('gEl').textContent!==el) $('gEl').textContent=el; const a=ap+'%'; if($('gAp').textContent!==a){ $('gAp').textContent=a; $('gAp').style.color=ap<50?'#3fae7a':'#3b2f2a'; $('gApF').style.width=ap+'%'; $('gApF').style.background=ap<50?'#3fae7a':'#a08fc2'; } }
+function godFxRows(){ const g=S.god, R=[], tm=g.tm||{}, mm=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, ef=p=>p&&p<100?`（AI 學乖了，效果 ${p}%）`:'';
+  if(stormOn()) R.push({t0:tm.storm,ic:tm.snow?'❄️':'⛈️',nm:tm.snow?'暴風雪':'豪雨',d:'交通、商店、觀光變差'+ef(tm.spc),r:tm.storm+60-S.time});
+  g.ent.forEach(e=>{ if(e.k==='rumor') R.push({t0:e.t0,ic:e.icon,nm:'謠言',d:`「${e.say||''}」${CATNM[e.cat]||''}沒人去`+ef(e.pc),r:e.until-S.time});
+    else if(e.k==='dogs'&&!e.leave) R.push({t0:e.t0,ic:'🐕',nm:'柴犬擋路',d:`附近 ${e.n||0} 間店沒人進得去`+ef(e.pc),r:e.until-S.time});
+    else if(e.k==='thief') R.push({t0:e.t0,ic:'🦹',nm:'小偷',d:`已經偷了 ${e.hit} 間店`,r:e.until-S.time});
+    else if(e.k==='scam') R.push({t0:e.t0,ic:'📞',nm:'假說明會',d:'全城消費變少，直到市府取締',r:null}); });
+  const tp=g.rq.find(q=>q.k==='tempt'); if(tp) R.push({t0:tp.t0,ic:'🤝',nm:'建商',d:'正在找市長談…',r:tp.t-S.time});
+  if(loanOn()){ const f=fxL('loan').find(f=>f.lb==='🏗️ 爛尾購物城'); R.push({t0:-1,ic:'💸',nm:'市長在還債',d:'市庫每分鐘被扣錢',r:f.until-S.time}); }
+  return R.sort((a,b)=>(b.t0||0)-(a.t0||0)).slice(0,3).map(x=>({...x,rs:x.r==null?'':mm(x.r)})); }
+let gFxKey='';
+function godTopTick(){ if(!S.god) return;
+  { const R=godFxRows(), key=R.map(x=>x.ic+x.d+x.rs).join('|'); if(key!==gFxKey){ gFxKey=key; $('gFx').innerHTML=R.map(x=>`<div class="fr${S.time-(x.t0||-9)<1.5?' new':''}"><span>${x.ic} ${x.nm}</span><em>${x.d}</em><b>${x.rs}</b></div>`).join(''); } } const v=voteState(), ap=approval(), t=Math.max(0,v.next-S.time), el=`🗳️ ${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} 開票`; if($('gEl').textContent!==el) $('gEl').textContent=el; const a=ap+'%'; if($('gAp').textContent!==a){ $('gAp').textContent=a; $('gAp').style.color=ap<50?'#3fae7a':'#3b2f2a'; $('gApF').style.width=ap+'%'; $('gApF').style.background=ap<50?'#3fae7a':'#a08fc2'; } }
 function godAdvice(){ const g=S.god, L=[], v=voteState(), ap=approval(), left=v.next-S.time, f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, go=()=>openSheet(godHTML);
   if(g.over) return [{lv:0,t:'這局結束了',go}];
   if(g.tut===1) return [{lv:2,t:'👇 先點 <b>⛈️ 天災</b> 試試看',go}];
@@ -3391,7 +3406,7 @@ function godAdvice(){ const g=S.god, L=[], v=voteState(), ap=approval(), left=v.
   if(left<=120) L.push({lv:2,good:ap<50,t:`🗳️ <b>${f(left)}</b> 後開票・AI ${ap}%${ap<50?'，他要落選了！':''}`,go});
   const th=g.ent.find(e=>e.k==='thief'); if(th) L.push({lv:1,t:`🦹 小偷偷了 <b>${th.hit}</b> 間`,go:()=>{ camX=th.x; camY=th.y; clampCam(); }});
   { const F=godFits(), k=Object.keys(F).find(q=>!F[q].hide); if(k) L.push({lv:1,good:1,t:`👍 ${F[k].why} → ${GODP[k].icon} <b>${GODP[k].name}</b>`,go:()=>godUse(k)}); }
-  if(g.log[0]) L.push({lv:1,t:`🤖 ${g.log[0]}`,go});
+  if(g.loud&&S.time-g.loud.t<15) L.push({lv:1,t:`🤖 ${g.loud.m}`,go});
   L.push({lv:0,t:GOD_TIPS[Math.floor(S.time/25)%GOD_TIPS.length],go}); return L; }
 // ---- v2.39 連招：照順序出招會加乘，第一次觸發收進圖鑑（S.meta.gdex，跨局保留） ----
 const GCOMBO={
