@@ -64,6 +64,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}body.gapfix nav{padding-bottom:4px}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
+body.godm header .top,body.godm header .row2{display:none!important}#godTop{pointer-events:auto;align-self:stretch;max-width:520px;background:rgba(255,253,248,.96);border:2px solid var(--line);border-radius:16px;padding:6px 12px 8px;display:flex;flex-direction:column;gap:4px}#godTop .gt1{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--soft)}#godTop .gt2,#godTop .gs,#gPw{display:flex;align-items:center;gap:8px}#godTop .gb,#gPw .gb{position:relative;flex:1;height:14px;background:#efe6d6;border-radius:7px;overflow:visible}#godTop .gb i,#gPw .gb i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;transition:width .3s}#godTop .gb u{position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1px;background:#3fae7a;border-radius:2px}#godTop #gAp{font-size:20px;font-weight:900;min-width:54px;text-align:right}#godTop .gs{font-size:12px;font-weight:800;color:#c0392b}#godTop .gs .gb{height:8px}#godTop .gs b{min-width:54px;text-align:right}#gPw{padding:0 14px 6px;font-size:13px;font-weight:900;color:#7a4fc0}#gPw .gb{height:10px;background:#ece3f7}#gPw i{background:#9b6dd6}#gPw b{min-width:26px;text-align:right}
 #navG{gap:3px;padding-left:5px;padding-right:5px}#navG button i{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;font-weight:900;color:#7a4fc0}#navG button.off{opacity:.42}#navG button.fit::after{content:'👍';position:absolute;top:-7px;left:-3px;font-size:15px}.hint{animation:hintb .8s ease-in-out infinite;border-color:#9b6dd6!important}@keyframes hintb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}.gfl{position:absolute;z-index:6;font-weight:900;font-size:20px;pointer-events:none;text-shadow:0 1px 0 #fff,0 -1px 0 #fff,1px 0 0 #fff,-1px 0 0 #fff;animation:gfl 1.4s ease-out forwards}@keyframes gfl{0%{transform:translateY(6px) scale(.8);opacity:0}20%{transform:translateY(0) scale(1.15);opacity:1}100%{transform:translateY(-16px);opacity:0}}#navG button.aim{border-color:#9b6dd6;background:#f1e8fb;box-shadow:0 3px 0 #c9b3ea}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;font-weight:900}
@@ -146,6 +147,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
         </div>
       </div>
       <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span><button class="chipbtn hidden" id="godPw"></button><button class="chipbtn hidden" id="godSus"></button></div>
+      <div id="godTop" class="hidden"><div class="gt1"><span>🤖 支持率・壓到 50% 就贏</span><span id="gEl"></span></div><div class="gt2"><div class="gb"><i id="gApF"></i><u></u></div><b id="gAp"></b></div><div class="gs hidden" id="gSusR"><span>👀 懷疑</span><div class="gb"><i id="gSusF"></i></div><b id="gSus"></b></div></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -154,6 +156,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
   </div>
   <div id="bottom">
     <div id="ticker">🏙️ 城市準備中…</div>
+    <div id="gPw" class="hidden"><span>😈 神力</span><div class="gb"><i id="gPwF"></i></div><b id="gPwN"></b></div>
     <nav id="navC">
       <button id="cBuild"><span>🏗️</span>建設</button>
       <button id="cRoad"><span>🛣️</span>鋪路</button>
@@ -3085,10 +3088,10 @@ let lastMoney=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
-  { const vc=$('voteChip'); if(S.god&&booted){ const v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, t=`🗳️ ${f(v.next-S.time)}・🤖 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(ap<50?'ok':ap<58?'mid':'bad')+(S.god.tut===2?' hint':''); } else if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
+  { const vc=$('voteChip'); if(S.god&&booted){ const v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, t=`🗳️ ${f(v.next-S.time)}・🤖 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(ap<50?'ok':ap<58?'mid':'bad'); } else if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   const m=Math.floor(S.money);
   if(m!==lastMoney){ $('money').textContent=(S.god?'🤖💰 ':'💰 ')+fmt(m); lastMoney=m; }
-  cityHud(); godHud();
+  cityHud(); godHud(); godTopTick();
 }
 let tickTimer=null;
 let HSIM=false;
@@ -3105,7 +3108,7 @@ $('sheetBg').onclick=closeSheet;
 $('bannerX').onclick=()=>{ if(godAim){ setGodAim(null); return; } setPlacing(null); };
 $('deputy').onclick=()=>{ ensureAudio(); const a=depList[Math.min(depIdx,depList.length-1)]; if(a&&a.go) a.go(); sfx.pop(); };
 $('voteChip').onclick=()=>{ ensureAudio(); openSheet(S.god?godHTML:cityGovHTML); };
-$('godPw').onclick=$('godSus').onclick=()=>{ ensureAudio(); openSheet(godHTML); };
+$('godPw').onclick=$('godSus').onclick=$('godTop').onclick=$('gPw').onclick=()=>{ ensureAudio(); openSheet(godHTML); };
 document.querySelectorAll('#navG [data-gp]').forEach(b=>b.onclick=()=>godUse(b.dataset.gp));
 $('gSet').onclick=()=>{ ensureAudio(); confirmReset=false; openSheet(citySetHTML); };
 $('satChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(S.god?godHTML:cityGovHTML); };
@@ -3132,7 +3135,7 @@ function citySetHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     <div class="toggle"><span>🌙 日夜變化</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
     <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.39</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.40</div>`;
   return `<h2>⚙️ 設定</h2><div class="sub">${CITY_STAGES[S.city.stage].name}・${CITY_STAGES[S.city.stage].mayor}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>當市長第<b>${yearNo()} 年</b></div><div>人口<b>👥 ${fmt(CS.pop)}</b></div><div>建築<b>🏢 ${S.city.b.length} 棟</b></div><div>道路<b>🛣️ ${ROADS.size} 格</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div><div>完成任務<b>🎯 ${S.city.misDone||0} 個</b></div></div>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
@@ -3141,7 +3144,7 @@ function citySetHTML(){
     <div class="row"><button class="btn ghost" data-act="godStart">😈 破壞神模式：搞垮 AI 市長的城市</button></div>
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.39</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.40</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
@@ -3199,7 +3202,7 @@ function godToast(i,t,s){ TOASTOK=1; toast(i,t,s); TOASTOK=0; }
 function aiSay(m){ const g=S.god; ticker('🤖 '+m); g.log.unshift(m); g.log.length=Math.min(g.log.length,6); }
 // 民怨：市民把怪事算在市長頭上，直接扣支持率；會慢慢被淡忘，市長處理得好也會消一點
 function blame(n){ const g=S.god; g.blame=Math.max(-10,Math.min(70,(g.blame||0)+n)); if(Math.abs(n)>=1) voteFloat(-Math.round(n)); }
-function voteFloat(v){ const c=$('voteChip'), st=$('stage'); if(!c||c.classList.contains('hidden')) return; const r=c.getBoundingClientRect(), s0=st.getBoundingClientRect(), el=document.createElement('div'); el.className='gfl'; el.style.left=Math.round(r.right-s0.left-30)+'px'; el.style.top=Math.round(r.top-s0.top-14)+'px'; el.style.color=v<0?'#e2574c':'#3fae7a'; el.textContent=(v>0?'+':'')+v; st.appendChild(el); setTimeout(()=>el.remove(),1400); }
+function voteFloat(v){ const c=S.god?$('gAp'):$('voteChip'), st=$('stage'); if(!c||c.offsetParent===null) return; const r=c.getBoundingClientRect(), s0=st.getBoundingClientRect(), el=document.createElement('div'); el.className='gfl'; el.style.left=Math.round(r.right-s0.left-30)+'px'; el.style.top=Math.round(r.top-s0.top-14)+'px'; el.style.color=v<0?'#e2574c':'#3fae7a'; el.textContent=(v>0?'+':'')+v; st.appendChild(el); setTimeout(()=>el.remove(),1400); }
 // 第一次碰到某個機制才講一句（每局一次）
 function godTip(k,i,t,s){ const g=S.god; g.seen=g.seen||{}; if(g.seen[k]) return; g.seen[k]=1; godToast(i,t,s); }
 function godSus(n,msg){ const g=S.god; g.sus=Math.min(100,g.sus+n); g.susMax=Math.max(g.susMax||0,g.sus); sfx.bad(); godToast('🚨',msg,`👀 +${n}`); }
@@ -3238,7 +3241,7 @@ function aiRoadBFS(seed){ const prev=new Map(), Q=[], open=(x,y)=>{ let c=0; for
 // ---- 進出模式（市長的城市先存在旁邊，回來原封不動） ----
 function cityRuntimeReset(){ WILD.length=0; wildKey=''; INC.length=0; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1; godAim=null; godFitT=0; setPlacing(null);
   resetRuntime(); rot=S.city.rot||0; ROTV=rot; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey=''; groundVer++; cityDirty=true; }
-function setGodUI(on){ $('navC').classList.toggle('hidden',on); $('navG').classList.toggle('hidden',!on); $('godPw').classList.toggle('hidden',!on); $('godSus').classList.toggle('hidden',!on);
+function setGodUI(on){ $('navC').classList.toggle('hidden',on); $('navG').classList.toggle('hidden',!on); document.body.classList.toggle('godm',on); $('godTop').classList.toggle('hidden',!on); $('gPw').classList.toggle('hidden',!on);
   document.querySelector('#deputy .dav').textContent=on?'😈':'🧑‍💼'; lastMoney=null; lastCityKey=''; godKey=''; depKey=''; layout(); }
 function enterGod(){
   if(!S.god){ saveLocal(); cloudSave(true); try{ localStorage.setItem(MAYOR_KEY,JSON.stringify(S)); }catch(e){} }
@@ -3377,13 +3380,13 @@ function godTap(sx,sy,x,y){ const k=godAim;
 function godHud(){ const g=S.god; if(!g) return;
   const key=Object.keys(GODP).map(k=>`${g.pw>=GODP[k].cost?1:0}${(g.cd[k]||0)>S.time?1:0}${godAim===k?1:0}`).join('')+'|'+Math.floor(g.pw)+'|'+Math.round(g.sus)+'|'+g.tut+'|'+Object.keys(godFits()).filter(k=>!godFits()[k].hide).join(''); if(key===godKey) return; godKey=key;
   document.querySelectorAll('#navG [data-gp]').forEach(btn=>{ const k=btn.dataset.gp, P=GODP[k]; btn.classList.toggle('off',g.pw<P.cost||(g.cd[k]||0)>S.time); btn.classList.toggle('aim',godAim===k); btn.classList.toggle('hint',g.tut===1&&k==='storm'); const F=godFits()[k]; btn.classList.toggle('fit',!!F&&!F.hide&&g.tut!==1); });
-  $('godPw').innerHTML=`😈 ${Math.floor(g.pw)}<span class="pb"><i style="width:${Math.floor(g.pw)}%"></i></span>`; $('godSus').textContent=`👀 ${Math.round(g.sus)}%`; $('godSus').className='chipbtn '+(g.sus>=70?'bad':g.sus>=45?'mid':'ok'); }
+  const pw=Math.max(0,Math.floor(g.pw)); $('gPwF').style.width=pw+'%'; $('gPwN').textContent=pw; const su=Math.round(g.sus); $('gSusR').classList.toggle('hidden',su<20); $('gSusF').style.width=su+'%'; $('gSusF').style.background=su>=70?'#e2574c':'#f2a33a'; $('gSus').textContent=su+'%'; $('godTop').classList.toggle('hint',g.tut===2); }
+function godTopTick(){ if(!S.god) return; const v=voteState(), ap=approval(), t=Math.max(0,v.next-S.time), el=`🗳️ ${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')} 開票`; if($('gEl').textContent!==el) $('gEl').textContent=el; const a=ap+'%'; if($('gAp').textContent!==a){ $('gAp').textContent=a; $('gAp').style.color=ap<50?'#3fae7a':'#3b2f2a'; $('gApF').style.width=ap+'%'; $('gApF').style.background=ap<50?'#3fae7a':'#a08fc2'; } }
 function godAdvice(){ const g=S.god, L=[], v=voteState(), ap=approval(), left=v.next-S.time, f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, go=()=>openSheet(godHTML);
   if(g.over) return [{lv:0,t:'這局結束了',go}];
   if(g.tut===1) return [{lv:2,t:'👇 先點 <b>⛈️ 天災</b> 試試看',go}];
-  if(g.tut===2) return [{lv:2,good:1,t:`👆 看！AI 支持率掉到 <b>${ap}%</b>，壓到 50% 以下就贏`,go}];
+  if(g.tut===2) return [{lv:2,good:1,t:`👆 看！支持率掉到 <b>${ap}%</b> 了`,go}];
   if(g.sus>=80) L.push({lv:3,t:`👀 快被發現了（${Math.round(g.sus)}%）！先停一下`,go});
-  else if(g.sus>=55) L.push({lv:2,t:`👀 市民覺得怪怪的（${Math.round(g.sus)}%）`,go});
   if(g.lowT>0) L.push({lv:2,good:1,t:`🏳️ 再 <b>${Math.ceil(20-g.lowT)} 秒</b>市長就辭職了！`,go});
   if(left<=120) L.push({lv:2,good:ap<50,t:`🗳️ <b>${f(left)}</b> 後開票・AI ${ap}%${ap<50?'，他要落選了！':''}`,go});
   const th=g.ent.find(e=>e.k==='thief'); if(th) L.push({lv:1,t:`🦹 小偷偷了 <b>${th.hit}</b> 間`,go:()=>{ camX=th.x; camY=th.y; clampCam(); }});
