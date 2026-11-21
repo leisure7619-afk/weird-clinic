@@ -64,6 +64,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}body.gapfix nav{padding-bottom:4px}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
+#navG{gap:3px;padding-left:5px;padding-right:5px}#navG button i{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;font-weight:900;color:#7a4fc0}#navG button.off{opacity:.42}#navG button.aim{border-color:#9b6dd6;background:#f1e8fb;box-shadow:0 3px 0 #c9b3ea}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;font-weight:900}
 #bottom{background:linear-gradient(#f6ecd9,#fdf6e9)}
@@ -144,7 +145,7 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
           <div class="pill" id="money">💰 0</div>
         </div>
       </div>
-      <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span></div>
+      <div class="row2"><button class="chipbtn" id="scaleChip">🏡 村</button><button class="chipbtn" id="voteChip">🗳️</button><span id="rep" class="hidden"></span><button class="chipbtn hidden" id="godPw"></button><button class="chipbtn hidden" id="godSus"></button></div>
       <div id="deputy" class="hidden"><span class="dav">🧑‍💼</span><span id="depTxt"></span><span id="depGo">›</span></div>
     </header>
     <div id="zoom"><button id="zIn">＋</button><button id="zOut">－</button><button id="zRot" class="hidden" title="旋轉">⟳</button><button id="zHome">⌖</button><button id="zFull" class="hidden">⛶</button></div>
@@ -159,6 +160,15 @@ nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;
       <button id="cBull"><span>🧹</span>拆除</button>
       <button id="cGov"><span>📊</span>市政</button>
       <button id="cSet"><span>⚙️</span>設定</button>
+    </nav>
+    <nav id="navG" class="hidden">
+      <button data-gp="storm"><span>⛈️</span>天災<i>40</i></button>
+      <button data-gp="rumor"><span>🗣️</span>謠言<i>25</i></button>
+      <button data-gp="shiba"><span>🐕</span>柴犬<i>15</i></button>
+      <button data-gp="tempt"><span>🤝</span>誘惑<i>30</i></button>
+      <button data-gp="thief"><span>🦹</span>小偷<i>20</i></button>
+      <button data-gp="scam"><span>📞</span>詐騙<i>35</i></button>
+      <button id="gSet"><span>⚙️</span>設定</button>
     </nav>
   </div>
 </div>
@@ -874,7 +884,7 @@ function cityCalc(){
   const sur=Math.max(0,pcap-puse);
   S.city.b.forEach(b=>{ const D=CB[b.t]; b.rev=0; b.served=0; b.up=upOf(b); b.mrtB=0; if(b.t==='mrt'&&MS.includes(b)&&line) b.up+=tiles*TRACK_UP/MS.length; if(!b.ok) return;
     let m=(b.cm||1)*fxMul('rev',D.cat); if(!D.pwr) m*=bf; if(line&&(D.cat==='shop'||D.cat==='tour')&&D.svc&&MS.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,2)<=3)){ m*=1.3; b.mrtB=1; }
-    if(D.cat==='shop'&&HACHI.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,1)<=3)) m*=1.1; if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK); if(T==='food'&&b.t==='market') m*=1.5; if(b.hot>S.time) m*=2; if(D.cat==='ind'&&S.city.open==='indus') m*=1.3; if(b.t==='pearl'&&S.city.b.some(q=>q.t==='bubble'&&q.ok&&gapOf(b.x,b.y,1,q.x,q.y,1)<=2)) m*=1.3; if(b.t==='rlab'&&S.city.b.some(q=>q.t==='chip'&&q.ok&&gapOf(b.x,b.y,2,q.x,q.y,3)<=2)) m*=1.4; if(S.city.spots) m*=spotMul(b); if(T==='rainy'&&weather.type==='rain'&&(b.t==='conv'||b.t==='mall'||b.t==='museum')) m*=1.5; if(T==='windy'&&b.t==='bike') m*=.7; if(T==='slow'&&D.cat==='tech') m*=.8;
+    if(D.cat==='shop'&&HACHI.some(q=>gapOf(b.x,b.y,BW(b),q.x,q.y,1)<=3)) m*=1.1; if(T==='sweet'&&(b.t==='bubble'||b.t==='conv')) m*=1.4; if(b.t==='shiba') m*=(T==='shiba'?1.5:1)*(1+.3*upL('shiba')); if(T==='tech'&&D.cat==='tech') m*=1.4; if(T==='lazy'&&D.svc==='move') m*=1.3; if(T==='party'&&(D.cat==='shop'||D.cat==='tour')) m*=1+.3*(S.noNight?.35:NK); if(T==='food'&&b.t==='market') m*=1.5; if(b.hot>S.time) m*=2; if(b.rob>S.time) m*=b.robM||.5; if(b.jam>S.time) m*=b.jamM||.5; if(D.cat==='ind'&&S.city.open==='indus') m*=1.3; if(b.t==='pearl'&&S.city.b.some(q=>q.t==='bubble'&&q.ok&&gapOf(b.x,b.y,1,q.x,q.y,1)<=2)) m*=1.3; if(b.t==='rlab'&&S.city.b.some(q=>q.t==='chip'&&q.ok&&gapOf(b.x,b.y,2,q.x,q.y,3)<=2)) m*=1.4; if(S.city.spots) m*=spotMul(b); if(T==='rainy'&&weather.type==='rain'&&(b.t==='conv'||b.t==='mall'||b.t==='museum')) m*=1.5; if(T==='windy'&&b.t==='bike') m*=.7; if(T==='slow'&&D.cat==='tech') m*=.8;
     if(D.rent){ const r=(b.occ||0)*er*D.rent*viewMult(b)*m*FEE.r; b.rev+=r; inc.rent+=r; }
     if(D.svc){ const g=b.grp, tot=Math.min(gdem[g]||0,gsup[g]||0); b.served=(wsum[g]?Math.min(b.cap,tot*b.cap*b.wgt/wsum[g]):0)*(b.acc??1); b.busy=b.served>=b.cap*.98; const r=b.served*D.fee*viewMult(b)*m*FEE.r; b.rev+=r; inc[D.svc]+=r; }
     if(D.exp){ const r=D.exp*(D.jobs?staff:1)*(D.svc?1:viewMult(b))*m; b.rev+=r; inc.exp+=r; }
@@ -957,7 +967,7 @@ function misTick(dt){
   if(m.left<=0){ S.buffs.citysad=Date.now()+60000; sfx.bad(); voteState().bonus=(voteState().bonus||0)-2; toast('⌛','任務失敗：'+misText(m),'市民有點失望（支持率 -2）'); S.city.mis=null; misNextT=60; }
 }
 function fireTick(dt){
-  if(mode!=='city'||modalOpen) return;
+  if(mode!=='city'||modalOpen||S.god) return;
   fireT-=dt;
   const cand=S.city.b.filter(b=>!CB[b.t].fixed&&!b.burnt&&!(b.fire>0)&&b.t!=='park'&&b.t!=='bigpark'&&b.t!=='fire');
   if(fireT<=0){ fireT=120+Math.random()*150; if(cand.length>=5&&CS.pop>=30&&!fxL('fireless').length){ const b=pick(cand); b.fire=25; sfx.bad(); const D=CB[b.t]; camX=b.x+BW(b)/2; camY=b.y+BW(b)/2; clampCam(); toast('🔥',`${D.name}失火了！`,'快點它滅火！25 秒內沒滅就會燒毀'); ticker(`🔥 ${D.icon} ${D.name}冒出濃煙！市長快去點它！`); } }
@@ -975,10 +985,10 @@ function protestTick(dt){
 // ---- 市長選舉 ----
 const RIVALS=['鴨子黨・呱呱','柴犬黨・旺財','珍奶黨・波霸','機器人黨・嗶嗶','外星人黨・咻咻','睡覺黨・阿呆'];
 function voteState(){ if(!S.city.vote) S.city.vote={next:Math.ceil((S.time+90)/YEAR)*YEAR,apS:0,apN:0,terms:0}; return S.city.vote; }
-function approval(){ const v=voteState(), avg=v.apN?v.apS/v.apN:CS.happy; return Math.max(5,Math.min(95,Math.round(.6*avg+.4*CS.happy-(S.money<0?10:0)-(protest?10:0)+Math.max(-15,Math.min(15,v.bonus||0))+3*upL('charm')))); }
+function approval(){ const v=voteState(), avg=v.apN?v.apS/v.apN:CS.happy; return Math.max(5,Math.min(95,Math.round(.6*avg+.4*CS.happy-(S.money<0?10:0)-(protest?10:0)+Math.max(-15,Math.min(15,v.bonus||0))+3*upL('charm')-(S.god?Math.round(S.god.blame||0):0)))); }
 let voteAcc=0, voteWarned=0;
 function electionTick(dt){
-  if(S.city.over) return; const v=voteState();
+  if(S.god) return godElect(dt); if(S.city.over) return; const v=voteState();
   voteAcc+=dt; if(voteAcc>=1){ voteAcc=0; v.apS+=CS.happy; v.apN++; }
   const c=S.city.crisis;
   if(c){ c.left-=dt; c.ok=CS.happy>=55?(c.ok||0)+dt:0;
@@ -1007,15 +1017,15 @@ let lastMatch=false;
 function cityUpdate(dt){
   const mo=matchOn(); if(mo&&!lastMatch&&CS.cnt&&CS.cnt.stadium&&mode==='city') ticker('🏟️ 比賽開始！球迷從外地湧進來，體育場門票收入加倍！'); lastMatch=mo;
   if(!S.city.fx) S.city.fx=[]; if(S.city.fx.length&&S.city.fx[0].until<=S.time) S.city.fx=S.city.fx.filter(f=>f.until>S.time); { const ln=fxSum('loan'); if(ln) S.money-=ln*dt; }
-  cityStatT-=dt; if(cityStatT<=0){ cityStatT=.5; cityCalc(); checkUnlocks(); if(mode==='city'&&!modalOpen) checkDex(); if(stageReady()&&stageNotified!==S.city.stage){ stageNotified=S.city.stage; toast('🏛️','城市可以升格了！','到 📊 市政 看看'); } }
+  cityStatT-=dt; if(cityStatT<=0){ cityStatT=.5; cityCalc(); checkUnlocks(); if(mode==='city'&&!modalOpen&&!S.god) checkDex(); if(stageReady()&&stageNotified!==S.city.stage){ stageNotified=S.city.stage; toast('🏛️','城市可以升格了！','到 📊 市政 看看'); } }
   const grow=CS.happy>35, fac=Math.min(1,CS.happy/100+.35);
   S.city.b.forEach(b=>{ const D=CB[b.t];
     if(D.pop){ const target=b.ok?D.pop*fac*fxMul('home'):0; if((b.occ||0)<target&&grow) b.occ=Math.min(target,(b.occ||0)+dt*.35*(1+D.pop/30)); else if((b.occ||0)>target) b.occ=Math.max(target,(b.occ||0)-dt*.2); }
     if(!D.fixed){ b.pt=(b.pt||Math.random()*10)+dt; if(b.pt>=10){ b.pt=0; const m=Math.round((b.ok?payOf(b)*PAYM()*(protest?.8:1):0)-(b.up||0)); if(m){ S.money+=m; if(m>0) S.stats.earned+=m; if(mode==='city'&&(m>0||m<=-2)){ const c=P3(b.x+BW(b)/2,b.y+BW(b)/2,BW(b)>1?1.4:.9); floats.push({c:1,text:(m>0?'+$':'-$')+fmt(Math.abs(m)),x:c.x,y:c.y,life:1.1,color:m>0?'#e09a12':'#e2574c'}); } } } }
   });
   cityPops.forEach(p=>p.life-=dt); cityPops=cityPops.filter(p=>p.life>0);
-  if(mode==='city'&&!modalOpen){ misTick(dt); platTick(); xferTick(); electionTick(dt); evTick(); incTick(dt); } fireTick(dt); protestTick(dt); deputyTick(dt);
-  if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); wildTick(dt); updateTransit(dt); decTick(dt); }
+  if(mode==='city'&&!modalOpen){ if(S.god){ electionTick(dt); godTick(dt); } else { misTick(dt); platTick(); xferTick(); electionTick(dt); evTick(); incTick(dt); } } fireTick(dt); protestTick(dt); deputyTick(dt);
+  if(mode==='city'){ updateCars(dt); updatePeds(dt); abuTick(dt); wildTick(dt); updateTransit(dt); if(!S.god) decTick(dt); }
 }
 // ================= v2.5：地圖、電力、組合、決策、任期 =================
 const MAPS={
@@ -2605,12 +2615,12 @@ function drawCity(){
   drawDisc(); drawGhost(list);
   const vw=toWorld(0,0), vw2=toWorld(W,H), vw3=toWorld(W,0), vw4=toWorld(0,H);
   const XS=[vw.x,vw2.x,vw3.x,vw4.x], YS=[vw.y,vw2.y,vw3.y,vw4.y]; const ax=Math.max(0,Math.floor(Math.min(...XS))-1), bx=Math.min(30,Math.ceil(Math.max(...XS))+2), ay=Math.max(0,Math.floor(Math.min(...YS))-1), by=Math.min(30,Math.ceil(Math.max(...YS))+2);
-  for(let y=ay;y<by;y++) for(let x=ax;x<bx;x++){ const t=terr(x,y); if(t!=='h'&&t!=='f') continue; if(x<n&&y<n&&(isRoad(x,y)||bAt(x,y)||(ghost&&!ghost.bull&&!ghost.msg&&placing&&placing.city&&CB[ghost.k]&&(CB[ghost.k].hill||CB[ghost.k].hillOK||ghost.k==='cablebase')&&inFoot(ghost,x,y,CB[ghost.k].w))||(placing&&placing.top&&placing.top.x===x&&placing.top.y===y))) continue; const out=x>=n||y>=n;
+  for(let y=ay;y<by;y++) for(let x=ax;x<bx;x++){ const t=terr(x,y); if(t!=='h'&&t!=='f') continue; if(x<n&&y<n&&(isRoad(x,y)||bAt(x,y)||(S.god&&godBlocked(x,y,1))||(ghost&&!ghost.bull&&!ghost.msg&&placing&&placing.city&&CB[ghost.k]&&(CB[ghost.k].hill||CB[ghost.k].hillOK||ghost.k==='cablebase')&&inFoot(ghost,x,y,CB[ghost.k].w))||(placing&&placing.top&&placing.top.x===x&&placing.top.y===y))) continue; const out=x>=n||y>=n;
     if(t==='h') list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.7; drawHill(x,y); ctx.globalAlpha=1; }});
     else { const v=(x*7+y*3)%3; list.push({d:dep(x+.5,y+.5)-.5,fn:()=>{ if(out) ctx.globalAlpha=.75; if(v===0) drawPine(x+.5,y+.5,1); else drawTree(x+.5,y+.5,{scale:.85}); ctx.globalAlpha=1; }}); } }
   cars.forEach(a=>{ const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
   transit.buses.forEach(a=>{ if(a.x===undefined) return; const p=agentPos(a,.2); list.push({d:dep(p.x,p.y),fn:()=>drawCar(a)}); });
-  FESTLIT.length=0; festDeco(list); beautyDeco(list); spotDeco(list); incDeco(list); abuDeco(list); wildDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
+  FESTLIT.length=0; festDeco(list); beautyDeco(list); spotDeco(list); incDeco(list); godDeco(list); abuDeco(list); wildDeco(list); drawMrtPillars(list); drawQueues(list); drawSignals(list);
   peds.forEach(p=>{ const q=agentPos(p,.36*p.side); list.push({d:dep(q.x,q.y)+.01,fn:()=>drawPed(p)}); });
   list.sort((a,b)=>a.d-b.d).forEach(o=>o.fn());
   if(NIGHT>.02) drawNight(); if(NIGHT>.3) FESTLIT.forEach(f=>f());
@@ -2627,7 +2637,7 @@ function drawCity(){
     txt('市民滿意度',cx,cy-hh+fs*.62,fs*.62,'#7a6a58',800);
     for(let i=0;i<5;i++){ const sx=cx+(i-2)*fs*1.1, pop=i<p.stars?1+.25*Math.max(0,Math.sin(Math.min(Math.PI,(3.2-p.life)*6-i*.6))):1; txt(i<p.stars?'★':'☆',sx,cy-fs*.72,fs*1.05*pop,i<p.stars?'#f2b544':'#d8cdbd',900); }
     ctx.globalAlpha=1; });
-  drawIncidents(); drawAbuSay(); festSky(); drawWeather(); drawVignette();
+  drawIncidents(); godOverlay(); drawAbuSay(); festSky(); drawWeather(); drawVignette();
   floats.forEach(f=>{ if(!f.c||/^[+-]\$/.test(f.text)) return; ctx.globalAlpha=Math.max(0,Math.min(1,f.life*1.5)); txt(f.text,f.x,f.y,Math.max(13,tw*.3),f.color,900,'#fff'); ctx.globalAlpha=1; });
   peds.forEach(p=>{ if(p.thinkT>0&&p.px!==undefined) drawThink({x:p.px,y:p.py,look:p.look,think:p.think}); });
   if(false){ const h=null; if(h){ const c=P3(h.x+1,h.y+1,1.5); emoji('👆',c.x+tw*.1,c.y+Math.abs(Math.sin(clock*4))*tw*.15,Math.max(24,tw*.45)); } }
@@ -2827,7 +2837,7 @@ function drawGhost(list){ if(!ghost) return;
   if(ok){ const an=rotAnchor(ghost.x,ghost.y,w); list.push({d:an[0]+an[1]+w-.4,fn:()=>{ ctx.globalAlpha=.6; RAW=true; drawCityB({t:ghost.k==='cablebase'&&terr(ghost.x,ghost.y)==='h'?'cable':ghost.k,pv:ghost.k==='cablebase'&&terr(ghost.x,ghost.y)==='h'&&placing&&placing.top?placing.top:null,x:ghost.x,y:ghost.y,w,ok:1,occ:0,fx:ghost.k==='cable'||ghost.k==='cablebase'?-1:undefined,tx:placing&&placing.top?placing.top.x:undefined,ty:placing&&placing.top?placing.top.y:undefined},an[0],an[1]); RAW=false; ctx.globalAlpha=1; }}); }
   if(placing&&placing.top&&!placing.top.ex){ const tp=placing.top, a2=rotAnchor(tp.x,tp.y,1); list.push({d:a2[0]+a2[1]+.6,fn:()=>{ ctx.globalAlpha=.8; RAW=true; drawCityB({t:'cable',x:tp.x,y:tp.y,w:1,ok:1,occ:0,fx:-1},a2[0],a2[1]); RAW=false; ctx.globalAlpha=1; }}); } }
 function cityTap(sx,sy){
-  const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y);
+  const w=toWorld(sx,sy), x=Math.floor(w.x), y=Math.floor(w.y); if(S.god){ godTap(sx,sy,x,y); return; }
   { const fb=S.city.b.find(q=>q.fire>0&&q._hit&&inPoly(sx,sy,q._hit.poly)); if(fb){ extinguish(fb); return; } }
   { const ic=incAtScreen(sx,sy); if(ic&&incTap(ic)) return; }
   if(!(placing&&placing.city)&&(abuTap(sx,sy)||wildTap(sx,sy))) return;
@@ -2980,7 +2990,7 @@ function deputyAdvice(){
 function deputyTick(dt){
   const el=$('deputy'); if(mode!=='city'||!booted){ el.classList.add('hidden'); $('stage').classList.remove('dep'); $('toast').style.top=''; return; } el.classList.remove('hidden'); $('stage').classList.add('dep'); { const r=el.getBoundingClientRect(), st=$('stage').getBoundingClientRect(); $('toast').style.top=Math.round(r.bottom-st.top+8)+'px'; }
   depT-=dt; if(depT>0) return; depT=.5;
-  depList=deputyAdvice(); const top=depList[0]; const urgent=top.lv>=3;
+  depList=S.god?godAdvice():deputyAdvice(); const top=depList[0]; const urgent=top.lv>=3;
   const key=depList.map(a=>a.t.replace(/[0-9:,]+/g,'')).join('|');
   if(key!==depKey){ depKey=key; depIdx=0; } else if(!urgent&&(Math.floor(clock)%7===0)) depIdx=(depIdx+1)%Math.min(3,depList.length);
   const a=depList[Math.min(depIdx,depList.length-1)];
@@ -3022,9 +3032,9 @@ function renameCity(){ if(!S.city) return; queueModal({icon:'✏️',title:'幫�
   buttons:[{label:'就叫這個',fn:()=>{ const v=($('cityNameIn').value||'').trim().slice(0,8); S.city.name=v&&!CITY_STAGES.some(st=>st.name===v)?v:undefined; lastCityKey=''; saveLocal(); toast('🏙️','改名成「'+cityName()+'」','市民換上新的城市旗子'); }},{label:'取消',ghost:1}]}); setTimeout(()=>{ const i=$('cityNameIn'); if(i){ i.focus(); i.select(); } },50); }
 function cityHud(){
   const nx=S.city.stage+1<CITY_STAGES.length?stageChecks(S.city.stage+1):null, pr=nx?nx.filter(c=>c.ok).length/nx.length:1;
-  const k=`${CS.pop}|${CS.happy}|${S.city.stage}|${S.city.name||''}|${pr}`; if(k===lastCityKey) return; lastCityKey=k;
+  const k=`${CS.pop}|${CS.happy}|${S.city.stage}|${S.city.name||''}|${pr}|${!!S.god}`; if(k===lastCityKey) return; lastCityKey=k;
   $('rep').textContent='👥 '+fmt(CS.pop); $('satFg').style.width=Math.max(0,Math.min(100,CS.happy))+'%'; $('satChip').classList.toggle('warn',CS.happy<45);
-  $('brandName').innerHTML=`${esc(cityName())}<span class="ed">✏️</span>`;
+  $('brandName').innerHTML=S.god?`🤖 ${esc(cityName())}`:`${esc(cityName())}<span class="ed">✏️</span>`;
   const SC=(themeDef().short||STAGE_SHORT)[S.city.stage]||STAGE_SHORT[0]; $('scaleChip').innerHTML=`${SC[0]} ${SC[1]}${nx?`<span class="pb"><i style="width:${Math.round(pr*100)}%"></i></span>`:''}`;
 }
 function cityIntro(){
@@ -3075,15 +3085,15 @@ let lastMoney=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
-  { const vc=$('voteChip'); if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
+  { const vc=$('voteChip'); if(S.god&&booted){ const v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, t=`🗳️ ${f(v.next-S.time)}・🤖 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(ap<50?'ok':ap<58?'mid':'bad'); } else if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   const m=Math.floor(S.money);
-  if(m!==lastMoney){ $('money').textContent='💰 '+fmt(m); lastMoney=m; }
-  cityHud();
+  if(m!==lastMoney){ $('money').textContent=(S.god?'🤖💰 ':'💰 ')+fmt(m); lastMoney=m; }
+  cityHud(); godHud();
 }
 let tickTimer=null;
 let HSIM=false;
 function ticker(msg){ if(HSIM&&mode==='city') return; const el=$('ticker'); el.textContent=msg; el.classList.add('flash'); clearTimeout(tickTimer); tickTimer=setTimeout(()=>el.classList.remove('flash'),600); }
-function toast(icon,title,sub){
+function toast(icon,title,sub){ if(S&&S.god&&!TOASTOK) return;
   const el=document.createElement('div'); el.className='tst'; el.innerHTML=`<span class="ti">${icoH(icon)}</span><span>${title}${sub?`<small>${sub}</small>`:''}</span>`;
   $('toast').appendChild(el); sfx.pop();
   setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),350); },2800);
@@ -3092,12 +3102,15 @@ function openSheet(fn){ sheetFn=fn; $('sheetBody').innerHTML=fn(); $('sheetWrap'
 function refreshSheet(){ if(sheetFn&&!$('sheetWrap').classList.contains('hidden')) $('sheetBody').innerHTML=sheetFn(); }
 function closeSheet(){ $('sheetWrap').classList.add('hidden'); sheetFn=null; }
 $('sheetBg').onclick=closeSheet;
-$('bannerX').onclick=()=>setPlacing(null);
+$('bannerX').onclick=()=>{ if(godAim){ setGodAim(null); return; } setPlacing(null); };
 $('deputy').onclick=()=>{ ensureAudio(); const a=depList[Math.min(depIdx,depList.length-1)]; if(a&&a.go) a.go(); sfx.pop(); };
-$('voteChip').onclick=()=>{ ensureAudio(); openSheet(cityGovHTML); };
-$('satChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(cityGovHTML); };
-$('scaleChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(cityGovHTML); };
-$('brandName').onclick=()=>{ ensureAudio(); if(mode==='city') renameCity(); };
+$('voteChip').onclick=()=>{ ensureAudio(); openSheet(S.god?godHTML:cityGovHTML); };
+$('godPw').onclick=$('godSus').onclick=()=>{ ensureAudio(); openSheet(godHTML); };
+document.querySelectorAll('#navG [data-gp]').forEach(b=>b.onclick=()=>godUse(b.dataset.gp));
+$('gSet').onclick=()=>{ ensureAudio(); confirmReset=false; openSheet(citySetHTML); };
+$('satChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(S.god?godHTML:cityGovHTML); };
+$('scaleChip').onclick=()=>{ ensureAudio(); cityCalc(); openSheet(S.god?godHTML:cityGovHTML); };
+$('brandName').onclick=()=>{ ensureAudio(); if(mode==='city'&&!S.god) renameCity(); };
 $('bannerOK').onclick=()=>{ ensureAudio(); confirmGhost(); };
 $('cBuild').onclick=()=>{ ensureAudio(); openSheet(cityBuildHTML); };
 $('cRoad').onclick=()=>{ ensureAudio(); setPlacing({city:'road'}); };
@@ -3111,25 +3124,31 @@ const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||
 function rotateView(d){ groundVer++; rot=(rot+d+4)%4; S.city.rot=rot; ROTV=mode==='city'?rot:0; sfx.pop(); ticker(pick(['🔄 換個角度看城市。','🔄 市長轉了一圈，看到新的風景。','🔄 從這邊看，鴨子也比較帥。'])); }
 $('zRot').onclick=()=>{ ensureAudio(); if(mode==='city') rotateView(-1); };
 $('zHome').onclick=()=>{ if(mode==='city'){ zoom=cityZoom(); applyZoom(); camX=citySize()/2; camY=citySize()/2; return; } };
-$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={platChange,setFee,buyVoucher,buyBeauty,buyLand,donate,book:bookArtist,bidOly,cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,toggleNight,askReset,buyUpg,buyMap,askResign,openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
+$('sheetBody').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; ensureAudio(); const f={platChange,setFee,buyVoucher,buyBeauty,buyLand,donate,book:bookArtist,bidOly,cityDemolish,cityRepair,goBuild,setCityTab,pickCity,stageUp,toggleMute,toggleNight,askReset,buyUpg,buyMap,askResign,exitGodAsk,godStart:()=>{ closeSheet(); enterGod(); },openDex:()=>openSheet(dexHTML),goMap:()=>{ closeSheet(); chooseMap(); },openFame:()=>{ confirmResign=false; openSheet(fameHTML); }}[b.dataset.act]; if(f) f(b.dataset.arg); });
 
 let confirmReset=false;
 function citySetHTML(){
+  if(S.god) return `<h2>⚙️ 設定</h2><div class="sub">😈 破壞神模式</div>
+    <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
+    <div class="toggle"><span>🌙 日夜變化</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
+    <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.37</div>`;
   return `<h2>⚙️ 設定</h2><div class="sub">${CITY_STAGES[S.city.stage].name}・${CITY_STAGES[S.city.stage].mayor}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>當市長第<b>${yearNo()} 年</b></div><div>人口<b>👥 ${fmt(CS.pop)}</b></div><div>建築<b>🏢 ${S.city.b.length} 棟</b></div><div>道路<b>🛣️ ${ROADS.size} 格</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div><div>完成任務<b>🎯 ${S.city.misDone||0} 個</b></div></div>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     <div class="toggle"><span>🌙 日夜變化（關掉就一直是白天）</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
     ${ON_PAGES&&!isStandalone()?`<div class="toggle" style="display:block;font-weight:500;line-height:1.7"><b>📲 加到主畫面，全螢幕玩</b><br>iPhone：Safari「分享」→「加入主畫面」<br>Android：Chrome「⋮」→「安裝應用程式」</div>`:''}
+    <div class="row"><button class="btn ghost" data-act="godStart">😈 破壞神模式：搞垮 AI 市長的城市</button></div>
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.36</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.37</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
 function askReset(){ if(!confirmReset){ confirmReset=true; refreshSheet(); return; } confirmReset=false; S=newState(); S.day=today(); S.tut=1; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; resetRuntime(); camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); saveLocal(); cloudSave(true); closeSheet(); cityIntro(); ticker('🏙️ 新的城市開始了！市民們搬著行李進城。'); }
 
 // ================= 對話框 =================
-function queueModal(m){ modalQ.push(m); if(!modalOpen) nextModal(); }
+function queueModal(m){ if(S&&S.god&&!m.god) return; modalQ.push(m); if(!modalOpen) nextModal(); }
 function nextModal(){
   const m=modalQ.shift(); if(!m){ modalOpen=false; $('modalWrap').classList.add('hidden'); return; }
   modalOpen=true;
@@ -3152,6 +3171,226 @@ function welcomeBack(savedT){
   sfx.coin(); queueModal({icon:'🧑‍💼',title:'副市長報帳',body,buttons:[{label:'開始上班'}]});
 }
 
+// ================= v2.37 破壞神模式：AI 市長自己蓋城市，玩家只能間接搞破壞 =================
+const MAYOR_KEY=SAVE_KEY+'-mayor';
+let godAim=null, TOASTOK=0, godKey='';
+const AI_PER={
+  cautious:{icon:'🐢',name:'保守型',desc:'存夠錢才蓋、出事反應快，不太會被建商騙',acc:.3,react:.7,reserve:2500,step:6},
+  bold:{icon:'🚀',name:'衝衝衝型',desc:'有錢就蓋、反應慢半拍，最容易被建商騙',acc:.8,react:1.3,reserve:0,step:3.5},
+  vain:{icon:'🪞',name:'愛面子型',desc:'最怕負評，謠言對他特別有效；也愛聽大案子',acc:.6,react:1,reserve:800,step:4.5}
+};
+const AI_NAMES=['阿算','嗶嗶博士','小精','算盤仔','整整齊齊'];
+const GOD_TOWNS=['算盤市','嗶嗶鎮','整齊市','效率鎮','演算法市'];
+const GODP={
+  storm:{icon:'⛈️',name:'天災',cost:40,sus:12,desc:'一分鐘豪雨（冬天是暴風雪）：交通、商店、觀光都變差，市民很煩'},
+  rumor:{icon:'🗣️',name:'謠言',cost:25,sus:8,aim:'點一棟建築，同一類的全部遭殃',desc:'點一棟建築散播謠言，同一類的客人少一半'},
+  shiba:{icon:'🐕',name:'柴犬',cost:15,sus:3,aim:'點一段路，柴犬會躺在那裡曬太陽',desc:'一群野柴犬躺在馬路上曬太陽，附近的店沒人進得去'},
+  tempt:{icon:'🤝',name:'誘惑',cost:30,sus:6,desc:'派建商找市長談「穩賺」的超大購物城，看市長貪不貪心'},
+  thief:{icon:'🦹',name:'小偷',cost:20,sus:5,aim:'點一段路放小偷，離 🚓 協尋中心遠一點',desc:'偷店家收銀機和單車。被抓到會招供，懷疑度大增'},
+  scam:{icon:'📞',name:'詐騙',cost:35,sus:8,aim:'點住宅附近、路邊的空地',desc:'開假投資說明會騙走居民存款，全城消費變少，直到市府取締'}
+};
+const RUMOR={shop:['🤢','吃了會拉肚子'],tour:['👻','晚上會鬧鬼'],culture:['👻','晚上會鬧鬼'],home:['🏭','旁邊要蓋焚化爐'],tech:['💸','老闆要捲款跑路'],ind:['☠️','偷排廢水'],public:['🏚️','偷工減料快倒了'],traffic:['🦆','司機沒有駕照'],power:['💥','快爆炸了'],farm:['🐛','灑了很多農藥']};
+const CATNM={shop:'商店',tour:'觀光設施',culture:'文化設施',home:'住宅',tech:'科技公司',ind:'工廠',public:'公共設施',traffic:'交通設施',power:'發電廠',farm:'農田'};
+const GOD_TIPS=['💡 市民越不開心，😈 神力回得越快','💡 小偷別放在 🚓 協尋中心附近','💡 市庫赤字時支持率 -10，試試 🤝 誘惑','💡 同一招一直用，AI 會學乖，換著用','💡 🐕 柴犬最不會被懷疑','💡 支持率看整年平均，年初就要開始搞'];
+const aiPer=()=>AI_PER[S.god.per]||AI_PER.vain;
+const godEff=k=>{ const g=S.god; return Math.max(.35,Math.pow(.75,g.used[k]||0))*(g.shrine?.75:1); };
+const godFx=(k,o)=>S.city.fx.push(Object.assign({k},o));
+function godToast(i,t,s){ TOASTOK=1; toast(i,t,s); TOASTOK=0; }
+function aiSay(m){ const g=S.god; ticker('🤖 '+m); g.log.unshift(m); g.log.length=Math.min(g.log.length,6); }
+// 民怨：市民把怪事算在市長頭上，直接扣支持率；會慢慢被淡忘，市長處理得好也會消一點
+function blame(n){ const g=S.god; g.blame=Math.max(-10,Math.min(70,(g.blame||0)+n)); }
+function godSus(n,msg){ const g=S.god; g.sus=Math.min(100,g.sus+n); g.susMax=Math.max(g.susMax||0,g.sus); sfx.bad(); godToast('🚨',msg,`👀 懷疑度 +${n}`); }
+
+// ---- AI 市長 ----
+const AI_MUST=new Set(), AI_SKIP=new Set(['road','canal','cable','cablebase','mrt','balloon','airport']);
+function godBlocked(x,y,w){ return (S.god.ent||[]).some(e=>(e.k==='scam'||e.k==='site')&&e.tx<x+w&&x<e.tx+e.w&&e.ty<y+w&&y<e.ty+e.w); }
+function aiWants(){ AI_MUST.clear(); const L=[...(S.god.want||[])], nx=CITY_STAGES[S.city.stage+1];
+  cityNeeds().filter(n=>NEED_B[n.k]&&n.k!=='debt'&&n.k!=='ruin').forEach(n=>L.push(...NEED_B[n.k]));
+  if(nx){ const q=nx.req; (q.has||[]).forEach(k=>{ if(!(CS.cnt[k]>0)){ L.unshift(k); AI_MUST.add(k); } }); Object.keys(q.cat||{}).forEach(c=>L.push(...shuffle(Object.keys(CB).filter(k=>(CB[k].cat===c||(c==='tour'&&CB[k].cat==='culture'))&&!['park','shrine'].includes(k)&&!(CS.cnt[k]>1)&&unlocked(k))).slice(0,3))); }
+  if(CS.happy>=45) L.push('tower','apt','house'); L.push('park','conv','bubble','shiba','bus');
+  return [...new Set(L)].filter(k=>CB[k]&&!CB[k].fixed&&!CB[k].wonder&&!AI_SKIP.has(k)&&k!=='shrine'&&unlocked(k)); }
+function aiStep(seed){ const g=S.god, P=aiPer(), c=S.city;
+  if(stageReady()){ c.stage++; groundVer++; cityDirty=true; spotOnStage(); if(!seed) aiSay(`城市升格成「${CITY_STAGES[c.stage].name}」，市長開香檳慶祝`); return 1; }
+  if(S.money<0){ if((g.demT||0)>S.time) return 0; g.demT=S.time+15; const L=c.b.filter(b=>!CB[b.t].fixed&&!CB[b.t].pop).map(b=>({b,n:(b.rev||0)*PAYM()-(b.up||0)})).sort((a,b)=>a.n-b.n)[0];
+    if(L&&L.n<0){ cityBulldoze(L.b.x,L.b.y); aiSay(`市庫赤字，拆掉賠錢的${CB[L.b.t].name}`); return 1; } return 0; }
+  const res=seed?0:P.reserve; let tries=0, full=0;
+  for(const k of aiWants()){ if(S.money<costOf(k)+res) continue; if(++tries>6) break; const sp=aiSpot(k); if(!sp||sp.stars<(AI_MUST.has(k)?0:2)||godBlocked(sp.x,sp.y,CB[k].w)){ full++; continue; }
+    if(cityPlace(k,sp.x,sp.y,{quiet:1,ai:1})){ g.want=(g.want||[]).filter(q=>q!==k); if(!seed) aiSay(`蓋了 ${CB[k].icon} ${CB[k].name}`); return 1; } }
+  return full&&S.money>=200+res&&roadFront()<10?aiRoad(seed):0; }
+function roadFront(){ const n=citySize(); let c=0; for(let x=0;x<n;x++) for(let y=0;y<n;y++) if(freeTile(x,y)&&nearRoad(x,y,1)) c++; return c; }
+function aiRoad(seed){ const n=citySize(), cx=6.5, cy=6.5, ok=(x,y)=>x>=0&&y>=0&&x<n&&y<n&&!isRoad(x,y)&&!bAt(x,y)&&!blocked(x,y)&&!['sea','s'].includes(terr(x,y))&&!godBlocked(x,y,1); let best=null;
+  ROADS.forEach(key=>{ const [x,y]=key.split(',').map(Number);
+    DIRS.forEach(([dx,dy])=>{ for(const L of [4,3]){ let good=true; const T=[];
+      for(let i=1;i<=L;i++){ const tx=x+dx*i, ty=y+dy*i; if(!ok(tx,ty)||isRoad(tx+dy,ty+dx)||isRoad(tx-dy,ty-dx)){ good=false; break; } T.push([tx,ty]); }
+      if(!good) continue; const m=T[T.length>>1], sc=Math.hypot(m[0]-cx,m[1]-cy)+Math.random()*2.5-L*.3; if(!best||sc<best.sc) best={T,sc}; break; } }); });
+  if(!best) return aiRoadBFS(seed); let k=0; best.T.forEach(([x,y])=>{ if(cityPlace('road',x,y)) k++; }); if(k&&!seed) aiSay(`鋪了一段 ${k} 格的新路`); return k?1:0; }
+// 路口都被房子堵住時：從現有道路沿著空地找一條通往大片空地的小路
+function aiRoadBFS(seed){ const prev=new Map(), Q=[], open=(x,y)=>{ let c=0; for(let a=-2;a<=2;a++) for(let b=-2;b<=2;b++) if(freeTile(x+a,y+b)) c++; return c; };
+  ROADS.forEach(k=>{ const [x,y]=k.split(',').map(Number); DIRS.forEach(([dx,dy])=>{ const a=x+dx, b=y+dy, kk=a+','+b; if(freeTile(a,b)&&!prev.has(kk)){ prev.set(kk,null); Q.push([a,b]); } }); });
+  for(let i=0;i<Q.length;i++){ const [x,y]=Q[i];
+    if(open(x,y)>=12){ const path=[]; let k=x+','+y; while(k){ path.push(k.split(',').map(Number)); k=prev.get(k); } if(path.length>12) return 0; let n=0; path.reverse().forEach(([a,b])=>{ if(cityPlace('road',a,b)) n++; }); if(n&&!seed) aiSay(`開了一條 ${n} 格的小路通往空地`); return n?1:0; }
+    DIRS.forEach(([dx,dy])=>{ const a=x+dx, b=y+dy, kk=a+','+b; if(freeTile(a,b)&&!prev.has(kk)){ prev.set(kk,x+','+y); Q.push([a,b]); } }); }
+  return 0; }
+
+// ---- 進出模式（市長的城市先存在旁邊，回來原封不動） ----
+function cityRuntimeReset(){ WILD.length=0; wildKey=''; INC.length=0; transit={key:'',mrt:null,trains:[],route:null,buses:[],air:[]}; CMB=[]; cmbKey=''; decT=80; misNextT=40; protest=false; lowHappyT=0; voteAcc=0; stageNotified=-1; godAim=null; setPlacing(null);
+  resetRuntime(); rot=S.city.rot||0; ROTV=rot; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); closeSheet(); lastCityKey=''; groundVer++; cityDirty=true; }
+function setGodUI(on){ $('navC').classList.toggle('hidden',on); $('navG').classList.toggle('hidden',!on); $('godPw').classList.toggle('hidden',!on); $('godSus').classList.toggle('hidden',!on);
+  document.querySelector('#deputy .dav').textContent=on?'😈':'🧑‍💼'; lastMoney=null; lastCityKey=''; godKey=''; depKey=''; layout(); }
+function enterGod(){
+  if(!S.god){ saveLocal(); cloudSave(true); try{ localStorage.setItem(MAYOR_KEY,JSON.stringify(S)); }catch(e){} }
+  modalQ=modalQ.filter(m=>m.god);
+  const meta=S.meta, muted=S.muted, nn=S.noNight;
+  S=newState(); S.meta=meta; S.muted=muted; S.noNight=nn; S.tut=1; S.day=today();
+  S.god={pw:50,sus:0,susMax:0,used:{},cd:{},per:pick(Object.keys(AI_PER)),nm:pick(AI_NAMES),el:0,ent:[],rq:[],log:[],want:[],aiT:3,id:1};
+  S.city=initCity('coast','city',pick(['plain','river','forest','lakes'])); S.city.spots=[]; S.city.intro=1; S.city.noHosp=1; S.city.v25=1; S.city.name=pick(GOD_TOWNS);
+  setTheme(); cityRuntimeReset(); applyOpen('classic');
+  S.money=45000; for(let i=0;i<40;i++){ cityCalc(); checkUnlocks(); S.city.b.forEach(b=>{ if(CB[b.t].pop) b.occ=CB[b.t].pop*.8; }); aiStep(true); }
+  S.money=6000; cityCalc(); voteState(); { const B=S.city.b; camX=B.reduce((a,b)=>a+b.x+BW(b)/2,0)/B.length; camY=B.reduce((a,b)=>a+b.y+BW(b)/2,0)/B.length; } zoom=cityZoom(); applyZoom(); groundVer++; $('toast').innerHTML='';
+  setGodUI(true); saveLocal(); const P=aiPer(), g=S.god; sfx.fan();
+  queueModal({god:1,icon:'😈',title:'破壞神模式',body:`<p>AI 市長「<b>${g.nm}</b>」（${P.icon} ${P.name}）正在經營「${cityName()}」。你不能直接拆房子，只能用下面 6 招間接搞破壞。</p><div class="note">🎯 讓他選舉落選（支持率 &lt; 50%），或把支持率壓到 25% 以下撐 20 秒，逼他辭職<br>🗓️ 每年底選一次，他撐過 3 次你就輸<br>😈 出招要花神力，市民越不爽回得越快<br>👀 太明顯會被懷疑，到 100% 你會被封印<br>🧠 同一招用越多次，AI 越會防</div>`,buttons:[{label:'開始搞破壞'}]}); }
+function exitGod(){ const meta=S.meta; let s=null; try{ s=migrate(JSON.parse(localStorage.getItem(MAYOR_KEY)||'null')); }catch(e){}
+  S=s||newState(); S.meta=meta; delete S.god; try{ localStorage.removeItem(MAYOR_KEY); }catch(e){}
+  modalQ=[]; $('toast').innerHTML=''; setTheme(); cityRuntimeReset(); setGodUI(false); saveLocal(); cloudSave(true); ticker('🏛️ 回到市長模式，你的城市一切照舊。');
+  if(S.city.over) showGameOver(); else if(S.city.settled) chooseMap(); else if(!S.city.intro) cityIntro(); }
+function exitGodAsk(){ closeSheet(); queueModal({god:1,icon:'🏛️',title:'放棄這局？',body:'<p>回到你自己的城市，這局破壞神不會拿到勳章。</p>',buttons:[{label:'回市長模式',fn:exitGod},{label:'繼續搞破壞',ghost:1}]}); }
+function modeModal(){ return {icon:'🎮',title:'選擇模式',body:'',buttons:[{label:'🏛️ 市長模式',sub:`繼續經營「${cityName()}」`},{label:'😈 破壞神模式',sub:'AI 市長在蓋城市，你負責把它搞垮',fn:enterGod}]}; }
+function godResume(){ const g=S.god; setGodUI(true);
+  if(g.over) queueModal({god:1,icon:'😈',title:'這局結束了',body:'',buttons:[{label:'😈 再來一局',fn:enterGod},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]});
+  else queueModal({god:1,icon:'😈',title:'破壞神模式進行中',body:`<p>AI 市長「${g.nm}」還在經營「${cityName()}」。</p>`,buttons:[{label:'繼續搞破壞'},{label:'🏛️ 回市長模式（放棄這局）',ghost:1,fn:exitGod}]}); }
+
+// ---- 每一幀 ----
+function godTick(dt){ const g=S.god; if(!g||g.over) return;
+  g.pw=Math.min(100,g.pw+dt*(.8+Math.max(0,60-CS.happy)/40+(protest?.5:0))); g.sus=Math.max(0,g.sus-dt*.22); if(g.blame>0) g.blame=Math.max(0,g.blame-dt*.03); else if(g.blame<0) g.blame=Math.min(0,g.blame+dt*.05); if(protest) blame(dt*.06); g.ent.forEach(q=>{ if(q.k==='scam') blame(dt*.08*(q.e||1)); });
+  if(protest&&!g.prot){ g.prot=1; godToast('✊','市民上街抗議 AI 市長！','收入 -20%・支持率 -10・神力回得更快'); } if(!protest) g.prot=0;
+  g.aiT=(g.aiT??2)-dt; if(g.aiT<=0){ g.aiT=aiPer().step*(.8+Math.random()*.4); aiStep(); }
+  for(let i=g.rq.length-1;i>=0;i--) if(S.time>=g.rq[i].t) aiReact(g.rq.splice(i,1)[0]);
+  godEnts(dt);
+  if(g.sus>=70&&!g.shrine){ g.shrine=1; const sp=aiSpot('shrine'); if(sp) cityPlace('shrine',sp.x,sp.y,{quiet:1,cost:1}); sfx.bad(); godToast('⛩️','市民覺得怪事太多，蓋了柴犬神社','之後你的法術效果 -25%'); aiSay('市民蓋了柴犬神社，每天排隊拜拜求平安'); }
+  if(g.sus>=100) return godEnd(false,'seal');
+  const ap=approval(); g.lowT=ap<=25?(g.lowT||0)+dt:0; if(g.lowT>=20) godEnd(true,'resign',ap); }
+function godElect(dt){ const g=S.god, v=voteState(); if(g.over) return; voteAcc+=dt; if(voteAcc>=1){ voteAcc=0; v.apS+=CS.happy; v.apN++; }
+  const left=v.next-S.time; if(left<=60&&voteWarned!==v.next){ voteWarned=v.next; godToast('🗳️','一分鐘後選舉開票！',`AI 市長支持率 ${approval()}%，壓到 50% 以下他就落選`); }
+  if(left>0) return; const X=approval(); v.next+=YEAR; v.apS=0; v.apN=0; v.bonus=0; g.el=(g.el||0)+1;
+  if(X<50) return godEnd(true,'elect',X); if(g.el>=3) return godEnd(false,'term',X);
+  sfx.bad(); queueModal({god:1,icon:'🗳️',title:`AI 市長連任了（${X}%）`,body:`<p>${g.nm}市長：「謝謝大家，我會更有效率！」</p><div class="note">🗓️ 還剩 ${3-g.el} 次選舉<br>💡 支持率看整年平均，要從年初就開始搞</div>`,buttons:[{label:'下次一定'}]}); }
+function godEnd(win,why,X){ const g=S.god; if(g.over) return; g.over=1; setGodAim(null); const md=win?3+Math.max(0,2-(g.el||0)):1; S.meta.md+=md;
+  const T={elect:['🗳️','AI 市長落選了！',`開票結果只拿到 ${X}%，${g.nm}市長抱著紙箱離開市政府。`],resign:['🏳️','AI 市長辭職了！',`支持率只剩 ${X}%，${g.nm}市長宣布：「我需要重新訓練一下。」`],term:['😇','AI 市長撐過三次選舉',`${g.nm}市長連任三屆，市民還幫他蓋了一座銅像。`],seal:['⛩️','你被封印了…','市民發現怪事都是你搞的，請柴犬神社把你封印在一個罐罐裡。']}[why];
+  if(win) sfx.fan(); else sfx.bad(); saveLocal();
+  queueModal({god:1,icon:T[0],title:T[1],body:`<p>${T[2]}</p><div class="note">${win?'😈 破壞成功！':'🙈 這次失敗了'}<br>🏅 柴犬勳章 +${md}（市長模式也能用）<br>🗳️ 經過 ${g.el||0} 次選舉・👀 最高懷疑度 ${Math.round(g.susMax||0)}%</div>`,buttons:[{label:'😈 再來一局',fn:enterGod},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]}); }
+
+// ---- 出招 ----
+function godUse(k){ const g=S.god, P=GODP[k]; if(!g||g.over||modalOpen) return; ensureAudio();
+  if(godAim===k){ setGodAim(null); return; }
+  const cd=(g.cd[k]||0)-S.time; if(cd>0){ sfx.bad(); ticker(`${P.icon} ${P.name}還要 ${Math.ceil(cd)} 秒才能再用`); return; }
+  if(g.pw<P.cost){ sfx.bad(); ticker(`😈 神力不夠（要 ${P.cost}）。市民越不爽，神力回得越快`); return; }
+  if(P.aim){ setGodAim(k); return; } godDo(k); }
+function setGodAim(k){ godAim=k; godKey=''; const b=$('banner'); if(!k){ b.classList.remove('show'); return; } $('bannerTxt').textContent=`${GODP[k].icon} ${GODP[k].aim}`; $('bannerOK').classList.add('hidden'); $('bannerX').textContent='取消'; b.classList.add('show'); sfx.pop(); }
+function godPay(k){ const g=S.god, P=GODP[k]; g.pw-=P.cost; g.cd[k]=S.time+8; let s=P.sus; if(S.time-(g.lastUse??-99)<15) s*=1.5; g.sus=Math.min(100,g.sus+s); g.susMax=Math.max(g.susMax||0,g.sus); g.lastUse=S.time; g.used[k]=(g.used[k]||0)+1; godKey=''; }
+function roadNear2(x,y,r=3){ let best=null; for(let a=-r;a<=r;a++) for(let b=-r;b<=r;b++){ if(!isRoad(x+a,y+b)) continue; const d=Math.hypot(a,b); if(!best||d<best.d) best={d,p:[x+a,y+b]}; } return best&&best.p; }
+function freeTile(x,y){ return x>=0&&y>=0&&x<citySize()&&y<citySize()&&!isRoad(x,y)&&!bAt(x,y)&&!blocked(x,y)&&!['sea','s'].includes(terr(x,y))&&!godBlocked(x,y,1); }
+function scamSpot(x,y){ let best=null; for(let a=-3;a<=3;a++) for(let b=-3;b<=3;b++){ const tx=x+a, ty=y+b; if(!freeTile(tx,ty)||!nearRoad(tx,ty,1)) continue; const d=Math.hypot(a,b)-nearPop(tx,ty,1,3)*.02; if(!best||d<best.d) best={d,p:[tx,ty]}; } return best&&best.p; }
+function siteSpot(){ const n=citySize(); let best=null; for(let x=0;x<n-1;x++) for(let y=0;y<n-1;y++){ if(![[0,0],[1,0],[0,1],[1,1]].every(([a,b])=>freeTile(x+a,y+b))||!nearRoad(x,y,2)) continue; const d=Math.hypot(x+1-6.5,y+1-6.5); if(!best||d<best.d) best={d,p:[x,y]}; } return best&&best.p; }
+const godLook=(top,bot,hair)=>{ const L=genLook(); return Object.assign(L,{age:'adult',h:1,topCol:top,bottomCol:bot,hairCol:hair}); };
+function godDo(k,x,y,sb){ const g=S.god, R=aiPer().react, P=GODP[k], e=Math.min(1,godEff(k)*(k==='rumor'&&g.per==='vain'?1.25:1)), nid=()=>(g.id=(g.id||1)+1), pc=Math.round(e*100);
+  if(k==='storm'){ const snow=seasonOf(monthNo())==='winter', nm=snow?'暴風雪':'豪雨', T=60, lb=(snow?'❄️ ':'⛈️ ')+nm;
+    weather={type:snow?'snow':'rain',t:T}; godFx('sup',{s:'move',m:1-.45*e,until:S.time+T,lb}); godFx('rev',{s:'shop',m:1-.35*e,until:S.time+T}); godFx('tour',{m:1-.5*e,until:S.time+T}); godFx('happy',{n:-Math.round(9*e),until:S.time+T});
+    blame(9*e); godPay(k); g.rq.push({k,t:S.time+14*R}); godToast(P.icon,`${nm}來了！`,`效果 ${pc}%・一分鐘內交通、商店、觀光都變差`); ticker(snow?'❄️ 暴風雪！市民被困在家裡，只能看電視罵市長。':'⛈️ 豪雨下不停！騎樓淹水，公車開成了船。'); return true; }
+  if(k==='rumor'){ const D=CB[sb.t], cat=D.cat, Rm=RUMOR[cat]||['🤨','偷偷漲價'], T=75, id=nid();
+    godFx('rev',{s:cat,m:1-.55*e,until:S.time+T,lb:'🗣️ 謠言',gid:id}); godFx('happy',{n:-2,until:S.time+T,gid:id}); if(cat==='home') godFx('home',{m:1-.2*e,until:S.time+T,gid:id});
+    g.ent.push({id,k:'rumor',cat,icon:Rm[0],until:S.time+T}); blame(7*e); godPay(k); g.rq.push({k,id,t:S.time+(g.per==='vain'?28:20)*R});
+    godToast(Rm[0],`謠言：「${D.name}${Rm[1]}」`,`所有${CATNM[cat]||'同類建築'}客人變少・效果 ${pc}%`); return true; }
+  if(k==='shiba'){ const r=roadNear2(x,y); if(!r) return false; const T=70, id=nid(), tiles=[r], seen=new Set([r+'']);
+    for(let i=0;i<tiles.length&&tiles.length<7;i++){ const [a,b]=tiles[i]; DIRS.forEach(([dx,dy])=>{ const q=[a+dx,b+dy]; if(isRoad(q[0],q[1])&&!seen.has(q+'')&&Math.hypot(q[0]-r[0],q[1]-r[1])<=3){ seen.add(q+''); tiles.push(q); } }); }
+    const dogs=tiles.slice(0,7).map(([a,b])=>({x:a+.25+Math.random()*.5,y:b+.25+Math.random()*.5,col:pick(['red','red','sesame','black','white']),dir:Math.random()<.5?1:-1,pose:pick(['sleep','sleep','sit'])}));
+    let n=0; S.city.b.forEach(b=>{ if(CB[b.t].fixed||b.burnt) return; if(tiles.some(([a,c])=>gapOf(b.x,b.y,BW(b),a,c,1)<=1)){ b.jam=S.time+T; b.jamM=1-.5*e; b.jg=id; n++; } });
+    godFx('sup',{s:'move',m:1-.25*e,until:S.time+T,gid:id}); g.ent.push({id,k:'dogs',dogs,until:S.time+T}); blame(3*e); godPay(k); g.rq.push({k,id,t:S.time+30*R});
+    godToast('🐕','野柴犬躺在馬路上曬太陽',`旁邊 ${n} 棟沒人進得去・效果 ${pc}%`); ticker('🐕 一群柴犬躺在馬路中間，車子只能停下來等，市民邊塞車邊拍照。'); return true; }
+  if(k==='tempt'){ godPay(k); const p=aiPer().acc*Math.pow(.7,g.used.tempt-1); g.rq.push({k,t:S.time+6,ok:Math.random()<p}); godToast('🤝','建商提著禮盒去找市長了','「超大購物城，保證穩賺！」看市長怎麼回'); return true; }
+  if(k==='thief'){ const r=roadNear2(x,y); if(!r) return false; g.ent.push({id:nid(),k:'thief',px:r[0],py:r[1],nx:r[0],ny:r[1],t:1,x:r[0]+.5,y:r[1]+.5,until:S.time+90,e,hit:0,stT:1,look:godLook('#2c2f38','#1d1f24','#1e1e1e'),seed:Math.random()*9}); godPay(k);
+    godToast('🦹','小偷進城了','專偷店家收銀機・被 🚓 協尋中心抓到會招供'); return true; }
+  if(k==='scam'){ const s=scamSpot(x,y); if(!s) return false; const id=nid(); godFx('rev',{m:1-.25*e,until:S.time+9999,lb:'📞 詐騙集團',gid:id}); godFx('happy',{n:-Math.round(4*e),until:S.time+9999,gid:id});
+    g.ent.push({id,k:'scam',tx:s[0],ty:s[1],w:1,t0:S.time,look:godLook('#2b3550','#2b3550','#2a2a2a'),e}); blame(4*e); godPay(k); g.rq.push({k,id,t:S.time+Math.max(20,55*R/(1+.5*(g.used.scam-1)))});
+    godToast('📞','假投資說明會開張了','居民存款被騙走，全城消費變少・直到市府來取締'); return true; }
+  return false; }
+function aiReact(r){ const g=S.god, ent=id=>g.ent.find(e=>e.id===id), cut=(id,t=S.time)=>S.city.fx.forEach(f=>{ if(f.gid===id) f.until=Math.min(f.until,t); });
+  if(r.k==='storm'){ const c=P10(Math.max(300,netPerMin()*.5)); S.money-=c; blame(-2); aiSay(`市長穿雨衣到現場視察，花 $${fmt(c)} 加蓋排水溝`); }
+  else if(r.k==='rumor'){ const e=ent(r.id); if(e){ e.until=Math.min(e.until,S.time+8); cut(r.id,S.time+8); } blame(g.per==='vain'?-2:-3); aiSay(g.per==='vain'?'市長氣到召開記者會，當場試吃證明清白':'市長開記者會闢謠，謠言慢慢退燒'); }
+  else if(r.k==='shiba'){ const e=ent(r.id); if(e&&!e.leave){ e.leave=S.time; cut(r.id); S.city.b.forEach(b=>{ if(b.jg===r.id) b.jam=0; }); aiSay('市府請志工拿肉乾，把柴犬們引去公園了'); } }
+  else if(r.k==='scam'){ const e=ent(r.id); if(e){ g.ent=g.ent.filter(q=>q!==e); cut(r.id); const c=P10(Math.max(300,netPerMin()*.4)); S.money-=c; blame(-2); aiSay('市府辦反詐騙宣導，警察把假說明會搬走了'); if(Math.random()<.35) godSus(14,'主謀被抓到，他招供：「是神託夢叫我開的！」'); } }
+  else if(r.k==='tempt'){ if(r.ok){ const dp=P10(Math.max(1000,Math.max(0,S.money)*.5)), n=Math.max(6,cityRate()*.9); S.money-=dp; godFx('loan',{n,until:S.time+200,lb:'🏗️ 爛尾購物城'}); const s=siteSpot(); if(s) g.ent.push({id:(g.id=(g.id||1)+1),k:'site',tx:s[0],ty:s[1],w:2,until:S.time+200}); g.rq.push({k:'tempt2',t:S.time+40});
+      sfx.fan(); godToast('🤝','市長簽約了！',`付了訂金 $${fmt(dp)}，之後每分鐘還 $${fmt(n*60)}`); aiSay('市長簽下超大購物城，說「這次一定賺」'); }
+    else { blame(-4); sfx.bad(); godToast('🙅','市長拒絕了建商','還上了新聞「清廉市長」・支持率 +4'); aiSay('市長把禮盒退回去，還開記者會說自己很清廉'); } }
+  else if(r.k==='tempt2'){ godFx('happy',{n:-4,until:S.time+150,lb:'🏗️ 爛尾樓'}); blame(12); godToast('🏗️','購物城工程停擺了','建商跑了，工地只剩幾根柱子・市民很生氣'); aiSay('購物城變成爛尾樓，市長說「只是暫停一下」'); } }
+function godEnts(dt){ const g=S.god;
+  g.ent=g.ent.filter(e=>{ if(e.k==='rumor'||e.k==='site') return S.time<e.until; if(e.k==='scam') return true;
+    if(e.k==='dogs'){ if(!e.leave&&S.time>=e.until) e.leave=S.time; return !(e.leave&&S.time-e.leave>3); }
+    if(e.k==='thief') return thiefTick(e,dt); return false; }); }
+function thiefTick(e,dt){ const g=S.god;
+  e.t+=dt*1.1; if(e.t>=1){ e.t=0; e.px=e.nx; e.py=e.ny; const nb=DIRS.map(([a,b])=>[e.px+a,e.py+b]).filter(([a,b])=>isRoad(a,b)), fw=nb.filter(([a,b])=>a!==e.lx||b!==e.ly), q=pick(fw.length?fw:nb.length?nb:[[e.px,e.py]]); e.lx=e.px; e.ly=e.py; e.nx=q[0]; e.ny=q[1]; }
+  e.x=e.px+(e.nx-e.px)*e.t+.5; e.y=e.py+(e.ny-e.py)*e.t+.5;
+  e.stT-=dt; if(e.stT<=0){ e.stT=1.5; const v=S.city.b.find(b=>b.ok&&!b.burnt&&(CB[b.t].cat==='shop'||CB[b.t].cat==='tour'||b.t==='bike')&&!(b.rob>S.time)&&gapOf(b.x,b.y,BW(b),Math.floor(e.x),Math.floor(e.y),1)<=0);
+    if(v){ v.rob=S.time+45; v.robM=1-.5*e.e; const amt=P10(Math.max(60,cityRate()*6*e.e)); S.money-=amt; e.hit++; godFx('happy',{n:-1,until:S.time+45}); blame(2*e.e);
+      const q=R2(v.x+BW(v)/2,v.y+BW(v)/2), c=P3(q[0],q[1],1); floats.push({c:1,text:`🦹 -$${fmt(amt)}`,x:c.x,y:c.y,life:1.6,color:'#e2574c'});
+      if(!(g.alert>S.time)){ g.alert=S.time+60; aiSay(`${CB[v.t].name}的收銀機被偷了！市長下令加強巡邏`); } } }
+  const cops=S.city.b.filter(b=>b.t==='lost'&&b.ok&&!b.burnt&&Math.hypot(b.x+.5-e.x,b.y+.5-e.y)<=6).length;
+  if(Math.random()<(.012+.07*cops+(g.alert>S.time?.015:0))*dt){ blame(-2); if(!cops) g.want=[...new Set([...(g.want||[]),'lost'])]; godSus(18,'小偷被抓了！他招供：「是一個神叫我來的！」'); aiSay('抓到小偷了，市長宣布要多蓋協尋中心'); return false; }
+  if(S.time>=e.until){ ticker(`🦹 小偷偷了 ${e.hit} 間店，帶著贓物跑去隔壁城市了。`); return false; }
+  return true; }
+
+// ---- 畫面 ----
+function drawThief(e){ const q=R2(e.x,e.y), s=tw*.85, b=iso(q[0],q[1]);
+  drawPerson(q[0],q[1],{look:e.look,skin:e.look.skin,hair:'#1e1e1e',shirt:'#2c2f38',pants:'#1d1f24',walk:1,phase:clock*9+e.seed,seed:e.seed,scale:.85});
+  ctx.fillStyle='#f4f1ea'; [.27,.33,.39,.45].forEach(f=>ctx.fillRect(b.x-s*.095,b.y-s*f,s*.19,s*.026));
+  const hy=b.y-s*.565, hr=s*.085; ctx.fillStyle='#1b1b1f'; ctx.beginPath(); ctx.arc(b.x,hy-hr*.15,hr*1.05,Math.PI,0); ctx.fill(); rrect(b.x-hr*1.08,hy-hr*.12,hr*2.16,hr*.5,hr*.25,'#111'); circle(b.x-hr*.42,hy+hr*.12,hr*.15,'#fff'); circle(b.x+hr*.42,hy+hr*.12,hr*.15,'#fff');
+  emoji('💰',b.x+s*.2,b.y-s*.3,s*.26);
+  const r=Math.max(10,tw*.13), by=hy-hr-r*1.6+Math.sin(clock*4+e.seed)*2; ctx.fillStyle='#2c2f38'; ctx.beginPath(); ctx.moveTo(b.x-r*.3,by+r*.8); ctx.lineTo(b.x,by+r*1.3); ctx.lineTo(b.x+r*.3,by+r*.8); ctx.fill(); circle(b.x,by,r,'#2c2f38'); emoji('🦹',b.x,by,r*1.3); }
+function drawScam(e){ const q=R2(e.tx+.5,e.ty+.5), x=q[0], y=q[1];
+  box(x-.34,y-.18,.68,.36,.24,'#e9dcc0');
+  const p0=P3(x,y,.24), p1=P3(x,y,.9); ctx.strokeStyle='#6b6b6b'; ctx.lineWidth=Math.max(1.5,tw*.02); ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+  { const rx=tw*.4, ry=tw*.14, top=tw*.2; for(let i=0;i<8;i++){ const a0=Math.PI+i*Math.PI/8, a1=a0+Math.PI/8; ctx.fillStyle=i%2?'#f6f0e4':'#e2574c'; ctx.beginPath(); ctx.moveTo(p1.x,p1.y-top); ctx.lineTo(p1.x+Math.cos(a0)*rx,p1.y+Math.sin(a0)*ry); ctx.lineTo(p1.x+Math.cos(a1)*rx,p1.y+Math.sin(a1)*ry); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle='#c94236'; ctx.beginPath(); ctx.ellipse(p1.x,p1.y,rx,ry,0,0,Math.PI); ctx.lineTo(p1.x-rx,p1.y); ctx.fill(); circle(p1.x,p1.y-top,tw*.02,'#7a2a22'); }
+  drawPerson(x+.3,y+.3,{look:e.look,skin:e.look.skin,hair:'#2a2a2a',shirt:'#2b3550',pants:'#2b3550',walk:0,seed:2,scale:.85,lift:Math.abs(Math.sin(clock*4))*.03});
+  const sg=P3(x,y,1.4), fw=tw*.13; rrect(sg.x-fw*3.2,sg.y-fw*1.05,fw*6.4,fw*2.1,fw*.4,'#fffbe8','#e2574c',2); txt('穩賺不賠',sg.x,sg.y-fw*.35,fw,'#c0392b',900); txt('保證不是詐騙',sg.x,sg.y+fw*.5,fw*.62,'#555',800); }
+function drawSite(e){ const q=R2(e.tx+1,e.ty+1), x=q[0]-1, y=q[1]-1;
+  cPlate(x,y,2,'#b9b2a4',.04); [[.2,.2],[1.62,.2],[.2,1.62],[1.62,1.62],[.91,.91]].forEach(([a,b],i)=>box(x+a,y+b,.18,.18,i===4?.6:1.1+(i%2)*.25,'#cfcac0'));
+  const t=P3(x+1,y+1,1.6), fw=tw*.12; rrect(t.x-fw*3.4,t.y-fw*1.05,fw*6.8,fw*2.1,fw*.4,'#fff3c4','#c27a00',2); txt('超大購物城',t.x,t.y-fw*.35,fw,'#7a4a00',900); txt('工程停擺中',t.x,t.y+fw*.5,fw*.62,'#a33',800); }
+function godDeco(list){ const g=S.god; if(!g) return;
+  g.ent.forEach(e=>{
+    if(e.k==='thief') list.push({d:dep(e.x,e.y)+.12,fn:()=>drawThief(e)});
+    else if(e.k==='dogs'){ const a=e.leave?Math.max(0,1-(S.time-e.leave)/3):1; e.dogs.forEach(d=>list.push({d:dep(d.x,d.y)+.05,fn:()=>{ const q=R2(d.x,d.y), c=P3(q[0],q[1],0); ctx.globalAlpha=a; drawShibaSpr(c.x,c.y,tw*.26,d.col,isNight()?'sleep':d.pose,d.dir,0); ctx.globalAlpha=1; }})); }
+    else if(e.k==='scam') list.push({d:dep(e.tx+.5,e.ty+.5)+.2,fn:()=>drawScam(e)});
+    else if(e.k==='site') list.push({d:dep(e.tx+1,e.ty+1)+.5,fn:()=>drawSite(e)}); }); }
+function godOverlay(){ const g=S.god; if(!g) return;
+  g.ent.forEach(e=>{ if(e.k!=='rumor') return; let n=0; S.city.b.forEach(b=>{ if(n>=12||b.burnt||CB[b.t].fixed||CB[b.t].cat!==e.cat) return; n++; const w=BW(b), q=R2(b.x+w/2,b.y+w/2), p=P3(q[0],q[1],w>1?1.7:1.2), r=Math.max(10,tw*.15), y=p.y+Math.sin(clock*3+b.x)*3;
+    ctx.fillStyle='rgba(255,253,248,.92)'; ctx.beginPath(); ctx.moveTo(p.x-r*.3,y+r*.8); ctx.lineTo(p.x,y+r*1.3); ctx.lineTo(p.x+r*.3,y+r*.8); ctx.fill(); circle(p.x,y,r,'rgba(255,253,248,.92)'); emoji(e.icon,p.x,y,r*1.25); }); }); }
+function godTap(sx,sy,x,y){ const k=godAim;
+  if(!k){ const b=buildingAtScreen(sx,sy); ticker(b?`${CB[b.t].icon} ${CB[b.t].name}：AI 市長蓋的。下面選一招來搞它`:'😈 先在下面選一招'); return; }
+  let ok=false; if(k==='rumor'){ const b=buildingAtScreen(sx,sy)||bAt(x,y); if(b&&!CB[b.t].fixed) ok=godDo(k,x,y,b); else ticker('🗣️ 要點一棟建築（市政府不行）'); }
+  else { ok=godDo(k,x,y); if(!ok) ticker(k==='scam'?'📞 附近沒有路邊的空地，換個地方':'🛣️ 要點在路上或路旁'); }
+  if(ok) setGodAim(null); else sfx.bad(); }
+function godHud(){ const g=S.god; if(!g) return;
+  const key=Object.keys(GODP).map(k=>`${g.pw>=GODP[k].cost?1:0}${(g.cd[k]||0)>S.time?1:0}${godAim===k?1:0}`).join('')+'|'+Math.floor(g.pw)+'|'+Math.round(g.sus); if(key===godKey) return; godKey=key;
+  document.querySelectorAll('#navG [data-gp]').forEach(btn=>{ const k=btn.dataset.gp, P=GODP[k]; btn.classList.toggle('off',g.pw<P.cost||(g.cd[k]||0)>S.time); btn.classList.toggle('aim',godAim===k); });
+  $('godPw').innerHTML=`😈 ${Math.floor(g.pw)}<span class="pb"><i style="width:${Math.floor(g.pw)}%"></i></span>`; $('godSus').textContent=`👀 ${Math.round(g.sus)}%`; $('godSus').className='chipbtn '+(g.sus>=70?'bad':g.sus>=45?'mid':'ok'); }
+function godAdvice(){ const g=S.god, L=[], v=voteState(), ap=approval(), left=v.next-S.time, f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, go=()=>openSheet(godHTML);
+  if(g.over) return [{lv:0,t:'這局結束了',go}];
+  if(g.sus>=80) L.push({lv:3,t:`👀 懷疑度 <b>${Math.round(g.sus)}%</b>！再出招會被封印，先等它降下來`,go});
+  else if(g.sus>=55) L.push({lv:2,t:`👀 市民開始覺得怪怪的（${Math.round(g.sus)}%），出招間隔拉長一點`,go});
+  if(g.lowT>0) L.push({lv:2,good:1,t:`🏳️ 支持率 ${ap}%，再撐 <b>${Math.ceil(20-g.lowT)} 秒</b>市長就會辭職`,go});
+  if(left<=120) L.push({lv:2,good:ap<50,t:`🗳️ <b>${f(left)} 後選舉</b>，AI 支持率 ${ap}%${ap<50?'，照這樣他會落選！':'，還要壓到 50% 以下'}`,go});
+  const th=g.ent.find(e=>e.k==='thief'); if(th) L.push({lv:1,t:`🦹 小偷作案中，已經偷了 <b>${th.hit}</b> 間`,go:()=>{ camX=th.x; camY=th.y; clampCam(); }});
+  if(g.log[0]) L.push({lv:1,t:`🤖 ${g.log[0]}`,go});
+  L.push({lv:0,t:GOD_TIPS[Math.floor(S.time/25)%GOD_TIPS.length],go}); return L; }
+function godHTML(){ const g=S.god, P=aiPer(), v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
+  return `<h2>😈 破壞神</h2><div class="sub">讓 AI 市長選輸（支持率 &lt; 50%），或支持率 25% 以下撐 20 秒逼他辭職</div>
+    <div class="kv"><div>AI 市長<b>${P.icon} ${esc(g.nm)}・${P.name}</b></div><div>支持率<b>🗳️ ${ap}%</b></div><div>下次選舉<b>${f(v.next-S.time)}（${(g.el||0)+1}/3）</b></div><div>懷疑度<b>👀 ${Math.round(g.sus)}%</b></div><div>民怨<b>😤 ${Math.max(0,Math.round(g.blame||0))}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div></div>
+    <div class="note">${P.icon} ${P.desc}</div>
+    ${Object.entries(GODP).map(([k,Q])=>`<div class="item" style="padding:8px 10px"><div style="font-size:24px">${Q.icon}</div><div class="txt"><div class="nm" style="font-size:14px">${Q.name}<small style="font-weight:700;color:var(--soft)">　神力 ${Q.cost}・效果 ${Math.round(godEff(k)*100)}%</small></div><div class="ds">${Q.desc}</div></div></div>`).join('')}
+    <div class="note">😤 每招得手都會累積民怨，直接扣市長支持率；民怨會慢慢被淡忘，市長處理得好也會消一點<br>🧠 同一招每用一次，AI 就學乖一點（效果 ×75%）<br>👀 每招都會讓人起疑，連續出招漲更快；70% 市民蓋神社（法術 -25%），100% 你被封印<br>😈 市民越不開心、有抗議，神力回得越快</div>
+    ${g.log.length?`<div class="note"><b>AI 市長最近</b><br>${g.log.slice(0,4).map(esc).join('<br>')}</div>`:''}
+    <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>`; }
+
 // ================= 雲端存檔（Claude 連結限定） =================
 const ON_PAGES=/\.github\.io$/.test(location.hostname);
 const cloud={ref:null,status:'local',busy:false,last:''};
@@ -3169,7 +3408,7 @@ async function initCloud(){
   return null;
 }
 async function cloudSave(force){
-  if(!cloud.ref||cloud.busy) return;
+  if(!cloud.ref||cloud.busy||(S&&S.god)) return;
   S.t=Date.now(); const j=JSON.stringify(S);
   if(!force&&j===cloud.last) return;
   cloud.busy=true;
@@ -3212,8 +3451,11 @@ function boot(){
     booted=true;
     mode='city'; camX=citySize()/2; camY=citySize()/2; zoom=cityZoom(); applyZoom(); 
     ticker(pick(['🏙️ 早安，市長！今天的城市也很怪。','🏙️ 市長上班了，鴨子們在市政府門口排隊。']));
-    if(S.tut===0){ S.tut=1; S.day=today(); } else { welcomeBack(t0); }
-    makeKidLooks(); if(S.city.over) showGameOver(); else if(S.city.settled) chooseMap(); else cityIntro(); lastCityKey=''; saveLocal();
+    makeKidLooks();
+    if(S.god){ godResume(); }
+    else { if(S.tut===0){ S.tut=1; S.day=today(); } else { if(S.city.intro&&!S.city.over&&!S.city.settled&&!S.city.needOpen) queueModal(modeModal()); welcomeBack(t0); }
+      if(S.city.over) showGameOver(); else if(S.city.settled) chooseMap(); else cityIntro(); }
+    lastCityKey=''; saveLocal();
   };
   initCloud().then(finish).catch(()=>finish(null));
   setTimeout(()=>finish(null),hadLocal?1500:6000);
