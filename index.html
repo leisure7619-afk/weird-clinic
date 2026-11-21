@@ -64,7 +64,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 nav{display:flex;gap:5px;padding:0 8px max(8px,calc(env(safe-area-inset-bottom) - 10px))}body.gapfix nav{padding-bottom:4px}
 nav button{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:6px 0 4px;font-size:11px;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 3px 0 var(--line);position:relative}
 nav button span{font-size:19px;line-height:1.1}
-#navG{gap:3px;padding-left:5px;padding-right:5px}#navG button i{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;font-weight:900;color:#7a4fc0}#navG button.off{opacity:.42}#navG button.aim{border-color:#9b6dd6;background:#f1e8fb;box-shadow:0 3px 0 #c9b3ea}
+#navG{gap:3px;padding-left:5px;padding-right:5px}#navG button i{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;font-weight:900;color:#7a4fc0}#navG button.off{opacity:.42}.hint{animation:hintb .8s ease-in-out infinite;border-color:#9b6dd6!important}@keyframes hintb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}.gfl{position:absolute;z-index:6;font-weight:900;font-size:20px;pointer-events:none;text-shadow:0 1px 0 #fff,0 -1px 0 #fff,1px 0 0 #fff,-1px 0 0 #fff;animation:gfl 1.4s ease-out forwards}@keyframes gfl{0%{transform:translateY(6px) scale(.8);opacity:0}20%{transform:translateY(0) scale(1.15);opacity:1}100%{transform:translateY(-16px);opacity:0}}#navG button.aim{border-color:#9b6dd6;background:#f1e8fb;box-shadow:0 3px 0 #c9b3ea}
 nav button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 nav .dot{position:absolute;top:-5px;right:-3px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;font-weight:900}
 #bottom{background:linear-gradient(#f6ecd9,#fdf6e9)}
@@ -3085,7 +3085,7 @@ let lastMoney=-1;
 function bump(id){ const el=$(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function hud(){
   $('zRot').classList.toggle('hidden',mode!=='city');
-  { const vc=$('voteChip'); if(S.god&&booted){ const v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, t=`🗳️ ${f(v.next-S.time)}・🤖 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(ap<50?'ok':ap<58?'mid':'bad'); } else if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
+  { const vc=$('voteChip'); if(S.god&&booted){ const v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, t=`🗳️ ${f(v.next-S.time)}・🤖 ${ap}%`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(ap<50?'ok':ap<58?'mid':'bad')+(S.god.tut===2?' hint':''); } else if(mode==='city'&&S.city&&booted){ const v=voteState(), c=S.city.crisis, ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`; const t=c?`🚨 罷免 ${f(c.left)}`:`${NIGHT>.5?'🌙':(SEASON_EV[monthNo()]||{}).icon||SEASON_ICON[seasonOf(monthNo())]} ${monthNo()}月・🗳️ ${f(v.next-S.time)}${ap<55?` 支持 ${ap}%`:''}`; vc.classList.remove('hidden'); if(vc.textContent!==t) vc.textContent=t; vc.className='chipbtn '+(c||ap<50?'bad':ap<55?'mid':'ok'); } else vc.classList.add('hidden'); }
   const m=Math.floor(S.money);
   if(m!==lastMoney){ $('money').textContent=(S.god?'🤖💰 ':'💰 ')+fmt(m); lastMoney=m; }
   cityHud(); godHud();
@@ -3132,7 +3132,7 @@ function citySetHTML(){
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
     <div class="toggle"><span>🌙 日夜變化</span><button class="btn ghost" data-act="toggleNight">${S.noNight?'關':'開'}</button></div>
     <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.37</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.38</div>`;
   return `<h2>⚙️ 設定</h2><div class="sub">${CITY_STAGES[S.city.stage].name}・${CITY_STAGES[S.city.stage].mayor}・${cloud.status==='cloud'?'☁️ 雲端存檔':'📱 本機存檔'}</div>
     <div class="kv"><div>當市長第<b>${yearNo()} 年</b></div><div>人口<b>👥 ${fmt(CS.pop)}</b></div><div>建築<b>🏢 ${S.city.b.length} 棟</b></div><div>道路<b>🛣️ ${ROADS.size} 格</b></div><div>累計收入<b>$${fmt(S.stats.earned)}</b></div><div>完成任務<b>🎯 ${S.city.misDone||0} 個</b></div></div>
     <div class="toggle"><span>🔊 音效</span><button class="btn ghost" data-act="toggleMute">${S.muted?'關':'開'}</button></div>
@@ -3141,7 +3141,7 @@ function citySetHTML(){
     <div class="row"><button class="btn ghost" data-act="godStart">😈 破壞神模式：搞垮 AI 市長的城市</button></div>
     <div class="row"><button class="btn ghost" data-act="openFame">🏅 市長名人堂（卸任、升級）</button><button class="btn ghost" data-act="openDex">📖 組合圖鑑</button></div>
     <div class="row"><button class="btn ${confirmReset?'danger':'ghost'}" data-act="askReset">${confirmReset?'真的嗎？城市、勳章、圖鑑全部清除':'清除全部進度'}</button></div>
-    <div class="sub" style="margin-top:14px">搞怪城市 v2.37</div>`;
+    <div class="sub" style="margin-top:14px">搞怪城市 v2.38</div>`;
 }
 function toggleMute(){ S.muted=!S.muted; saveLocal(); refreshSheet(); }
 function toggleNight(){ S.noNight=!S.noNight; saveLocal(); refreshSheet(); ticker(S.noNight?'☀️ 日夜變化關掉了，城市永遠是白天。':'🌙 日夜變化打開了。'); }
@@ -3175,31 +3175,34 @@ function welcomeBack(savedT){
 const MAYOR_KEY=SAVE_KEY+'-mayor';
 let godAim=null, TOASTOK=0, godKey='';
 const AI_PER={
-  cautious:{icon:'🐢',name:'保守型',desc:'存夠錢才蓋、出事反應快，不太會被建商騙',acc:.3,react:.7,reserve:2500,step:6},
-  bold:{icon:'🚀',name:'衝衝衝型',desc:'有錢就蓋、反應慢半拍，最容易被建商騙',acc:.8,react:1.3,reserve:0,step:3.5},
-  vain:{icon:'🪞',name:'愛面子型',desc:'最怕負評，謠言對他特別有效；也愛聽大案子',acc:.6,react:1,reserve:800,step:4.5}
+  cautious:{icon:'🐢',name:'保守型',desc:'謹慎、反應快，很難騙',acc:.3,react:.7,reserve:2500,step:6},
+  bold:{icon:'🚀',name:'衝衝衝型',desc:'有錢就蓋，很好騙',acc:.8,react:1.3,reserve:0,step:3.5},
+  vain:{icon:'🪞',name:'愛面子型',desc:'最怕謠言',acc:.6,react:1,reserve:800,step:4.5}
 };
 const AI_NAMES=['阿算','嗶嗶博士','小精','算盤仔','整整齊齊'];
 const GOD_TOWNS=['算盤市','嗶嗶鎮','整齊市','效率鎮','演算法市'];
 const GODP={
-  storm:{icon:'⛈️',name:'天災',cost:40,sus:12,desc:'一分鐘豪雨（冬天是暴風雪）：交通、商店、觀光都變差，市民很煩'},
-  rumor:{icon:'🗣️',name:'謠言',cost:25,sus:8,aim:'點一棟建築，同一類的全部遭殃',desc:'點一棟建築散播謠言，同一類的客人少一半'},
-  shiba:{icon:'🐕',name:'柴犬',cost:15,sus:3,aim:'點一段路，柴犬會躺在那裡曬太陽',desc:'一群野柴犬躺在馬路上曬太陽，附近的店沒人進得去'},
-  tempt:{icon:'🤝',name:'誘惑',cost:30,sus:6,desc:'派建商找市長談「穩賺」的超大購物城，看市長貪不貪心'},
-  thief:{icon:'🦹',name:'小偷',cost:20,sus:5,aim:'點一段路放小偷，離 🚓 協尋中心遠一點',desc:'偷店家收銀機和單車。被抓到會招供，懷疑度大增'},
-  scam:{icon:'📞',name:'詐騙',cost:35,sus:8,aim:'點住宅附近、路邊的空地',desc:'開假投資說明會騙走居民存款，全城消費變少，直到市府取締'}
+  storm:{icon:'⛈️',name:'天災',cost:40,sus:12,desc:'一分鐘豪雨，大家出不了門'},
+  rumor:{icon:'🗣️',name:'謠言',cost:25,sus:8,aim:'點一棟建築',desc:'點一棟建築，同類的客人變少'},
+  shiba:{icon:'🐕',name:'柴犬',cost:15,sus:3,aim:'點一段路',desc:'柴犬躺馬路，附近的店沒人進得去'},
+  tempt:{icon:'🤝',name:'誘惑',cost:30,sus:6,desc:'建商找市長談大案子，收了會背債'},
+  thief:{icon:'🦹',name:'小偷',cost:20,sus:5,aim:'點一段路放小偷',desc:'偷店家收銀機，別被 🚓 抓到'},
+  scam:{icon:'📞',name:'詐騙',cost:35,sus:8,aim:'點住家旁的空地',desc:'假說明會，騙走居民的錢'}
 };
 const RUMOR={shop:['🤢','吃了會拉肚子'],tour:['👻','晚上會鬧鬼'],culture:['👻','晚上會鬧鬼'],home:['🏭','旁邊要蓋焚化爐'],tech:['💸','老闆要捲款跑路'],ind:['☠️','偷排廢水'],public:['🏚️','偷工減料快倒了'],traffic:['🦆','司機沒有駕照'],power:['💥','快爆炸了'],farm:['🐛','灑了很多農藥']};
 const CATNM={shop:'商店',tour:'觀光設施',culture:'文化設施',home:'住宅',tech:'科技公司',ind:'工廠',public:'公共設施',traffic:'交通設施',power:'發電廠',farm:'農田'};
-const GOD_TIPS=['💡 市民越不開心，😈 神力回得越快','💡 小偷別放在 🚓 協尋中心附近','💡 市庫赤字時支持率 -10，試試 🤝 誘惑','💡 同一招一直用，AI 會學乖，換著用','💡 🐕 柴犬最不會被懷疑','💡 支持率看整年平均，年初就要開始搞'];
+const GOD_TIPS=['💡 市民越不爽，😈 回得越快','💡 小偷別放在 🚓 旁邊','💡 市長沒錢時，支持率掉很多','💡 🐕 柴犬最不會被懷疑'];
 const aiPer=()=>AI_PER[S.god.per]||AI_PER.vain;
 const godEff=k=>{ const g=S.god; return Math.max(.35,Math.pow(.75,g.used[k]||0))*(g.shrine?.75:1); };
 const godFx=(k,o)=>S.city.fx.push(Object.assign({k},o));
 function godToast(i,t,s){ TOASTOK=1; toast(i,t,s); TOASTOK=0; }
 function aiSay(m){ const g=S.god; ticker('🤖 '+m); g.log.unshift(m); g.log.length=Math.min(g.log.length,6); }
 // 民怨：市民把怪事算在市長頭上，直接扣支持率；會慢慢被淡忘，市長處理得好也會消一點
-function blame(n){ const g=S.god; g.blame=Math.max(-10,Math.min(70,(g.blame||0)+n)); }
-function godSus(n,msg){ const g=S.god; g.sus=Math.min(100,g.sus+n); g.susMax=Math.max(g.susMax||0,g.sus); sfx.bad(); godToast('🚨',msg,`👀 懷疑度 +${n}`); }
+function blame(n){ const g=S.god; g.blame=Math.max(-10,Math.min(70,(g.blame||0)+n)); if(Math.abs(n)>=1) voteFloat(-Math.round(n)); }
+function voteFloat(v){ const c=$('voteChip'), st=$('stage'); if(!c||c.classList.contains('hidden')) return; const r=c.getBoundingClientRect(), s0=st.getBoundingClientRect(), el=document.createElement('div'); el.className='gfl'; el.style.left=Math.round(r.right-s0.left-30)+'px'; el.style.top=Math.round(r.top-s0.top-14)+'px'; el.style.color=v<0?'#e2574c':'#3fae7a'; el.textContent=(v>0?'+':'')+v; st.appendChild(el); setTimeout(()=>el.remove(),1400); }
+// 第一次碰到某個機制才講一句（每局一次）
+function godTip(k,i,t,s){ const g=S.god; g.seen=g.seen||{}; if(g.seen[k]) return; g.seen[k]=1; godToast(i,t,s); }
+function godSus(n,msg){ const g=S.god; g.sus=Math.min(100,g.sus+n); g.susMax=Math.max(g.susMax||0,g.sus); sfx.bad(); godToast('🚨',msg,`👀 +${n}`); }
 
 // ---- AI 市長 ----
 const AI_MUST=new Set(), AI_SKIP=new Set(['road','canal','cable','cablebase','mrt','balloon','airport']);
@@ -3247,81 +3250,83 @@ function enterGod(){
   setTheme(); cityRuntimeReset(); applyOpen('classic');
   S.money=45000; for(let i=0;i<40;i++){ cityCalc(); checkUnlocks(); S.city.b.forEach(b=>{ if(CB[b.t].pop) b.occ=CB[b.t].pop*.8; }); aiStep(true); }
   S.money=6000; cityCalc(); voteState(); { const B=S.city.b; camX=B.reduce((a,b)=>a+b.x+BW(b)/2,0)/B.length; camY=B.reduce((a,b)=>a+b.y+BW(b)/2,0)/B.length; } zoom=cityZoom(); applyZoom(); groundVer++; $('toast').innerHTML='';
-  setGodUI(true); saveLocal(); const P=aiPer(), g=S.god; sfx.fan();
-  queueModal({god:1,icon:'😈',title:'破壞神模式',body:`<p>AI 市長「<b>${g.nm}</b>」（${P.icon} ${P.name}）正在經營「${cityName()}」。你不能直接拆房子，只能用下面 6 招間接搞破壞。</p><div class="note">🎯 讓他選舉落選（支持率 &lt; 50%），或把支持率壓到 25% 以下撐 20 秒，逼他辭職<br>🗓️ 每年底選一次，他撐過 3 次你就輸<br>😈 出招要花神力，市民越不爽回得越快<br>👀 太明顯會被懷疑，到 100% 你會被封印<br>🧠 同一招用越多次，AI 越會防</div>`,buttons:[{label:'開始搞破壞'}]}); }
+  setGodUI(true); saveLocal(); const g=S.god; sfx.fan();
+  g.tut=1; queueModal({god:1,icon:'😈',title:'搞垮 AI 市長！',body:`<p>讓 🤖 <b>${g.nm}</b>市長選舉落選，你就贏了。</p>`,buttons:[{label:'開始'}]}); }
 function exitGod(){ const meta=S.meta; let s=null; try{ s=migrate(JSON.parse(localStorage.getItem(MAYOR_KEY)||'null')); }catch(e){}
   S=s||newState(); S.meta=meta; delete S.god; try{ localStorage.removeItem(MAYOR_KEY); }catch(e){}
   modalQ=[]; $('toast').innerHTML=''; setTheme(); cityRuntimeReset(); setGodUI(false); saveLocal(); cloudSave(true); ticker('🏛️ 回到市長模式，你的城市一切照舊。');
   if(S.city.over) showGameOver(); else if(S.city.settled) chooseMap(); else if(!S.city.intro) cityIntro(); }
-function exitGodAsk(){ closeSheet(); queueModal({god:1,icon:'🏛️',title:'放棄這局？',body:'<p>回到你自己的城市，這局破壞神不會拿到勳章。</p>',buttons:[{label:'回市長模式',fn:exitGod},{label:'繼續搞破壞',ghost:1}]}); }
-function modeModal(){ return {icon:'🎮',title:'選擇模式',body:'',buttons:[{label:'🏛️ 市長模式',sub:`繼續經營「${cityName()}」`},{label:'😈 破壞神模式',sub:'AI 市長在蓋城市，你負責把它搞垮',fn:enterGod}]}; }
+function exitGodAsk(){ closeSheet(); queueModal({god:1,icon:'🏛️',title:'放棄這局？',body:'',buttons:[{label:'回市長模式',fn:exitGod},{label:'繼續搞破壞',ghost:1}]}); }
+function modeModal(){ return {icon:'🎮',title:'選擇模式',body:'',buttons:[{label:'🏛️ 市長模式',sub:`繼續經營「${cityName()}」`},{label:'😈 破壞神模式',sub:'搞垮 AI 市長的城市',fn:enterGod}]}; }
 function godResume(){ const g=S.god; setGodUI(true);
   if(g.over) queueModal({god:1,icon:'😈',title:'這局結束了',body:'',buttons:[{label:'😈 再來一局',fn:enterGod},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]});
-  else queueModal({god:1,icon:'😈',title:'破壞神模式進行中',body:`<p>AI 市長「${g.nm}」還在經營「${cityName()}」。</p>`,buttons:[{label:'繼續搞破壞'},{label:'🏛️ 回市長模式（放棄這局）',ghost:1,fn:exitGod}]}); }
+  else queueModal({god:1,icon:'😈',title:'繼續搞破壞？',body:'',buttons:[{label:'繼續'},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]}); }
 
 // ---- 每一幀 ----
 function godTick(dt){ const g=S.god; if(!g||g.over) return;
   g.pw=Math.min(100,g.pw+dt*(.8+Math.max(0,60-CS.happy)/40+(protest?.5:0))); g.sus=Math.max(0,g.sus-dt*.22); if(g.blame>0) g.blame=Math.max(0,g.blame-dt*.03); else if(g.blame<0) g.blame=Math.min(0,g.blame+dt*.05); if(protest) blame(dt*.06); g.ent.forEach(q=>{ if(q.k==='scam') blame(dt*.08*(q.e||1)); });
-  if(protest&&!g.prot){ g.prot=1; godToast('✊','市民上街抗議 AI 市長！','收入 -20%・支持率 -10・神力回得更快'); } if(!protest) g.prot=0;
+  if(protest&&!g.prot){ g.prot=1; godToast('✊','市民上街抗議！','😈 神力回得更快'); } if(!protest) g.prot=0;
   g.aiT=(g.aiT??2)-dt; if(g.aiT<=0){ g.aiT=aiPer().step*(.8+Math.random()*.4); aiStep(); }
   for(let i=g.rq.length-1;i>=0;i--) if(S.time>=g.rq[i].t) aiReact(g.rq.splice(i,1)[0]);
   godEnts(dt);
-  if(g.sus>=70&&!g.shrine){ g.shrine=1; const sp=aiSpot('shrine'); if(sp) cityPlace('shrine',sp.x,sp.y,{quiet:1,cost:1}); sfx.bad(); godToast('⛩️','市民覺得怪事太多，蓋了柴犬神社','之後你的法術效果 -25%'); aiSay('市民蓋了柴犬神社，每天排隊拜拜求平安'); }
+  if(g.sus>=25) godTip('sus','👀','市民開始起疑了','懷疑滿了你就輸，出招別太密');
+  if(g.tut===2&&S.time>=g.tutT) g.tut=3;
+  if(g.sus>=70&&!g.shrine){ g.shrine=1; const sp=aiSpot('shrine'); if(sp) cityPlace('shrine',sp.x,sp.y,{quiet:1,cost:1}); sfx.bad(); godToast('⛩️','市民蓋了柴犬神社求平安','你的招式變弱了'); aiSay('市民蓋了柴犬神社，每天排隊拜拜求平安'); }
   if(g.sus>=100) return godEnd(false,'seal');
   const ap=approval(); g.lowT=ap<=25?(g.lowT||0)+dt:0; if(g.lowT>=20) godEnd(true,'resign',ap); }
 function godElect(dt){ const g=S.god, v=voteState(); if(g.over) return; voteAcc+=dt; if(voteAcc>=1){ voteAcc=0; v.apS+=CS.happy; v.apN++; }
-  const left=v.next-S.time; if(left<=60&&voteWarned!==v.next){ voteWarned=v.next; godToast('🗳️','一分鐘後選舉開票！',`AI 市長支持率 ${approval()}%，壓到 50% 以下他就落選`); }
+  const left=v.next-S.time; if(left<=60&&voteWarned!==v.next){ voteWarned=v.next; godToast('🗳️','一分鐘後開票！',`AI 支持率 ${approval()}%`); }
   if(left>0) return; const X=approval(); v.next+=YEAR; v.apS=0; v.apN=0; v.bonus=0; g.el=(g.el||0)+1;
   if(X<50) return godEnd(true,'elect',X); if(g.el>=3) return godEnd(false,'term',X);
-  sfx.bad(); queueModal({god:1,icon:'🗳️',title:`AI 市長連任了（${X}%）`,body:`<p>${g.nm}市長：「謝謝大家，我會更有效率！」</p><div class="note">🗓️ 還剩 ${3-g.el} 次選舉<br>💡 支持率看整年平均，要從年初就開始搞</div>`,buttons:[{label:'下次一定'}]}); }
+  sfx.bad(); queueModal({god:1,icon:'🗳️',title:`AI 市長連任了（${X}%）`,body:`<p>「謝謝大家，我會更有效率！」<br>還剩 ${3-g.el} 次機會。</p>`,buttons:[{label:'下次一定'}]}); }
 function godEnd(win,why,X){ const g=S.god; if(g.over) return; g.over=1; setGodAim(null); const md=win?3+Math.max(0,2-(g.el||0)):1; S.meta.md+=md;
   const T={elect:['🗳️','AI 市長落選了！',`開票結果只拿到 ${X}%，${g.nm}市長抱著紙箱離開市政府。`],resign:['🏳️','AI 市長辭職了！',`支持率只剩 ${X}%，${g.nm}市長宣布：「我需要重新訓練一下。」`],term:['😇','AI 市長撐過三次選舉',`${g.nm}市長連任三屆，市民還幫他蓋了一座銅像。`],seal:['⛩️','你被封印了…','市民發現怪事都是你搞的，請柴犬神社把你封印在一個罐罐裡。']}[why];
   if(win) sfx.fan(); else sfx.bad(); saveLocal();
-  queueModal({god:1,icon:T[0],title:T[1],body:`<p>${T[2]}</p><div class="note">${win?'😈 破壞成功！':'🙈 這次失敗了'}<br>🏅 柴犬勳章 +${md}（市長模式也能用）<br>🗳️ 經過 ${g.el||0} 次選舉・👀 最高懷疑度 ${Math.round(g.susMax||0)}%</div>`,buttons:[{label:'😈 再來一局',fn:enterGod},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]}); }
+  queueModal({god:1,icon:T[0],title:T[1],body:`<p>${T[2]}</p><div class="note" style="text-align:center">🏅 勳章 +${md}</div>`,buttons:[{label:'😈 再來一局',fn:enterGod},{label:'🏛️ 回市長模式',ghost:1,fn:exitGod}]}); }
 
 // ---- 出招 ----
 function godUse(k){ const g=S.god, P=GODP[k]; if(!g||g.over||modalOpen) return; ensureAudio();
   if(godAim===k){ setGodAim(null); return; }
   const cd=(g.cd[k]||0)-S.time; if(cd>0){ sfx.bad(); ticker(`${P.icon} ${P.name}還要 ${Math.ceil(cd)} 秒才能再用`); return; }
-  if(g.pw<P.cost){ sfx.bad(); ticker(`😈 神力不夠（要 ${P.cost}）。市民越不爽，神力回得越快`); return; }
+  if(g.pw<P.cost){ sfx.bad(); ticker(`😈 神力不夠（要 ${P.cost}）`); godTip('pw','😈','神力不夠了','等一下就回來，市民越不爽回越快'); return; }
   if(P.aim){ setGodAim(k); return; } godDo(k); }
 function setGodAim(k){ godAim=k; godKey=''; const b=$('banner'); if(!k){ b.classList.remove('show'); return; } $('bannerTxt').textContent=`${GODP[k].icon} ${GODP[k].aim}`; $('bannerOK').classList.add('hidden'); $('bannerX').textContent='取消'; b.classList.add('show'); sfx.pop(); }
-function godPay(k){ const g=S.god, P=GODP[k]; g.pw-=P.cost; g.cd[k]=S.time+8; let s=P.sus; if(S.time-(g.lastUse??-99)<15) s*=1.5; g.sus=Math.min(100,g.sus+s); g.susMax=Math.max(g.susMax||0,g.sus); g.lastUse=S.time; g.used[k]=(g.used[k]||0)+1; godKey=''; }
+function godPay(k){ const g=S.god, P=GODP[k]; g.pw-=P.cost; g.cd[k]=S.time+8; let s=P.sus; if(S.time-(g.lastUse??-99)<15) s*=1.5; g.sus=Math.min(100,g.sus+s); g.susMax=Math.max(g.susMax||0,g.sus); g.lastUse=S.time; g.used[k]=(g.used[k]||0)+1; godKey=''; if(g.tut===1){ g.tut=2; g.tutT=S.time+10; } if(g.used[k]===2) setTimeout(()=>godTip('learn','🧠','AI 學乖了','同一招會越用越弱，換著用'),3200); }
 function roadNear2(x,y,r=3){ let best=null; for(let a=-r;a<=r;a++) for(let b=-r;b<=r;b++){ if(!isRoad(x+a,y+b)) continue; const d=Math.hypot(a,b); if(!best||d<best.d) best={d,p:[x+a,y+b]}; } return best&&best.p; }
 function freeTile(x,y){ return x>=0&&y>=0&&x<citySize()&&y<citySize()&&!isRoad(x,y)&&!bAt(x,y)&&!blocked(x,y)&&!['sea','s'].includes(terr(x,y))&&!godBlocked(x,y,1); }
 function scamSpot(x,y){ let best=null; for(let a=-3;a<=3;a++) for(let b=-3;b<=3;b++){ const tx=x+a, ty=y+b; if(!freeTile(tx,ty)||!nearRoad(tx,ty,1)) continue; const d=Math.hypot(a,b)-nearPop(tx,ty,1,3)*.02; if(!best||d<best.d) best={d,p:[tx,ty]}; } return best&&best.p; }
 function siteSpot(){ const n=citySize(); let best=null; for(let x=0;x<n-1;x++) for(let y=0;y<n-1;y++){ if(![[0,0],[1,0],[0,1],[1,1]].every(([a,b])=>freeTile(x+a,y+b))||!nearRoad(x,y,2)) continue; const d=Math.hypot(x+1-6.5,y+1-6.5); if(!best||d<best.d) best={d,p:[x,y]}; } return best&&best.p; }
 const godLook=(top,bot,hair)=>{ const L=genLook(); return Object.assign(L,{age:'adult',h:1,topCol:top,bottomCol:bot,hairCol:hair}); };
-function godDo(k,x,y,sb){ const g=S.god, R=aiPer().react, P=GODP[k], e=Math.min(1,godEff(k)*(k==='rumor'&&g.per==='vain'?1.25:1)), nid=()=>(g.id=(g.id||1)+1), pc=Math.round(e*100);
+function godDo(k,x,y,sb){ const effTxt=p=>p<100?`🧠 AI 學乖了，效果 ${p}%`:''; const g=S.god, R=aiPer().react, P=GODP[k], e=Math.min(1,godEff(k)*(k==='rumor'&&g.per==='vain'?1.25:1)), nid=()=>(g.id=(g.id||1)+1), pc=Math.round(e*100);
   if(k==='storm'){ const snow=seasonOf(monthNo())==='winter', nm=snow?'暴風雪':'豪雨', T=60, lb=(snow?'❄️ ':'⛈️ ')+nm;
     weather={type:snow?'snow':'rain',t:T}; godFx('sup',{s:'move',m:1-.45*e,until:S.time+T,lb}); godFx('rev',{s:'shop',m:1-.35*e,until:S.time+T}); godFx('tour',{m:1-.5*e,until:S.time+T}); godFx('happy',{n:-Math.round(9*e),until:S.time+T});
-    blame(9*e); godPay(k); g.rq.push({k,t:S.time+14*R}); godToast(P.icon,`${nm}來了！`,`效果 ${pc}%・一分鐘內交通、商店、觀光都變差`); ticker(snow?'❄️ 暴風雪！市民被困在家裡，只能看電視罵市長。':'⛈️ 豪雨下不停！騎樓淹水，公車開成了船。'); return true; }
+    blame(9*e); godPay(k); g.rq.push({k,t:S.time+14*R}); godToast(P.icon,`${nm}來了！`,effTxt(pc)); ticker(snow?'❄️ 暴風雪！市民被困在家裡，只能看電視罵市長。':'⛈️ 豪雨下不停！騎樓淹水，公車開成了船。'); return true; }
   if(k==='rumor'){ const D=CB[sb.t], cat=D.cat, Rm=RUMOR[cat]||['🤨','偷偷漲價'], T=75, id=nid();
     godFx('rev',{s:cat,m:1-.55*e,until:S.time+T,lb:'🗣️ 謠言',gid:id}); godFx('happy',{n:-2,until:S.time+T,gid:id}); if(cat==='home') godFx('home',{m:1-.2*e,until:S.time+T,gid:id});
     g.ent.push({id,k:'rumor',cat,icon:Rm[0],until:S.time+T}); blame(7*e); godPay(k); g.rq.push({k,id,t:S.time+(g.per==='vain'?28:20)*R});
-    godToast(Rm[0],`謠言：「${D.name}${Rm[1]}」`,`所有${CATNM[cat]||'同類建築'}客人變少・效果 ${pc}%`); return true; }
+    godToast(Rm[0],`「${D.name}${Rm[1]}」`,effTxt(pc)||`${CATNM[cat]||'同類建築'}都沒人去了`); return true; }
   if(k==='shiba'){ const r=roadNear2(x,y); if(!r) return false; const T=70, id=nid(), tiles=[r], seen=new Set([r+'']);
     for(let i=0;i<tiles.length&&tiles.length<7;i++){ const [a,b]=tiles[i]; DIRS.forEach(([dx,dy])=>{ const q=[a+dx,b+dy]; if(isRoad(q[0],q[1])&&!seen.has(q+'')&&Math.hypot(q[0]-r[0],q[1]-r[1])<=3){ seen.add(q+''); tiles.push(q); } }); }
     const dogs=tiles.slice(0,7).map(([a,b])=>({x:a+.25+Math.random()*.5,y:b+.25+Math.random()*.5,col:pick(['red','red','sesame','black','white']),dir:Math.random()<.5?1:-1,pose:pick(['sleep','sleep','sit'])}));
     let n=0; S.city.b.forEach(b=>{ if(CB[b.t].fixed||b.burnt) return; if(tiles.some(([a,c])=>gapOf(b.x,b.y,BW(b),a,c,1)<=1)){ b.jam=S.time+T; b.jamM=1-.5*e; b.jg=id; n++; } });
     godFx('sup',{s:'move',m:1-.25*e,until:S.time+T,gid:id}); g.ent.push({id,k:'dogs',dogs,until:S.time+T}); blame(3*e); godPay(k); g.rq.push({k,id,t:S.time+30*R});
-    godToast('🐕','野柴犬躺在馬路上曬太陽',`旁邊 ${n} 棟沒人進得去・效果 ${pc}%`); ticker('🐕 一群柴犬躺在馬路中間，車子只能停下來等，市民邊塞車邊拍照。'); return true; }
-  if(k==='tempt'){ godPay(k); const p=aiPer().acc*Math.pow(.7,g.used.tempt-1); g.rq.push({k,t:S.time+6,ok:Math.random()<p}); godToast('🤝','建商提著禮盒去找市長了','「超大購物城，保證穩賺！」看市長怎麼回'); return true; }
+    godToast('🐕','柴犬在馬路上曬太陽',effTxt(pc)||`${n} 間店沒人進得去`); ticker('🐕 一群柴犬躺在馬路中間，車子只能停下來等，市民邊塞車邊拍照。'); return true; }
+  if(k==='tempt'){ godPay(k); const p=aiPer().acc*Math.pow(.7,g.used.tempt-1); g.rq.push({k,t:S.time+6,ok:Math.random()<p}); godToast('🤝','建商去找市長了','看他收不收…'); return true; }
   if(k==='thief'){ const r=roadNear2(x,y); if(!r) return false; g.ent.push({id:nid(),k:'thief',px:r[0],py:r[1],nx:r[0],ny:r[1],t:1,x:r[0]+.5,y:r[1]+.5,until:S.time+90,e,hit:0,stT:1,look:godLook('#2c2f38','#1d1f24','#1e1e1e'),seed:Math.random()*9}); godPay(k);
-    godToast('🦹','小偷進城了','專偷店家收銀機・被 🚓 協尋中心抓到會招供'); return true; }
+    godToast('🦹','小偷進城了',effTxt(Math.round(e*100))); return true; }
   if(k==='scam'){ const s=scamSpot(x,y); if(!s) return false; const id=nid(); godFx('rev',{m:1-.25*e,until:S.time+9999,lb:'📞 詐騙集團',gid:id}); godFx('happy',{n:-Math.round(4*e),until:S.time+9999,gid:id});
     g.ent.push({id,k:'scam',tx:s[0],ty:s[1],w:1,t0:S.time,look:godLook('#2b3550','#2b3550','#2a2a2a'),e}); blame(4*e); godPay(k); g.rq.push({k,id,t:S.time+Math.max(20,55*R/(1+.5*(g.used.scam-1)))});
-    godToast('📞','假投資說明會開張了','居民存款被騙走，全城消費變少・直到市府來取締'); return true; }
+    godToast('📞','假說明會開張了',effTxt(Math.round(e*100))||'居民的錢被騙走了'); return true; }
   return false; }
 function aiReact(r){ const g=S.god, ent=id=>g.ent.find(e=>e.id===id), cut=(id,t=S.time)=>S.city.fx.forEach(f=>{ if(f.gid===id) f.until=Math.min(f.until,t); });
   if(r.k==='storm'){ const c=P10(Math.max(300,netPerMin()*.5)); S.money-=c; blame(-2); aiSay(`市長穿雨衣到現場視察，花 $${fmt(c)} 加蓋排水溝`); }
   else if(r.k==='rumor'){ const e=ent(r.id); if(e){ e.until=Math.min(e.until,S.time+8); cut(r.id,S.time+8); } blame(g.per==='vain'?-2:-3); aiSay(g.per==='vain'?'市長氣到召開記者會，當場試吃證明清白':'市長開記者會闢謠，謠言慢慢退燒'); }
   else if(r.k==='shiba'){ const e=ent(r.id); if(e&&!e.leave){ e.leave=S.time; cut(r.id); S.city.b.forEach(b=>{ if(b.jg===r.id) b.jam=0; }); aiSay('市府請志工拿肉乾，把柴犬們引去公園了'); } }
-  else if(r.k==='scam'){ const e=ent(r.id); if(e){ g.ent=g.ent.filter(q=>q!==e); cut(r.id); const c=P10(Math.max(300,netPerMin()*.4)); S.money-=c; blame(-2); aiSay('市府辦反詐騙宣導，警察把假說明會搬走了'); if(Math.random()<.35) godSus(14,'主謀被抓到，他招供：「是神託夢叫我開的！」'); } }
+  else if(r.k==='scam'){ const e=ent(r.id); if(e){ g.ent=g.ent.filter(q=>q!==e); cut(r.id); const c=P10(Math.max(300,netPerMin()*.4)); S.money-=c; blame(-2); aiSay('市府辦反詐騙宣導，警察把假說明會搬走了'); if(Math.random()<.35) godSus(14,'主謀招供：「是神託夢叫我開的！」'); } }
   else if(r.k==='tempt'){ if(r.ok){ const dp=P10(Math.max(1000,Math.max(0,S.money)*.5)), n=Math.max(6,cityRate()*.9); S.money-=dp; godFx('loan',{n,until:S.time+200,lb:'🏗️ 爛尾購物城'}); const s=siteSpot(); if(s) g.ent.push({id:(g.id=(g.id||1)+1),k:'site',tx:s[0],ty:s[1],w:2,until:S.time+200}); g.rq.push({k:'tempt2',t:S.time+40});
-      sfx.fan(); godToast('🤝','市長簽約了！',`付了訂金 $${fmt(dp)}，之後每分鐘還 $${fmt(n*60)}`); aiSay('市長簽下超大購物城，說「這次一定賺」'); }
-    else { blame(-4); sfx.bad(); godToast('🙅','市長拒絕了建商','還上了新聞「清廉市長」・支持率 +4'); aiSay('市長把禮盒退回去，還開記者會說自己很清廉'); } }
-  else if(r.k==='tempt2'){ godFx('happy',{n:-4,until:S.time+150,lb:'🏗️ 爛尾樓'}); blame(12); godToast('🏗️','購物城工程停擺了','建商跑了，工地只剩幾根柱子・市民很生氣'); aiSay('購物城變成爛尾樓，市長說「只是暫停一下」'); } }
+      sfx.fan(); godToast('🤝','市長收了！',`開始背債，每分鐘還 $${fmt(n*60)}`); aiSay('市長簽下超大購物城，說「這次一定賺」'); }
+    else { blame(-4); sfx.bad(); godToast('🙅','市長拒絕了','還被誇清廉'); aiSay('市長把禮盒退回去，還開記者會說自己很清廉'); } }
+  else if(r.k==='tempt2'){ godFx('happy',{n:-4,until:S.time+150,lb:'🏗️ 爛尾樓'}); blame(12); godToast('🏗️','購物城變爛尾樓了','市民氣炸'); aiSay('購物城變成爛尾樓，市長說「只是暫停一下」'); } }
 function godEnts(dt){ const g=S.god;
   g.ent=g.ent.filter(e=>{ if(e.k==='rumor'||e.k==='site') return S.time<e.until; if(e.k==='scam') return true;
     if(e.k==='dogs'){ if(!e.leave&&S.time>=e.until) e.leave=S.time; return !(e.leave&&S.time-e.leave>3); }
@@ -3334,7 +3339,7 @@ function thiefTick(e,dt){ const g=S.god;
       const q=R2(v.x+BW(v)/2,v.y+BW(v)/2), c=P3(q[0],q[1],1); floats.push({c:1,text:`🦹 -$${fmt(amt)}`,x:c.x,y:c.y,life:1.6,color:'#e2574c'});
       if(!(g.alert>S.time)){ g.alert=S.time+60; aiSay(`${CB[v.t].name}的收銀機被偷了！市長下令加強巡邏`); } } }
   const cops=S.city.b.filter(b=>b.t==='lost'&&b.ok&&!b.burnt&&Math.hypot(b.x+.5-e.x,b.y+.5-e.y)<=6).length;
-  if(Math.random()<(.012+.07*cops+(g.alert>S.time?.015:0))*dt){ blame(-2); if(!cops) g.want=[...new Set([...(g.want||[]),'lost'])]; godSus(18,'小偷被抓了！他招供：「是一個神叫我來的！」'); aiSay('抓到小偷了，市長宣布要多蓋協尋中心'); return false; }
+  if(Math.random()<(.012+.07*cops+(g.alert>S.time?.015:0))*dt){ blame(-2); if(!cops) g.want=[...new Set([...(g.want||[]),'lost'])]; godSus(18,'小偷被抓了！「是神叫我來的！」'); aiSay('抓到小偷了，市長宣布要多蓋協尋中心'); return false; }
   if(S.time>=e.until){ ticker(`🦹 小偷偷了 ${e.hit} 間店，帶著贓物跑去隔壁城市了。`); return false; }
   return true; }
 
@@ -3370,26 +3375,26 @@ function godTap(sx,sy,x,y){ const k=godAim;
   else { ok=godDo(k,x,y); if(!ok) ticker(k==='scam'?'📞 附近沒有路邊的空地，換個地方':'🛣️ 要點在路上或路旁'); }
   if(ok) setGodAim(null); else sfx.bad(); }
 function godHud(){ const g=S.god; if(!g) return;
-  const key=Object.keys(GODP).map(k=>`${g.pw>=GODP[k].cost?1:0}${(g.cd[k]||0)>S.time?1:0}${godAim===k?1:0}`).join('')+'|'+Math.floor(g.pw)+'|'+Math.round(g.sus); if(key===godKey) return; godKey=key;
-  document.querySelectorAll('#navG [data-gp]').forEach(btn=>{ const k=btn.dataset.gp, P=GODP[k]; btn.classList.toggle('off',g.pw<P.cost||(g.cd[k]||0)>S.time); btn.classList.toggle('aim',godAim===k); });
+  const key=Object.keys(GODP).map(k=>`${g.pw>=GODP[k].cost?1:0}${(g.cd[k]||0)>S.time?1:0}${godAim===k?1:0}`).join('')+'|'+Math.floor(g.pw)+'|'+Math.round(g.sus)+'|'+g.tut; if(key===godKey) return; godKey=key;
+  document.querySelectorAll('#navG [data-gp]').forEach(btn=>{ const k=btn.dataset.gp, P=GODP[k]; btn.classList.toggle('off',g.pw<P.cost||(g.cd[k]||0)>S.time); btn.classList.toggle('aim',godAim===k); btn.classList.toggle('hint',g.tut===1&&k==='storm'); });
   $('godPw').innerHTML=`😈 ${Math.floor(g.pw)}<span class="pb"><i style="width:${Math.floor(g.pw)}%"></i></span>`; $('godSus').textContent=`👀 ${Math.round(g.sus)}%`; $('godSus').className='chipbtn '+(g.sus>=70?'bad':g.sus>=45?'mid':'ok'); }
 function godAdvice(){ const g=S.god, L=[], v=voteState(), ap=approval(), left=v.next-S.time, f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`, go=()=>openSheet(godHTML);
   if(g.over) return [{lv:0,t:'這局結束了',go}];
-  if(g.sus>=80) L.push({lv:3,t:`👀 懷疑度 <b>${Math.round(g.sus)}%</b>！再出招會被封印，先等它降下來`,go});
-  else if(g.sus>=55) L.push({lv:2,t:`👀 市民開始覺得怪怪的（${Math.round(g.sus)}%），出招間隔拉長一點`,go});
-  if(g.lowT>0) L.push({lv:2,good:1,t:`🏳️ 支持率 ${ap}%，再撐 <b>${Math.ceil(20-g.lowT)} 秒</b>市長就會辭職`,go});
-  if(left<=120) L.push({lv:2,good:ap<50,t:`🗳️ <b>${f(left)} 後選舉</b>，AI 支持率 ${ap}%${ap<50?'，照這樣他會落選！':'，還要壓到 50% 以下'}`,go});
-  const th=g.ent.find(e=>e.k==='thief'); if(th) L.push({lv:1,t:`🦹 小偷作案中，已經偷了 <b>${th.hit}</b> 間`,go:()=>{ camX=th.x; camY=th.y; clampCam(); }});
+  if(g.tut===1) return [{lv:2,t:'👇 先點 <b>⛈️ 天災</b> 試試看',go}];
+  if(g.tut===2) return [{lv:2,good:1,t:`👆 看！AI 支持率掉到 <b>${ap}%</b>，壓到 50% 以下就贏`,go}];
+  if(g.sus>=80) L.push({lv:3,t:`👀 快被發現了（${Math.round(g.sus)}%）！先停一下`,go});
+  else if(g.sus>=55) L.push({lv:2,t:`👀 市民覺得怪怪的（${Math.round(g.sus)}%）`,go});
+  if(g.lowT>0) L.push({lv:2,good:1,t:`🏳️ 再 <b>${Math.ceil(20-g.lowT)} 秒</b>市長就辭職了！`,go});
+  if(left<=120) L.push({lv:2,good:ap<50,t:`🗳️ <b>${f(left)}</b> 後開票・AI ${ap}%${ap<50?'，他要落選了！':''}`,go});
+  const th=g.ent.find(e=>e.k==='thief'); if(th) L.push({lv:1,t:`🦹 小偷偷了 <b>${th.hit}</b> 間`,go:()=>{ camX=th.x; camY=th.y; clampCam(); }});
   if(g.log[0]) L.push({lv:1,t:`🤖 ${g.log[0]}`,go});
   L.push({lv:0,t:GOD_TIPS[Math.floor(S.time/25)%GOD_TIPS.length],go}); return L; }
 function godHTML(){ const g=S.god, P=aiPer(), v=voteState(), ap=approval(), f=t=>`${Math.floor(Math.max(0,t)/60)}:${String(Math.floor(Math.max(0,t)%60)).padStart(2,'0')}`;
-  return `<h2>😈 破壞神</h2><div class="sub">讓 AI 市長選輸（支持率 &lt; 50%），或支持率 25% 以下撐 20 秒逼他辭職</div>
-    <div class="kv"><div>AI 市長<b>${P.icon} ${esc(g.nm)}・${P.name}</b></div><div>支持率<b>🗳️ ${ap}%</b></div><div>下次選舉<b>${f(v.next-S.time)}（${(g.el||0)+1}/3）</b></div><div>懷疑度<b>👀 ${Math.round(g.sus)}%</b></div><div>民怨<b>😤 ${Math.max(0,Math.round(g.blame||0))}</b></div><div>幸福度<b>😊 ${CS.happy}</b></div></div>
-    <div class="note">${P.icon} ${P.desc}</div>
-    ${Object.entries(GODP).map(([k,Q])=>`<div class="item" style="padding:8px 10px"><div style="font-size:24px">${Q.icon}</div><div class="txt"><div class="nm" style="font-size:14px">${Q.name}<small style="font-weight:700;color:var(--soft)">　神力 ${Q.cost}・效果 ${Math.round(godEff(k)*100)}%</small></div><div class="ds">${Q.desc}</div></div></div>`).join('')}
-    <div class="note">😤 每招得手都會累積民怨，直接扣市長支持率；民怨會慢慢被淡忘，市長處理得好也會消一點<br>🧠 同一招每用一次，AI 就學乖一點（效果 ×75%）<br>👀 每招都會讓人起疑，連續出招漲更快；70% 市民蓋神社（法術 -25%），100% 你被封印<br>😈 市民越不開心、有抗議，神力回得越快</div>
-    ${g.log.length?`<div class="note"><b>AI 市長最近</b><br>${g.log.slice(0,4).map(esc).join('<br>')}</div>`:''}
-    <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 放棄這局，回市長模式</button></div>`; }
+  return `<h2>🤖 ${esc(g.nm)}市長</h2><div class="sub">${P.icon} ${P.name}・${P.desc}</div>
+    <div class="kv"><div>支持率<b>🗳️ ${ap}%</b></div><div>開票<b>${f(v.next-S.time)}（${(g.el||0)+1}/3）</b></div><div>懷疑<b>👀 ${Math.round(g.sus)}%</b></div><div>神力<b>😈 ${Math.floor(g.pw)}</b></div></div>
+    ${Object.entries(GODP).map(([k,Q])=>{ const e=Math.round(godEff(k)*100); return `<div class="item" style="padding:7px 10px"><div style="font-size:24px">${Q.icon}</div><div class="txt"><div class="nm" style="font-size:14px">${Q.name}<small style="font-weight:700;color:var(--soft)">　😈${Q.cost}${e<100?`・效果 ${e}%`:''}</small></div><div class="ds">${Q.desc}</div></div></div>`; }).join('')}
+    ${g.log.length?`<div class="note">${g.log.slice(0,3).map(m=>'🤖 '+esc(m)).join('<br>')}</div>`:''}
+    <div class="row"><button class="btn ghost" data-act="exitGodAsk">🏛️ 回市長模式</button></div>`; }
 
 // ================= 雲端存檔（Claude 連結限定） =================
 const ON_PAGES=/\.github\.io$/.test(location.hostname);
